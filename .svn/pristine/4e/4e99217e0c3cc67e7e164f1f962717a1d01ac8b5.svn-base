@@ -1,0 +1,49 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:43:38
+ * @Function: 初始化原材料
+ * @version 1.0
+ */
+public class MaterialDataLoader extends BaseLoader {
+	
+	private BlockingQueue<Material> materials = new LinkedBlockingQueue<Material>();
+	
+	private int MATERIAL_COUNT_MAX = 500;
+
+	private MaterialDataLoader() {
+	}
+	
+	private static MaterialDataLoader loader = null ;
+	
+	public static MaterialDataLoader getInstance() {
+		if(loader == null) {
+			synchronized (MaterialDataLoader.class) {
+				if(loader == null ) {
+					loader = new MaterialDataLoader() ;
+				}
+			}
+		}
+		return loader; 
+	}
+
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据开始");
+		for (int i = 1; i <= MATERIAL_COUNT_MAX; i++) {
+			Material material = new Material(i, i, "material-" + i);
+			materials.add(material);
+		}
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据结束");
+		return true;
+	}
+
+}

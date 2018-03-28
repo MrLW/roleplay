@@ -1,0 +1,59 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:42:07
+ * @Function: 订单
+ * @version 1.0
+ */
+@Data
+public class Order implements IByteTo{
+	
+	// 订单Id
+	private Integer orderId ;
+	// 订单号
+	private String orderNum ;
+	// 接收订单所需要花费的钱
+	private Integer spendIncome = 10 ; 
+	// 完成订单所挣的收入
+	private Integer orderIncome = 100;
+	// 订单状态:0:未接受的订单;1:已接受的订单但还未完成的订单;2:订单已经完成
+	private Integer orderState = 0 ; 
+	// 订单内容,暂时测试只用book和pen两种
+	private String orderName ;
+	// 订单数量
+	private Integer productCount ;
+	// 订单有效时间,单位:秒
+	private Long  validTime ;
+	// 订单最迟付款时间
+	private Long latestPay;
+	// 是否交付.1:交付;0:未交付
+	private Byte delivery = 0 ;
+	// 0:未开始;1:制作中;2:已完成
+	private Integer orderType = 0 ;
+	// 订单对应的产品类型ID
+	private Integer productTypeId; 
+	
+	
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(orderId);
+		buf.writeString(orderNum);
+		buf.writeInt(spendIncome);
+		buf.writeInt(orderIncome);
+		buf.writeInt(orderState);
+		buf.writeInt(productTypeId);
+		buf.writeString(orderName);
+		buf.writeInt(productCount);
+		buf.writeLong(validTime);
+		buf.writeLong(latestPay);
+		buf.writeByte(delivery);
+		buf.writeInt(orderType);
+	}
+
+
+}

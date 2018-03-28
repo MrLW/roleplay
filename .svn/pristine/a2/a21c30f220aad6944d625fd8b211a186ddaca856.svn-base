@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.factory;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.player.FinanceManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 上午10:46:39
+ * @Function: 角色管理员
+ * @version 1.0
+ */
+public class BaseManagerFactory {
+
+	public static BaseManager getBaseManager(Integer roleType) {
+		BaseManager manager = null;
+		switch (roleType) {
+		case 1:
+			manager = new ProductorManager();
+			break;
+		case 2:
+			manager = new HRManager();
+			break;
+		case 3:
+			manager = new FinanceManager();
+			break;
+		case 4:
+			manager = new PurchaseManager();
+			break;
+		case 5:
+			manager = new BazaarManager();
+			break;
+		}
+		return manager;
+
+	}
+}

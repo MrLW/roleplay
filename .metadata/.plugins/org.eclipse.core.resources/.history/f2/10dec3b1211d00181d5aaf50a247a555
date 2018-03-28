@@ -1,0 +1,38 @@
+
+package com.sim.server.game.roleplay.handler.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.common.TotalIncomeResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:23:07
+ * @Function: 总金额请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.TOTAL_INCOME_REQUEST_PROTOCOL, desc = "总金额请求处理")
+public class TotalIncomeHandler extends BaseHandler {
+
+	public void run() {
+		TotalIncomeResponse response = new TotalIncomeResponse(channel);
+		// 获取公司总收入
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		Integer totalIncome = room.getTotalIncome();
+		response.setTotalIncome(totalIncome);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		TotalIncomeHandler handler = new TotalIncomeHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

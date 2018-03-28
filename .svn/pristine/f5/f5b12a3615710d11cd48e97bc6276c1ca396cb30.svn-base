@@ -1,0 +1,48 @@
+package com.sim.server.game.roleplay.player;
+/**
+ * @author liwen
+ * @date:2017年11月14日 下午4:35:06
+ * @Function: 好友
+ * @version 1.0
+ */
+public class Friend {
+	
+	public Integer userId ;
+	
+	public String name ;
+	// 是否在线
+	public Byte isOnline ;
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public Byte getIsOnline() {
+		return isOnline;
+	}
+
+	public void setIsOnline(Byte isOnline) {
+		this.isOnline = isOnline;
+	}
+
+	@Override
+	public String toString() {
+		return "Friend [userId=" + userId + ", name=" + name + ", isOnline=" + isOnline + "]";
+	}
+
+	
+	
+	
+}

@@ -1,0 +1,43 @@
+package com.sim.server.game.message.response.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午3:25:00
+ * @Function:
+ * @version 1.0
+ */
+public class AllSelectResponse extends BaseResponse{
+	
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.ROLE_ALL_SELECT_RESPONSE_PROTOCOL;
+	
+	private Byte result =0;
+	
+	public AllSelectResponse() {
+	}
+	public AllSelectResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	public Short getResponseId() {
+		return responseId;
+	}
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+	public Byte getResult() {
+		return result;
+	}
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+}

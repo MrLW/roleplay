@@ -1,0 +1,87 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午5:22:42
+ * @Function: 求职者
+ * @version 1.0
+ */
+public class Jobhunter implements IByteTo{
+
+	// 求职者ID
+	private Integer jobhunterId;
+	// 求职者名
+	private String name;
+	// 求职类型
+	private Integer type =1;
+	// 求职者能力
+	private Integer ability;
+	// 期望薪水
+	private Integer salary;
+
+	public Jobhunter(Integer jobhunterId, String name, Integer ability, Integer salary) {
+		super();
+		this.jobhunterId = jobhunterId;
+		this.name = name;
+		this.ability = ability;
+		this.salary = salary;
+	}
+
+	public Integer getJobhunterId() {
+		return jobhunterId;
+	}
+
+	public void setJobhunterId(Integer jobhunterId) {
+		this.jobhunterId = jobhunterId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getAbility() {
+		return ability;
+	}
+
+	public void setAbility(Integer ability) {
+		this.ability = ability;
+	}
+
+	public Integer getSalary() {
+		return salary;
+	}
+
+	public void setSalary(Integer salary) {
+		this.salary = salary;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
+	}
+
+	@Override
+	public String toString() {
+		return "Jobhunter [jobhunterId=" + jobhunterId + ", name=" + name + ", type=" + type + ", ability=" + ability
+				+ ", salary=" + salary + "]";
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(jobhunterId);
+		buf.writeString(name);
+		buf.writeInt(type);
+		buf.writeInt(ability);
+		buf.writeInt(salary);
+	}
+	
+}

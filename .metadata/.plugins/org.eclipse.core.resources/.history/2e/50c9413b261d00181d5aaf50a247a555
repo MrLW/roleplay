@@ -1,0 +1,193 @@
+package com.sim.server.game.model.model;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.productor.EmployeeSyncHPResponse;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.utils.LoggerUtil;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午1:39:57
+ * @Function:职员
+ * @version 1.0
+ */
+@Data
+public class Employee implements IByteTo, Runnable {
+
+	// 职员ID
+	private int empId;
+	// 员工所属公司/房间
+	private String empCompany;
+	// 员工姓名
+	private String empName;
+	// 职员类型.1:操作员;2:运输员
+	private int empType;
+	// 职员能力
+	private int empAbility;
+	// 状态：理解为人物HP，均为0~100，随工作时间减少，为0时拒绝工作
+	private int hp = 100;
+	// 薪水
+	private int salary;
+	// 职员此时状态.1:工作;0:休息
+	private int state = 0;
+	// 员工所负责的生产线ID
+	// 生产线
+	private ProductLine productLine;
+	// 员工是否处于血量上升或者下降的状态,或者说是否正在执行更新血量的任务
+	// true:正在恢复
+	private boolean hpTask = false;
+	// 定时器
+	private Timer timer = new Timer();
+
+	private EmployeeHPTask task = new EmployeeHPTask(this);
+	// HR连接
+	private Channel hrCtx;
+	// 生产连接
+	private ProductorManager productor;
+
+	public Employee() {
+		timer.schedule(task, 0, 1000);
+	}
+
+	public void setHp(int hp) {
+		LoggerUtil.getLogger(Employee.class).info("员工血量变化中");
+		if (hp >= 100) {
+			hp = 100;
+			hpTask = false;
+		} else if (hp <= 0) {
+			hp = 0;
+			hpTask = false;
+			productor.writeEmployeeDie(this);
+			// 当员工血量为0时,停止生产
+			if (productLine != null) {
+				productLine.setWork(false);
+			}
+		} else {
+			this.hp = hp;
+		}
+
+	}
+
+	/**
+	 * 更新员工的状态
+	 * 
+	 * @param state
+	 *            1:工作;0:休息
+	 */
+	public void setState(int state) {
+		this.state = state;
+		hpTask = true;
+	}
+
+	/**
+	 * 员工是否休息
+	 */
+	public boolean isIdle() {
+		return state == 0;
+	}
+
+	/**
+	 * 员工是否工作
+	 */
+	public boolean isWork() {
+		return state == 1;
+	}
+
+	class EmployeeHPTask extends TimerTask {
+
+		private Employee emp;
+
+		public EmployeeHPTask(Employee emp) {
+			this.emp = emp;
+		}
+
+		@Override
+		public void run() {
+			while (hpTask) {
+				if (state == 1) { // 工作
+					hp -= 1;
+					setHp(hp);
+				} else {
+					// 休息
+					if (hp < 0) {
+						hp = 0;
+					}
+					hp += 1;
+					setHp(hp);
+				}
+				EmployeeSyncHPResponse hr = new EmployeeSyncHPResponse(hrCtx);
+				hr.setEmp(emp);
+				hr.writeAndFlush();
+				EmployeeSyncHPResponse product = new EmployeeSyncHPResponse(productor.getCtx());
+				product.setEmp(emp);
+				product.writeAndFlush();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+	}
+
+	public void toData(EnhancedByteBuf enhancedByteBuf) {
+		enhancedByteBuf.writeInt(empId);
+		enhancedByteBuf.writeString(empCompany);
+		enhancedByteBuf.writeString(empName);
+		enhancedByteBuf.writeInt(empType);
+		enhancedByteBuf.writeInt(empAbility);
+		enhancedByteBuf.writeInt(hp);
+		enhancedByteBuf.writeInt(salary);
+		enhancedByteBuf.writeInt(state);
+		enhancedByteBuf.writeInt(productLine == null ? -1 : productLine.getProductLineId());
+	}
+
+	public static enum EmployeeState {
+		// 既非工作也非休息,例如:刚工作完还没处于休息的状态
+		IDLE("闲置", 2), WORK("工作", 1), REST("休息", 0);
+		private String desc;
+		private int state;
+
+		public String getDesc() {
+			return desc;
+		}
+
+		public void setDesc(String desc) {
+			this.desc = desc;
+		}
+
+		public int getState() {
+			return state;
+		}
+
+		public void setState(int state) {
+			this.state = state;
+		}
+
+		private EmployeeState(String desc, int state) {
+			this.desc = desc;
+			this.state = state;
+		}
+	}
+
+	@Override
+	public void run() {
+		//
+		while (state == 1) {
+			
+		}
+	}
+
+}

@@ -1,0 +1,35 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午2:06:43
+ * @Function: 添加生产线请求
+ * @version 1.0
+ */
+public class ProductLineAddRequest extends BaseRequest {
+	
+	@Setter@Getter
+	private short requestId = RolePlayProtocolConstant.PRODUCTLINE_ADD_REQUEST_PROTOCOL;
+	// 商品类型
+	@Setter@Getter
+	private int commodityType ;
+	// 设备数量
+	@Setter@Getter
+	private int commodityCount ;
+
+	public ProductLineAddRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		commodityType = buf.readInt() ;
+		commodityCount = buf.readInt() ;
+	}
+
+
+}

@@ -1,0 +1,52 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PlayerTeam;
+import com.sim.server.game.roleplay.room.Room;
+import com.sim.server.game.utils.RedisUtil;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年11月21日 上午11:31:22
+ * @Function: 玩家数据加载
+ * @version 1.0
+ */
+public class PlayerDataLoader extends BaseLoader{
+
+	private static Room room;
+	
+	private static LinkedBlockingQueue<PlayerTeam> playerTeams;
+	
+	public boolean initData() {
+		return false;
+	}
+	
+	/**
+	 *  初始化玩家信息
+	 * @param ctx
+	 */
+	public static void initConf(ChannelHandlerContext ctx) {
+		
+	}
+
+
+	
+	private static boolean isFit(PlayerInfo playerInfo) {
+		String roomId = room.getRoomId();
+		List<PlayerInfo> infos = RoomManager.getPlayerInfosByRoomId(roomId);
+		for (PlayerInfo info : infos) {
+			if(info != playerInfo) {
+				if(Math.abs(info.getX() - playerInfo.getX()) < 200 && Math.abs(info.getZ() - playerInfo.getZ()) < 200) {
+					return false; 
+				}
+			}
+		}
+		return true;
+	}
+}

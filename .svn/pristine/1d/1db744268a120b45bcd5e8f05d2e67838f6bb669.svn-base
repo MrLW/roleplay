@@ -1,0 +1,47 @@
+package com.sim.server.game.roleplay.manager;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.sim.server.game.data.db.pojo.TbUser;
+import com.sim.server.game.roleplay.player.Session;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 下午6:25:02
+ * @Function: 用户管理器
+ * @version 1.0
+ */
+public class UserManager {
+
+	/**
+	 * socket和user的map集合,相当于是一个大厅,记录了当前在线客户端
+	 */
+	public static Map<SocketChannel, TbUser> userSocketMap = new HashMap<SocketChannel, TbUser>();
+	
+	private static Map<Integer, Session> sessionMap = new ConcurrentHashMap<Integer, Session>() ;
+	
+	/**
+	 * socket和context的map映射,主要作用是:为了广播消息那块
+	 */
+	
+
+	public static void setSession(Integer sessionId,Session session) {
+		sessionMap.put(sessionId, session);
+	}
+	
+	public static Map<Integer, Session> getSessionMap() {
+		return sessionMap;
+	}
+	/**
+	 *  客户端退出
+	 */
+	public static void drop(ChannelHandlerContext ctx) {
+		SocketChannel socket = (SocketChannel) ctx.channel();
+		userSocketMap.remove(socket);
+	}
+}

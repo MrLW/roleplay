@@ -1,0 +1,6 @@
+# 每个房间的队伍数量
+TEAM_COUNT=2
+# 两个队伍的总人数
+TEAM_PLAYER_COUNT=4
+# 每个房间的人数
+ROOM_PLAYER_COUNT=5

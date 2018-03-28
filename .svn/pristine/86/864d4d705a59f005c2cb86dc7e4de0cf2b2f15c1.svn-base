@@ -1,0 +1,73 @@
+package com.sim.server.game.model.model;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午5:15:05
+ * @Function: 角色信息
+ * @version 1.0
+ */
+public class BaseManager {
+	// 该角色对应的ID
+	public Integer roleId;
+	// 角色类型
+	public Integer roleType;
+	// 角色名字
+	public String roleName;
+	// 默认申请的金额
+	public Integer applyForMoney = 0 ;
+	
+	public ChannelHandlerContext ctx ;
+
+	public int getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(int roleId) {
+		this.roleId = roleId;
+	}
+
+	public int getRoleType() {
+		return roleType;
+	}
+
+	public void setRoleType(int roleType) {
+		this.roleType = roleType;
+	}
+
+	public String getRoleName() {
+		return roleName;
+	}
+
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
+	}
+
+
+	public void setRoleId(Integer roleId) {
+		this.roleId = roleId;
+	}
+
+	public void setRoleType(Integer roleType) {
+		this.roleType = roleType;
+	}
+
+	public ChannelHandlerContext getCtx() {
+		return ctx;
+	}
+
+	public void setCtx(ChannelHandlerContext ctx) {
+		this.ctx = ctx;
+	}
+
+	public Integer getApplyForMoney() {
+		return applyForMoney;
+	}
+
+	public void setApplyForMoney(Integer applyForMoney) {
+		this.applyForMoney = applyForMoney;
+	}
+	
+
+}

@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午6:44:32
+ * @Function: 产品类型响应
+ * @version 1.0
+ */
+public class ProducterorTypeListResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.PRODUCTOR_LIST_RESPONSE_PROTOCOL;
+	private List productorTypes;
+
+	public ProducterorTypeListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public List getProductorTypes() {
+		return productorTypes;
+	}
+
+	public void setProductorTypes(List productorTypes) {
+		this.productorTypes = productorTypes;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeList(productorTypes);
+	}
+
+}

@@ -1,0 +1,201 @@
+package com.sim.server.game.model.model;
+/**
+ * @author liwen
+ * 2017年11月6日 下午12:13:15
+ * Function: 玩家的信息
+ * @version 1.0
+ */
+public class PlayerInfo {
+	
+	// 玩家ID
+	public Integer userId ;
+	// x
+	public Integer x =0 ;
+	// y
+	public Integer z = 0 ;
+	// 向量
+	public Integer directionX = 0 ;
+	public Integer directionY = 0 ;
+	public Integer yangle = 0;
+	// 最大能量
+	public Integer maxEnergy = 100 ; 
+	// 能量
+	public Integer energy = 0 ;
+	// 怒气
+	public Integer rage = 0 ;
+	// 最大经验
+	public Integer maxExp = 100 ;
+	// 经验
+	public Integer exp = 0 ; 
+	// 最大等级
+	public Integer maxLevel = 100 ;
+	// 等级
+	public Integer level = 1 ;
+	// 最大血量
+	public Integer maxHP = 100;
+	// 血量
+	public Integer curHP = 100 ;
+	
+	// 该玩家对象所在的组
+	public Long teamId = -1l ;
+	// 是否活着1:活着;0:死亡
+	public Byte isLive = 1  ;
+	
+	public Integer roleType = -1;
+	
+	public PlayerInfo() {
+		super();
+	}
+	
+	public Integer getRoleType() {
+		return roleType;
+	}
+
+	public void setRoleType(Integer roleType) {
+		this.roleType = roleType;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+	public Integer getX() {
+		return x;
+	}
+	public void setX(Integer x) {
+		this.x = x;
+	}
+	
+	public Integer getZ() {
+		return z;
+	}
+	public void setZ(Integer z) {
+		this.z = z;
+	}
+	public Integer getDirectionX() {
+		return directionX;
+	}
+	public void setDirectionX(Integer directionX) {
+		this.directionX = directionX;
+	}
+	public Integer getDirectionY() {
+		return directionY;
+	}
+	public void setDirectionY(Integer directionY) {
+		this.directionY = directionY;
+	}
+	public Integer getEnergy() {
+		return energy;
+	}
+	public void setEnergy(Integer energy) {
+		this.energy = energy;
+	}
+	public Integer getRage() {
+		return rage;
+	}
+	public void setRage(Integer rage) {
+		this.rage = rage;
+	}
+	public Integer getExp() {
+		return exp;
+	}
+	public void setExp(Integer exp) {
+		this.exp = exp;
+	}
+	public Integer getLevel() {
+		return level;
+	}
+	public void setLevel(Integer level) {
+		this.level = level;
+	}
+	public Integer getMaxHP() {
+		return maxHP;
+	}
+	public void setMaxHP(Integer maxHP) {
+		this.maxHP = maxHP;
+	}
+	public Integer getCurHP() {
+		return curHP;
+	}
+	public void setCurHP(Integer curHP) {
+		this.curHP = curHP;
+	}
+	public Integer getMaxEnergy() {
+		return maxEnergy;
+	}
+	public void setMaxEnergy(Integer maxEnergy) {
+		this.maxEnergy = maxEnergy;
+	}
+	
+	public Integer getYangle() {
+		return yangle;
+	}
+	public void setYangle(Integer yangle) {
+		this.yangle = yangle;
+	}
+
+	public Integer getMaxExp() {
+		return maxExp;
+	}
+
+
+	public void setMaxExp(Integer maxExp) {
+		this.maxExp = maxExp;
+	}
+
+
+	public Integer getMaxLevel() {
+		return maxLevel;
+	}
+
+
+	public void setMaxLevel(Integer maxLevel) {
+		this.maxLevel = maxLevel;
+	}
+
+
+	public Long getTeamId() {
+		return teamId;
+	}
+
+
+	public void setTeamId(Long teamId) {
+		this.teamId = teamId;
+	}
+	
+	
+
+	public Byte getIsLive() {
+		return isLive;
+	}
+
+
+	public void setIsLive(Byte isLive) {
+		this.isLive = isLive;
+	}
+
+
+	/**
+	 *  增长经验
+	 * @param exp 增长的经验
+	 */
+	public void increaseExp(Integer exp) {
+		this.exp += exp ;
+	}
+	
+	public void release() {
+		
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "PlayerInfo [userId=" + userId + ", x=" + x + ", z=" + z + ", directionX=" + directionX + ", directionY="
+				+ directionY + ", yangle=" + yangle + ", maxEnergy=" + maxEnergy + ", energy=" + energy + ", rage="
+				+ rage + ", maxExp=" + maxExp + ", exp=" + exp + ", maxLevel=" + maxLevel + ", level=" + level
+				+ ", maxHP=" + maxHP + ", curHP=" + curHP + ", teamId=" + teamId + ", isLive=" + isLive + "]";
+	}
+	
+}

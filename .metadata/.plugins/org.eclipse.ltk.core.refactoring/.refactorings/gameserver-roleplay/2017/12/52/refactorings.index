@@ -1,0 +1,21 @@
+1514170022741	Move compilation unit
+1514192756753	Move compilation unit
+1514196853101	Delete element
+1514196858358	Delete element
+1514259750235	Delete element
+1514273063960	Rename type 'PurchaseResultHandler'
+1514273094525	Extract method 'purchase'
+1514273387381	Rename type 'PurchaseWarehouseResultHandler'
+1514282768440	Delete element
+1514347096337	Copy compilation unit
+1514347105657	Copy compilation unit
+1514358416289	Rename type 'AddProductLineHandler'
+1514363224541	Rename type 'EmployeeListRequest'
+1514363406985	Delete element
+1514365417606	Delete element
+1514365477744	Delete element
+1514371142173	Rename type 'ProducterTypeList'
+1514371185119	Move compilation unit
+1514446458036	Delete element
+1514462363325	Extract method 'createProduct'
+1514518823813	Copy compilation unit

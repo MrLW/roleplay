@@ -1,0 +1,9 @@
+1515999661522	Rename type 'EquipmentIdleRequest'
+1515999667923	Delete element
+1515999707086	Delete element
+1516000276643	Rename type 'WarehouseIdleRequest'
+1516001211743	Rename type 'EquipmentBusyHandler'
+1516084019263	Delete element
+1516174448406	Rename type 'MaterialCount'
+1516257389558	Extract method 'initMaterial'
+1516258294491	Copy compilation unit

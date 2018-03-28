@@ -1,0 +1,38 @@
+package com.sim.server.game.message.response.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:47:07
+ * @Function: 刷新订单结果响应
+ * @version 1.0
+ */
+public class FlushOrderResultResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_FLUSH_ORDER_RESPONSE_PROTOCOL;
+	// 1:可以刷新,0:市场总监钱不够,需要向财务申请钱
+	private Byte result;
+	
+	public FlushOrderResultResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

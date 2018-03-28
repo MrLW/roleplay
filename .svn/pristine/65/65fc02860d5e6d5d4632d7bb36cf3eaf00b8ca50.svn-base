@@ -1,0 +1,73 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager {
+
+	// 购买仓库/材料/操作桌的数量
+	private int count = -1;
+
+	public PurchaseManager() {
+		roleId = 4;
+		roleType = 4;
+		roleName = "PurchaseManager";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public void purchaseWarehouse() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<WareHouse> wareHousesDB = (LinkedList<WareHouse>) ResourceDataLoader.getInstance()
+					.getWareHousesDB();
+			WareHouse wareHouse = wareHousesDB.pop();
+			room.addWarehouse(wareHouse);
+		}
+
+	}
+
+	public void purchaseMaterial() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Material> materials = (LinkedList<Material>) ResourceDataLoader.getInstance().getMaterialsDB();
+			Material material = materials.pop();
+			room.addMaterial(material);
+		}
+
+	}
+	
+	public void purchaseEquipment() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Equipment> equipments = (LinkedList<Equipment>) ResourceDataLoader.getInstance()
+					.getEquipmentsDB(); 
+			Equipment equipment = equipments.pop();
+			room.addEquipment(equipment);
+		}
+
+	}
+
+}

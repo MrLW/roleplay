@@ -1,0 +1,232 @@
+package com.sim.server.game.model.model;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+import com.sim.server.game.utils.CommodityUtil;
+
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:34:14
+ * @Function: 生产线
+ * @version 1.0
+ */
+public class ProductLine implements Runnable, IByteTo {
+
+	// 生产线ID
+	@Setter
+	@Getter
+	public int productLineId;
+	// 生产桌ID
+	@Setter
+	@Getter
+	public int equipmentId;
+	// 该生产线要生产的产品类型,默认情况下该生产线不生产产品,
+	@Setter
+	@Getter
+	public int productType = 0;
+	// 员工ID
+	@Setter
+	@Getter
+	public int employeeId = -1;
+	// 默认不工作
+	private boolean work = false;
+	// 生产总监
+	private ProductorManager productor;
+	// 每个生产生产线创建一个产品的时间间隔
+	private static final int PERIOD_MILS = 500;
+	// 房间对象
+	private Room room;
+
+	public ProductorManager getProductorManager() {
+		return productor;
+	}
+
+	public void setProductorManager(ProductorManager productorManager) {
+		this.productor = productorManager;
+		this.room = RoomManager.getNewRoomByCtx(productor.getCtx());
+	}
+
+	/**
+	 * 设置当前生产线的工作状态
+	 * 
+	 * @param work
+	 *            是否工作
+	 */
+	public void setWork(boolean work) {
+		this.work = work;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void run() {
+
+		while (work) {
+			int productId = productType + 2;
+			// 如果是在工作状态,每秒创建一个产品
+			// 如果仓库数量不足则停止生产并通知客户端
+			if (!productor.checkWarehouse(productId, 0, productor.getCtx())) {
+				stop();
+				productor.writeCheckWarehouse(productor.getCtx());
+				return;
+			}
+			// 根据当前产品类型获取要生产的原料类型
+			int materialType = CommodityUtil.getMaterialTypeByProductType(productType);
+			// 根据原料类型获取仓库集合
+			List<Commodity> wareHouseList = room.getCommdityMap()
+					.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType)); //
+			ConcurrentLinkedQueue<Commodity> materialQueue = null;
+			
+			Map<Integer, List<Commodity>> idleCommdityMap = room.getIdleCommdityMap();
+			Map<Integer, List<Commodity>> busyCommdityMap = room.getBusyCommdityMap();
+			if (materialQueue == null || materialQueue.size() == 0) {
+				for (Commodity warehouse : wareHouseList) {
+					if (warehouse.getQueue() != null && warehouse.getQueue().size() > 0) {
+						// 取出原料
+						materialQueue = warehouse.getQueue();
+						break;
+					} else {
+						// 说明该仓库为null,需要将该仓库从busy中移除,添加到idle中
+						if (busyCommdityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType))
+								.contains(warehouse)) { // 从busy中移除
+							busyCommdityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType))
+									.remove(warehouse);
+						}
+						if(idleCommdityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType)) == null) {
+							idleCommdityMap.put(CommodityUtil.getWarehouseTypeByMaterialType(materialType), new LinkedList<Commodity>());
+						}
+						if (!idleCommdityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType))
+								.contains(warehouse)) { // 添加到idle
+							idleCommdityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(materialType))
+									.add(warehouse);
+						}
+					}
+				}
+			}
+			// 如果原料不足,则停止生产并通知客户端
+			// 获取原料仓库
+			WareHouse materialWarehouse = room.getWareHouseByType(materialType);
+			ConcurrentLinkedQueue<Material> materials = (ConcurrentLinkedQueue<Material>) materialWarehouse.getQueue();
+
+			if (materialQueue == null || materialQueue.size() == 0) {
+				materialWarehouse.setWarehouseId(-1);
+				materialWarehouse.setUsed(false);
+				stop();
+				productor.writeCheckMaterial();
+				return;
+			}
+			// 使用原料开始创建产品
+			try {
+				createProduct(materialQueue);
+				Thread.sleep(PERIOD_MILS);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * 创建产品
+	 * 
+	 * @param materialQueue
+	 *            原料集合
+	 * @throws CloneNotSupportedException 
+	 */
+	private void createProduct(ConcurrentLinkedQueue<Commodity> materialQueue) throws CloneNotSupportedException {
+		Commodity material = null;
+		for (Commodity m : materialQueue) {
+			if (m.getCommodityType() == CommodityUtil.getMaterialTypeByProductType(productType)) {
+				material = materialQueue.poll();
+				break;
+			}
+		}
+		// 获取要生产的产品
+		Commodity commodity = ResourceDataLoader.getInstance().getCommodities()
+				.get(productType);
+
+		if (materialQueue != null) {
+			if (material != null) {// 原料充足
+				// 获取产品仓库
+				Commodity product = commodity.clone() ;
+				
+				System.out.println("创建产品:" + product);
+				
+				// 获取指定类型仓库
+				List<Commodity> productWarehouseList = room.getCommdityMap()
+						.get(CommodityUtil.getWarehouseTypeByProductType(productType));
+				if (productWarehouseList != null && productWarehouseList.size() > 0) {
+					Commodity warehouse = productWarehouseList.get(0);
+					ConcurrentLinkedQueue<Commodity> queue = warehouse.getQueue();
+					queue.add(product);
+				} else { // 如果没有存储指定类型的仓库,取出一个空仓库
+					LinkedList<Commodity> emptyWarehouseList = (LinkedList<Commodity>) room.getCommdityMap()
+							.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+					// 从空仓库中取出一个
+					Commodity emptyWarehouse = emptyWarehouseList.poll();
+					// 创建一个新的仓库元素集合
+					List<Commodity> newWarehouseEleList = new LinkedList<Commodity>();
+					// 设置该新仓库的类型
+					emptyWarehouse.setCommodityType(CommodityUtil.getWarehouseTypeByProductType(productType));
+					// 将新添加的商品添加到新仓库中
+					if(emptyWarehouse.getQueue()==null)
+						emptyWarehouse.setQueue(new ConcurrentLinkedQueue<Commodity>());
+					emptyWarehouse.getQueue().add(product);
+					// 将该仓库添加到新的仓库类型集合中
+					newWarehouseEleList.add(emptyWarehouse);
+					// 将新仓库类型集合添加到Map中
+					room.getCommdityMap().put(CommodityUtil.getWarehouseTypeByProductType(productType),newWarehouseEleList);
+					// 获取busy 、 idle
+					List<Commodity> busyCommdityList = room.getBusyCommdityMap()
+							.get(CommodityUtil.getWarehouseTypeByProductType(productType));
+					List<Commodity> idleCommdityList = room.getIdleCommdityMap()
+							.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+					if (busyCommdityList != null) {
+						busyCommdityList.add(emptyWarehouse);
+						idleCommdityList.remove(emptyWarehouse);
+					} else {
+						busyCommdityList = new LinkedList<Commodity>();
+						busyCommdityList.add(emptyWarehouse);
+						room.getBusyCommdityMap().put(
+								CommodityUtil.getWarehouseTypeByProductType(productType),
+								busyCommdityList);
+					}
+					if (idleCommdityList != null) {
+						if(idleCommdityList.contains(emptyWarehouse)) {
+							idleCommdityList.remove(emptyWarehouse);
+						}
+					}
+				}
+
+			}
+		}
+
+	}
+
+	/**
+	 * 该生产线停止 生产
+	 */
+	private void stop() {
+		work = false;
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(productLineId);
+		buf.writeInt(equipmentId);
+		buf.writeInt(productType);
+		buf.writeInt(employeeId);
+	}
+
+}

@@ -1,0 +1,45 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月28日 下午4:09:22
+ * @Function: 选择生产A/B请求
+ * @version 1.0
+ */
+public class ProductLineAndTypeRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.START_PRODUCTLINE_REQUEST_PROTOCOL;
+
+	private Integer productLineId; // 其实就是设备ID
+
+	private Integer productTypeId;
+
+	public ProductLineAndTypeRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		productLineId = buf.readInt();
+		productTypeId = buf.readInt();
+	}
+
+	public Integer getProductLineId() {
+		return productLineId;
+	}
+
+	public void setProductLineId(Integer productLineId) {
+		this.productLineId = productLineId;
+	}
+
+	public Integer getProductTypeId() {
+		return productTypeId;
+	}
+
+	public void setProductTypeId(Integer productTypeId) {
+		this.productTypeId = productTypeId;
+	}
+	
+}

@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.WarehouseStateRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月15日 下午3:27:35
+ * @Function: 仓库
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.WAREHOUSE_STATE_REQUEST_PROTOCOL,desc="仓库")
+public class WarehouseStateHandler extends BaseHandler {
+
+	public void run() {
+		WarehouseStateRequest request = (WarehouseStateRequest) baseRequest ;
+		int state = request.getState();
+		// 找到采购总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductorManager productor = (ProductorManager) room.getProductManager();
+		productor.writeWareHousesByState(state) ;
+	}
+
+	@Override
+	public Object clone() {
+		WarehouseStateHandler handler = new WarehouseStateHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

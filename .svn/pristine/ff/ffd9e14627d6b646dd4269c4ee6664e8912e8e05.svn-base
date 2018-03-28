@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.ProductListResponse;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月29日 下午6:00:02
+ * @Function: 产品列表
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PRODUCT_LIST_REQUEST_PROTOCOL,desc="产品列表")
+public class ProductListHandler extends BaseHandler {
+
+	public void run() {
+		// 获取已经拥有的产品数量
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<Product> products = room.getProducts();
+		// 创建响应
+		ProductListResponse response = new ProductListResponse(ctx);
+		response.setProducts(products);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		ProductListHandler handler = new ProductListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

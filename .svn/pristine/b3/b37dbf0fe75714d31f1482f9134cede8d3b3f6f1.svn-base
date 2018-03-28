@@ -1,0 +1,58 @@
+package com.sim.server.game.model.model;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * 2017年11月6日 下午12:13:15
+ * Function: 玩家的信息
+ * @version 1.0
+ */
+@Data
+public class PlayerInfo {
+	
+	// 玩家ID
+	public int userId ;
+	// x
+	public int x =0 ;
+	// y
+	public int z = 0 ;
+	// 向量
+	public int directionX = 0 ;
+	public int directionY = 0 ;
+	public int yangle = 0;
+	// 最大能量
+	public int maxEnergy = 100 ; 
+	// 能量
+	public int energy = 0 ;
+	// 怒气
+	public int rage = 0 ;
+	// 最大经验
+	public int maxExp = 100 ;
+	// 经验
+	public int exp = 0 ; 
+	// 最大等级
+	public int maxLevel = 100 ;
+	// 等级
+	public int level = 1 ;
+	// 最大血量
+	public int maxHP = 100;
+	// 血量
+	public int curHP = 100 ;
+	
+	// 该玩家对象所在的组
+	public long teamId = -1l ;
+	// 是否活着1:活着;0:死亡
+	public byte isLive = 1  ;
+	
+	public int roleType = -1;
+	
+	@Override
+	public String toString() {
+		return "PlayerInfo [userId=" + userId + ", x=" + x + ", z=" + z + ", directionX=" + directionX + ", directionY="
+				+ directionY + ", yangle=" + yangle + ", maxEnergy=" + maxEnergy + ", energy=" + energy + ", rage="
+				+ rage + ", maxExp=" + maxExp + ", exp=" + exp + ", maxLevel=" + maxLevel + ", level=" + level
+				+ ", maxHP=" + maxHP + ", curHP=" + curHP + ", teamId=" + teamId + ", isLive=" + isLive + "]";
+	}
+	
+}

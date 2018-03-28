@@ -1,0 +1,155 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:03:27
+ * @Function: 仓库,里面存放着原料.暂时只有一种类型
+ * @version 1.0
+ */
+public class WareHouseA extends Commodity implements IByteTo {
+
+	// 仓库ID
+	private int warehouseId;
+	// 仓库类型,默认为-1,即此时仓库不装任何物品
+	// 1:存放material-A;2:存放material-B;3:存放Product-A;存放Product-B;5
+	private int wareHouseType = -1;
+	// 仓库名
+	private String warehouseName = "仓库";
+
+	// 仓库容量 其中包括 原材料+产品
+	private int capacity = MAXIMUM_CAPACITY;
+
+	// 仓库的价格
+	public static int price = 10000;
+
+	/**
+	 * 判断该仓库是否为null,主要用于客户端展示已使用/未使用
+	 */
+	private boolean used = false;
+
+	/**
+	 * 仓库的最大容量
+	 */
+	private static final int MAXIMUM_CAPACITY = 20;
+
+	private ConcurrentLinkedQueue queue = new ConcurrentLinkedQueue();
+
+	public void setUsed(boolean used) {
+		this.used = used;
+	}
+
+	public boolean isUsed() {
+		return used;
+	}
+
+	public int getWareHouseType() {
+		return wareHouseType;
+	}
+
+	public void setWareHouseType(int wareHouseType) {
+		this.wareHouseType = wareHouseType;
+	}
+
+	public int getWarehouseId() {
+		return warehouseId;
+	}
+
+	public void setWarehouseId(int warehouseId) {
+		this.warehouseId = warehouseId;
+	}
+
+	public String getWarehouseName() {
+		return warehouseName;
+	}
+
+	public void setWarehouseName(String warehouseName) {
+		this.warehouseName = warehouseName;
+	}
+
+	public int getCapacity() {
+		return capacity;
+	}
+
+	public void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	public static void setPrice(int price) {
+		WareHouseA.price = price;
+	}
+
+	public static int getPrice() {
+		return price;
+	}
+
+	/**
+	 * 购买原料
+	 * 
+	 * @param material
+	 *            原料对象
+	 */
+	public void add(Material material) {
+		this.queue.add(material);
+	}
+
+	/**
+	 * 添加产品
+	 * 
+	 * @param product
+	 *            产品对象
+	 */
+	public void add(Product product) {
+		this.queue.add(product);
+	}
+
+	public static enum WareHouseType {
+
+		PRODUCTA(3), PRODUCTB(4), MATERIALA(1), MATERIALB(2);
+		int value;
+
+		WareHouseType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+	}
+
+	public ConcurrentLinkedQueue getQueue() {
+		return queue;
+	}
+
+	public void setQueue(ConcurrentLinkedQueue<Commodity> queue) {
+		this.queue = queue;
+	}
+
+	/**
+	 * 判断当前仓库是否已经满
+	 */
+	public boolean isFull() {
+		return queue.size() == MAXIMUM_CAPACITY;
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(warehouseId);
+		buf.writeInt(wareHouseType);
+		buf.writeString(warehouseName);
+		buf.writeInt(capacity);
+		buf.writeInt(price);
+
+	}
+
+	/**
+	 * 当前仓库的容量
+	 */
+	public int size() {
+		return queue.size();
+	}
+
+}

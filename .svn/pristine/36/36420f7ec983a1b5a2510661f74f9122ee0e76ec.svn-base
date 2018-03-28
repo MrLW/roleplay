@@ -1,0 +1,349 @@
+package com.sim.server.game.roleplay.manager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.room.Room;
+import com.sim.server.game.utils.LoggerUtil;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 上午10:30:23
+ * @Function:room mamager
+ * @version 1.0
+ */
+public class RoomManager {
+
+	/**
+	 * 房间map,每个房间对应两个队伍
+	 */
+	public static BlockingQueue<Room> newRoomsList = new LinkedBlockingQueue<Room>();
+
+	/**
+	 * 房间是否成功
+	 * 
+	 * @param room
+	 * @return
+	 */
+	public static boolean isComplete(Room room) {
+		return room.isComplete();
+	}
+
+	/**
+	 * 获取房间号
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public static String getNewRoomIdByCtx(ChannelHandlerContext ctx) {
+		int userId = HallManager.getUserIdByCtx(ctx);
+		for (Room room : newRoomsList) {
+			BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+			for (PlayerInfo info : playerInfos) {
+				if (userId == info.getUserId()) {
+					return room.getRoomId();
+				}
+			}
+		}
+
+		return "-1";
+	}
+	/**
+	 *  获取房间
+	 * @param ctx
+	 * @return
+	 */
+	public static Room getNewRoomByCtx(ChannelHandlerContext ctx) {
+		String roomId = getNewRoomIdByCtx(ctx);
+		Room room = getRoomByRoomId(roomId);
+
+		return room;
+	}
+	
+	
+
+	/**
+	 * 获取房间
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public static Room getRoomByCtx(ChannelHandlerContext ctx) {
+		int userId = HallManager.getUserIdByCtx(ctx);
+		for (Room room : newRoomsList) {
+			BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+			for (PlayerInfo info : playerInfos) {
+				if (info.getUserId() == userId)
+					return room;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * 根据房间号返回房间
+	 * 
+	 * @param roomId
+	 *            房间号
+	 * @return 房间
+	 */
+	public static Room getRoomByRoomId(String roomId) {
+		for (Room room : newRoomsList) {
+			if (roomId.equals(room.getRoomId()))
+				return room;
+		}
+
+		return null;
+	}
+
+	/**
+	 * 添加玩家到对应房间号的对应组中
+	 * 
+	 * @param ctx
+	 *            玩家
+	 * @param roomId
+	 *            房间号
+	 * @param teamId
+	 *            组号
+	 * @return 添加成功与否
+	 */
+	public static boolean addPlayerInfo(ChannelHandlerContext ctx, String roomId, Long teamId) {
+		try {
+			PlayerInfo playerInfo = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+			for (Room room : newRoomsList) {
+				if (roomId.equals(room.getRoomId())) {
+					room.getPlayerInfos().add(playerInfo);
+					if (room.getPlayerInfos().size() == RoomConfig.ROOM_PLAYER_COUNT) {
+						room.setComplete(true);
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 创建房间
+	 * 
+	 * @return true:创建成功,false:创建失败
+	 */
+	public static Room createRoom() {
+		Room room = null;
+		try {
+			room = new Room();
+			room.setRoomId("A10" + (RoomManager.newRoomsList.size() + 1));
+			room.setState((byte) 1);
+			room.onCreate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		RoomManager.newRoomsList.add(room);
+		return room;
+
+	}
+
+	/**
+	 * 创建房间
+	 * 
+	 * @return
+	 */
+	public static Room getIdleRoom() {
+		for (Room room : RoomManager.newRoomsList) {
+			if (room.getState() == 1) {
+				// 如果该房间是闲置状态,也就是处于刚创建状态,则返回
+				return room;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 获取房间内的所有玩家信息
+	 * 
+	 * @param roomId
+	 *            房间号
+	 * @return 玩家集合
+	 */
+	public static List<PlayerInfo> getPlayerInfosByRoomId(String roomId) {
+		List<PlayerInfo> playerInfos = new ArrayList<PlayerInfo>();
+		for (Room room : newRoomsList) {
+			if (room.getRoomId().equals(roomId)) {
+				playerInfos.addAll(room.getPlayerInfos());
+			}
+		}
+		return playerInfos;
+	}
+
+	/**
+	 * 获取房间内的所有玩家socket
+	 * 
+	 * @param roomId
+	 *            房间号
+	 * @return 玩家集合
+	 */
+	public static List<SocketChannel> getSocketsByRoomId(String roomId) {
+		List<SocketChannel> playerInfos = new ArrayList<SocketChannel>();
+		// 根据房间号找到所有集合
+		List<PlayerInfo> infos = getPlayerInfosByRoomId(roomId);
+		for (PlayerInfo playerInfo : infos) {
+			SocketChannel socket = HallManager.getSocketByUserId(playerInfo.getUserId());
+			playerInfos.add(socket);
+		}
+		return playerInfos;
+	}
+
+	/**
+	 * get ctxs
+	 * 
+	 * @param roomId
+	 *            room id
+	 * @return ctx list
+	 */
+	public static List<ChannelHandlerContext> getContextsByRoomId(String roomId) {
+		List<ChannelHandlerContext> ctxs = new ArrayList<ChannelHandlerContext>();
+
+		// 根据房间号找到所有集合
+		List<PlayerInfo> infos = getPlayerInfosByRoomId(roomId);
+		for (PlayerInfo playerInfo : infos) {
+			ChannelHandlerContext ctx = HallManager.getContextByUserId(playerInfo.getUserId());
+			ctxs.add(ctx);
+		}
+		return ctxs;
+	}
+
+	/**
+	 * 玩家是否在房间内
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public static boolean isInRoom(ChannelHandlerContext ctx) {
+		int userId = HallManager.getUserIdByCtx(ctx);
+		for (Room room : newRoomsList) {
+			BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+			for (PlayerInfo playerInfo : playerInfos) {
+				if (playerInfo.getUserId() == userId)
+					return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 加入房间
+	 * 
+	 * @param ctx
+	 *            上下文
+	 */
+	public static Room joinOrCreateRoom(ChannelHandlerContext ctx) {
+		Room room = getRoomByCtx(ctx);
+		if (room == null) {
+			room = RoomManager.getIdleRoom();
+			if (room == null)
+				room = RoomManager.createRoom();
+			PlayerInfo playerInfo = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+			room.join(playerInfo);
+		}
+		return room;
+	}
+
+	
+	/**
+	 * 获取和玩家同一房间的所有玩家集合
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public static List<PlayerInfo> getPlayerInfosInSameRoom(ChannelHandlerContext ctx) {
+		List<PlayerInfo> infos = new ArrayList<PlayerInfo>();
+		// 获取玩家对应的房间
+		Room room = getRoomByCtx(ctx);
+		BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+		for (PlayerInfo playerInfo : playerInfos) {
+			infos.add(playerInfo);
+		}
+		return infos;
+	}
+
+	/**
+	 * 获取和玩家同一房间的所有玩家集合
+	 * 
+	 * @param ctx
+	 *            玩家
+	 * @return 玩家ID集合
+	 */
+	public static List<Integer> getUserIdsInSameRoom(ChannelHandlerContext ctx) {
+		List<Integer> infos = new ArrayList<Integer>();
+		// 获取玩家对应的房间
+		Room room = getRoomByCtx(ctx);
+		BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+		for (PlayerInfo playerInfo : playerInfos) {
+			infos.add(playerInfo.getUserId());
+		}
+		return infos;
+	}
+
+	public static boolean removeFromRoom(ChannelHandlerContext ctx) {
+		try {
+			int userId = HallManager.getUserIdByCtx(ctx);
+			Room room = getRoomByCtx(ctx);
+			if (room != null) {
+				BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+				for (PlayerInfo info : playerInfos) {
+					if (userId == info.getUserId()) {
+						playerInfos.remove(info);
+						room.setState((byte) 1);
+					}
+				}
+				if (isEmpty(room)) {
+					room.onDestroy();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(RoomManager.class).error("从对战房间移除玩家失败");
+			return false;
+		}
+		LoggerUtil.getLogger(RoomManager.class).error("从对战房间移除玩家成功");
+		return true;
+	}
+
+	/**
+	 * 判断房间是否为空
+	 * 
+	 * @param room
+	 *            房间
+	 * @return 是否为空
+	 */
+	public static boolean isEmpty(Room room) {
+		return room.isEmpty();
+	}
+
+	/**
+	 * 判断指定房间是否可以添加指定数量的玩家
+	 * 
+	 * @param roomId
+	 *            房间号
+	 * @param infos
+	 *            玩家集合
+	 * @return 是否可以添加
+	 */
+	public static boolean isAdd(String roomId, List<ChannelHandlerContext> ctxs) {
+		List<PlayerInfo> roomPlayerInfos = getPlayerInfosByRoomId(roomId);
+		int nowsize = roomPlayerInfos.size() + ctxs.size();
+		return nowsize <= RoomConfig.TEAM_PLAYER_COUNT;
+	}
+
+}

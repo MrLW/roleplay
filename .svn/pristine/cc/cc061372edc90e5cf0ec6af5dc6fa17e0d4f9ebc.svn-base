@@ -1,0 +1,93 @@
+package com.sim.server.game.model.model;
+
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午4:22:45
+ * @Function: 财务请款实体Bean
+ * @version 1.0
+ */
+public class FinancialRequestMsg {
+
+	public Integer financialRequestMsgId;
+
+	public String msg;
+
+	public Integer money;
+	// 申请人
+	public Integer roleId;
+	// 该财务请款的类型
+	public Integer type;
+
+	public Integer getFinancialRequestMsgId() {
+		return financialRequestMsgId;
+	}
+
+	public void setFinancialRequestMsgId(Integer financialRequestMsgId) {
+		this.financialRequestMsgId = financialRequestMsgId;
+	}
+
+	public String getMsg() {
+		return msg;
+	}
+
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+
+	public Integer getMoney() {
+		return money;
+	}
+
+	public void setMoney(Integer money) {
+		this.money = money;
+	}
+
+	public Integer getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(Integer roleId) {
+		this.roleId = roleId;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
+	}
+
+	/**
+	 * 请款类型
+	 */
+	public static enum FinancialType {
+		/**
+		 * 购买原料请款
+		 */
+		MATERIAL(13),
+		/**
+		 * 购买操作桌请款
+		 */
+		EQUIPMENT(12),
+		/**
+		 * 购买仓库请款
+		 */
+		WAREHOUSE(11),
+		/**
+		 * 市场申请小金库请款
+		 */
+		BAZAAR(21);
+
+		int value;
+
+		FinancialType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+	}
+
+}

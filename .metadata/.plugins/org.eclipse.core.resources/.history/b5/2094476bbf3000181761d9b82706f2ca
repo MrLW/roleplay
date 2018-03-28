@@ -1,0 +1,74 @@
+package com.sim.server.game.roleplay.init;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.aspectj.util.FileUtil;
+
+import com.alibaba.fastjson.JSON;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 上午10:53:04
+ * @Function: 仓库、原材料、设备的初始化,相当于数据库
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class ResourceDataLoader extends BaseLoader {
+
+	private static ResourceDataLoader loader = new ResourceDataLoader();
+	private Map<Integer, Commodity> commodities = new ConcurrentHashMap<Integer, Commodity>();
+	private static final String dataPath = System.getProperty("user.dir") + "/src/main/resources/data/setting.json";
+
+	private ResourceDataLoader() {
+	}
+
+	public static ResourceDataLoader getInstance() {
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		// 初始化商品类型表
+		try {
+			initCommodity();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 初始化商品类型
+	 */
+	private void initCommodity() throws Exception {
+		File file = new File(dataPath);
+		byte[] bs = FileUtil.readAsByteArray(file);
+		String json = new String(bs, "utf-8");
+		List<CommodityData> commodityDatas = JSON.parseArray(json, CommodityData.class);
+		for (CommodityData commodityData : commodityDatas) {
+			Commodity commodity = new Commodity();
+			commodity.setCommodityData(commodityData);
+			commodities.put(commodityData.getCommodityType(), commodity);
+		}
+	}
+	Integer warehouseType = new Integer(30011000);
+	Integer productTableType = new Integer(20011000);
+	public Commodity getWarehouse() {
+		Commodity warehouse = commodities.get(warehouseType);
+		return warehouse ;
+	}
+	
+	public Commodity getProductTable() {
+		Commodity warehouse = commodities.get(productTableType);
+		return warehouse ;
+	}
+	
+}

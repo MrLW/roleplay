@@ -1,0 +1,241 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.PurchaseResultResponse;
+import com.sim.server.game.message.response.purchase.CheckWarehouseResponse;
+import com.sim.server.game.message.response.purchase.SaleCommodityResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.utils.CommodityUtil;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager implements IByteTo {
+
+	// 购买仓库/材料/操作桌的数量
+	private int count = -1;
+	// 采购需要的花费
+	private int cost;
+
+	public PurchaseManager() {
+		roleId = 4;
+		roleType = 4;
+		roleName = "采购总监";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public int getCost() {
+		return cost;
+	}
+
+	public void setCost(int cost) {
+		this.cost = cost;
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param type
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 */
+	private boolean checkWarehouse(int type, int count) {
+		// 请求生产经理进行判断
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		boolean result = productManager.checkWarehouse(type, count, ctx);
+		if (!result) {
+			writeCheckWarehouse();
+		}
+		return result;
+	}
+
+	
+	/**
+	 * 提示仓库数量是否足够
+	 */
+	private void writeCheckWarehouse() {
+		CheckWarehouseResponse response = new CheckWarehouseResponse(ctx);
+		response.setResult((byte) 0); // 0,不够
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 同步请款单
+	 * 
+	 * @param room
+	 *            房间对象
+	 */
+	private void syncPayee() {
+		ChannelHandlerContext financeCtx = room.getFinanceManager().getCtx();
+		List<FinancialRequestMsg> financialRequestMsgs = room.getFinancialRequestMsgs();
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 响应购买原料/仓库/设备
+	 * 
+	 * @param result
+	 */
+	private void writePurchaseResult(Byte result) {
+		PurchaseResultResponse response = new PurchaseResultResponse(ctx);
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 卖某个“产品”多少个
+	 * 
+	 * @param type
+	 *            产品类型
+	 * @param count
+	 *            产品数量
+	 */
+	public void sale(int type, int count) {
+		int earn = 0;
+		Map<Integer, List<Commodity>> busyCommdityMap = room.getBusyCommdityMap();
+		Map<Integer, List<Commodity>> idleCommdityMap = room.getIdleCommdityMap();
+		Map<Integer, List<Commodity>> commdityMap = room.getCommdityMap();
+		int i = count;
+		
+		// 如果是原料
+		if (CommodityUtil.isMaterial(type)) {
+			// 根据原料或者产品类型获取对应的仓库类型
+			int warehouseType = CommodityUtil.getWarehouseTypeByMaterialType(type);
+			List<Commodity> busyWarehouseList = busyCommdityMap.get(warehouseType);
+			List<Commodity> totalWarehouseList = commdityMap.get(warehouseType);
+			List<Commodity> idleWarehouseList = idleCommdityMap.get(warehouseType);
+			// 要删除的仓库
+			for (Commodity warehouse : busyWarehouseList) {
+				List<Commodity> removeCommodities = new LinkedList<>() ;
+				ConcurrentLinkedQueue<Commodity> queue = warehouse.getQueue();
+				if(queue != null ) {
+					for (; i > 0; i--) {
+						if (queue.size() > 0) {
+							Commodity poll = queue.poll();
+							earn += poll.getOutPrice();
+						}
+						// 如果当前仓库的商品卖完,则从下一个仓库中取出继续卖
+						if (queue.size() == 0) {
+							// 将当前仓库设置为闲置状态
+							List<Commodity> list = idleCommdityMap.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+							if(list == null ) {
+								list = new LinkedList<>() ;
+							}
+							warehouse.setCommodityType(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+							commdityMap.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE).add(warehouse);
+							list.add(warehouse);
+							removeCommodities.add(warehouse);
+							break;
+						} 
+					}
+					
+				}
+				for (Commodity commodity : removeCommodities) {
+					if(busyWarehouseList.contains(commodity)) {
+						busyWarehouseList.remove(commodity);
+						
+					}
+				}
+			}
+			totalWarehouseList.clear();
+			if(busyWarehouseList != null ) {
+				totalWarehouseList.addAll(busyWarehouseList);
+			}
+			if(idleWarehouseList!=null) {
+				totalWarehouseList.addAll(idleWarehouseList);
+			}
+			
+		}
+		
+		// 如果是仓库/生产桌
+		if(CommodityUtil.isWarehouse(type) ||CommodityUtil.isProTable(type) ) {
+			List<Commodity> busyWarehouseList = busyCommdityMap.get(type);
+			List<Commodity> totalWarehouseList = commdityMap.get(type);
+			List<Commodity> idleWarehouseList = idleCommdityMap.get(type);
+			totalWarehouseList.clear();
+			totalWarehouseList.addAll(busyWarehouseList);
+			for(int j = 0 ; j < count ; j++ ) {
+				Commodity commodity = idleWarehouseList.remove(i);
+				earn += commodity.getOutPrice();
+			}
+			totalWarehouseList.addAll(idleWarehouseList);
+		}
+		
+		
+		room.earn(earn);
+		writeCommoditySale(1);
+	}
+
+	/**
+	 * 卖商品响应
+	 */
+	private void writeCommoditySale(int result) {
+		// 告诉采购方卖出结果
+		SaleCommodityResponse response = new SaleCommodityResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+	}
+
+	/**
+	 * 购买某种商品
+	 * 
+	 * @param commodityType
+	 *            商品的类型
+	 * @param commodityCount
+	 *            商品的数量
+	 */
+	public void purchaseCommodity(int commodityType, int commodityCount) {
+		// 注意:此处的commodityType不对
+		if (!CommodityUtil.isWarehouse(commodityType) & !CommodityUtil.isProTable(commodityType)) {
+			if (!checkWarehouse(commodityType, commodityCount)) {
+				return;
+			}
+		}
+
+		Map<Integer, Commodity> commodities = ResourceDataLoader.getInstance().getCommodities();
+		// 获取商品
+		Commodity commodity = commodities.get(commodityType);
+
+		// 获取财务总监
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int cost = commodityCount * commodity.getInPrice();
+		financeManager.createFinReq(roleId, commodityType, cost);
+		// 同步请款单
+		syncPayee();
+
+	}
+
+}

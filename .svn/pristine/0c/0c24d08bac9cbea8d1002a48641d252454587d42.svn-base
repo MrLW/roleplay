@@ -1,0 +1,18 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.model.model.BaseManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:04:17
+ * @Function: 财务总监
+ * @version 1.0
+ */
+public class FinanceManager extends BaseManager {
+
+	public FinanceManager() {
+		super.roleId=3;
+		roleType = 3 ;
+		roleName = "FinanceManager";
+	}
+}

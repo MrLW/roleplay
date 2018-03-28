@@ -1,0 +1,24 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.TestMaterialListResponse;
+@HandlerEntity(id=100,desc="")
+public class TestMaterialListHandler extends BaseHandler {
+
+	public void run() {
+		System.out.println("≤‚ ‘‘≠¡œ«Î«Û");
+		TestMaterialListResponse response = new TestMaterialListResponse(ctx);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		TestMaterialListHandler handler = new TestMaterialListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

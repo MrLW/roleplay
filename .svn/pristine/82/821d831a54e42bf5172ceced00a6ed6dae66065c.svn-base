@@ -1,0 +1,33 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午2:06:43
+ * @Function: 添加生产线请求
+ * @version 1.0
+ */
+public class ProductLineAddRequest extends BaseRequest {
+	private Short requestId = RolePlayProtocolConstant.PRODUCTLINE_ADD_REQUEST_PROTOCOL;
+	// 设备数量
+	private Integer equipmentCount ;
+
+	public ProductLineAddRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		equipmentCount = buf.readInt() ;
+	}
+
+	public Integer getEquipmentCount() {
+		return equipmentCount;
+	}
+
+	public void setEquipmentCount(Integer equipmentCount) {
+		this.equipmentCount = equipmentCount;
+	}
+
+}

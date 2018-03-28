@@ -1,0 +1,21 @@
+package com.sim.server.game.roleplay.handler.room;
+
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.roleplay.handler.sys.ConnectHandler;
+
+public class GlabLandlordHandler extends BaseHandler {
+
+	@Override
+	public void run() {
+
+	}
+
+	@Override
+	public Object clone() {
+		GlabLandlordHandler handler = new GlabLandlordHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

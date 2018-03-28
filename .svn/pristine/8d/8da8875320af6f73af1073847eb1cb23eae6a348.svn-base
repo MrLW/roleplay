@@ -1,0 +1,51 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.roleplay.bean.WareHouse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月15日 下午3:17:57
+ * @Function: 仓库列表
+ * @version 1.0
+ */
+public class WarehouseStateResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.WAREHOUSE_STATE_RESPONSE_PROTOCOL;
+	
+	private int state ;
+
+	private List<WareHouse> wareHouses;
+	
+	public WarehouseStateResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public List<WareHouse> getWareHouses() {
+		return wareHouses;
+	}
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+	}
+
+	public void setWareHouses(List<WareHouse> wareHouses) {
+		this.wareHouses = wareHouses;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(state);
+		buf.writeArray(wareHouses);
+	}
+
+}

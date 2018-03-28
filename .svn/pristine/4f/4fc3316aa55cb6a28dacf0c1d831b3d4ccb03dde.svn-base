@@ -1,0 +1,51 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import com.sim.server.game.engine.core.NoSize;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:03:27
+ * @Function: 仓库,里面存放着原料.暂时只有一种类型
+ * @version 1.0
+ */
+public class WareHouse extends WareHouseDesc {
+
+	// 判断该仓库是否为null
+	private boolean isEmpty = true;
+
+	// 1:存放material-A;2:存放material-B;3:存放Product-A;存放Product-B;5
+	private Integer wareHouseType = -1;
+	
+	// 原材料队列
+	private List list = new LinkedList();
+	
+	public boolean isEmpty() {
+		return isEmpty;
+	}
+
+	public void setEmpty(boolean isEmpty) {
+		this.isEmpty = isEmpty;
+	}
+
+	public Integer getWareHouseType() {
+		return wareHouseType;
+	}
+
+	public void setWareHouseType(Integer wareHouseType) {
+		this.wareHouseType = wareHouseType;
+	}
+
+	public List getList() {
+		return list;
+	}
+
+	public void setList(List list) {
+		this.list = list;
+	}
+	
+}

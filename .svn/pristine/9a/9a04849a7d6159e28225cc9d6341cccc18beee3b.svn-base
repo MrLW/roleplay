@@ -1,0 +1,49 @@
+package com.sim.server.game.roleplay.handler.sys;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.sys.DropOutResponse;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.manager.UserManager;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:15:54
+ * @Function:退出处理器
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.DROPOUT_REQUEST_PROTOCOL,desc="退出请求处理")
+public class DropoutHandler extends BaseHandler {
+
+	public void run() {
+		
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		int userId = HallManager.getUserIdByCtx(ctx);
+		
+		List<ChannelHandlerContext> ctxs = RoomManager.getContextsByRoomId(roomId);
+		for (ChannelHandlerContext ctx : ctxs) {
+			DropOutResponse response = new DropOutResponse(ctx); 
+			response.setUserId(userId);
+			response.writeAndFlush();
+		}
+		// 从房间内移除
+		RoomManager.removeFromRoom(ctx);
+		UserManager.drop(ctx);
+		
+	}
+
+	@Override
+	public Object clone() {
+		DropoutHandler handler = new DropoutHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.ctx = this.ctx; 
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

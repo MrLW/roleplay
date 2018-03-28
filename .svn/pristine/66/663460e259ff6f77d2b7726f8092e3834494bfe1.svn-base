@@ -1,0 +1,31 @@
+package com.sim.server.game.model.model;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午2:39:15
+ * @Function: 工厂仓库中的实体Bean
+ * @version 1.0
+ */
+public class FactoryWarehouseBean {
+
+	public String name ;
+	
+	public Integer size ;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
+	}
+	
+	
+}

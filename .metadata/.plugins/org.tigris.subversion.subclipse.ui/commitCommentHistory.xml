@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CommitComments>	<CommitComment>HR薪水功能</CommitComment>
+	<CommitComment>换一个线程池类。</CommitComment>
+	<CommitComment>该线程池类暂时不用</CommitComment>
+	<CommitComment>将model、common、message、engine项目合到一个rpg项目中</CommitComment>
+	<CommitComment>进行人事招聘,从求职人员信息表招聘职员,并将设置为公司职工</CommitComment>
+	<CommitComment>4、采购经理将需要购买的费用请款提交给财务经理
+5、市场总监选择其中的某些订单(book/pen)</CommitComment>
+	<CommitComment>1、采购经理购设备买仓库
+2、采购经理购买原料
+3、采购设备(生产桌)
+</CommitComment>
+	<CommitComment>1、采购经理购设备买仓库
+2、采购经理购买原料
+3、采购设备(生产桌)</CommitComment>
+</CommitComments>

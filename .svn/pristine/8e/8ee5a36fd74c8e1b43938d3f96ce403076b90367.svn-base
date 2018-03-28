@@ -1,0 +1,25 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+public class TestMaterialListRequest extends BaseRequest {
+	private Short requestId = 100;
+
+	public TestMaterialListRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+	
+}

@@ -1,0 +1,30 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class TestMaterialListResponse extends BaseResponse{
+	
+	private Short responseId = 101;
+	
+
+	public TestMaterialListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+	}
+
+}

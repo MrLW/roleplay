@@ -1,0 +1,18 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.model.model.BaseManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager {
+
+	public PurchaseManager() {
+		roleId = 4 ;
+		roleType =4 ;
+		roleName = "PurchaseManager";
+	}
+}

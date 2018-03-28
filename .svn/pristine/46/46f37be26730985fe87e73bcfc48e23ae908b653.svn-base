@@ -1,0 +1,38 @@
+package com.sim.server.game.roleplay.handler.common;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.common.OwnedWareHouseResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午5:48:46
+ * @Function:已有仓库请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.OWNED_WAREHOUSE_RESPONSE_PROTOCOL,desc="已有仓库请求处理")
+public class OwnedWareHouseHandler extends BaseHandler{
+
+	public void run() {
+		// 根据当前socket,查询当前公司的仓库信息
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List wareHouses = room.getWareHouses();
+		OwnedWareHouseResponse response = new OwnedWareHouseResponse(ctx);
+		response.setWareHouseCount(wareHouses.size());
+	}
+
+	@Override
+	public Object clone() {
+		OwnedWareHouseHandler handler = new OwnedWareHouseHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+	
+}

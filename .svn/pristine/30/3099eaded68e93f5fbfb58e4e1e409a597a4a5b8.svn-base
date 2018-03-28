@@ -1,0 +1,26 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class CheckWarehouseResponse extends BaseResponse {
+	// –≠“È∫≈
+	private short responseId = RolePlayProtocolConstant.CHECK_WAREHOUSE_RESPONSE_PROTOCOL;
+	private byte result ;
+
+	public CheckWarehouseResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

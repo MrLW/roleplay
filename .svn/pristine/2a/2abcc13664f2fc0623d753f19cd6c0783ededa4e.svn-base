@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:20:18
+ * @Function: 总金额响应
+ * @version 1.0
+ */
+public class TotalIncomeResponse extends BaseResponse {
+	
+	public TotalIncomeResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.TOTAL_INCOME_RESPONSE_PROTOCOL;
+
+	private Integer totalIncome;
+
+	public Integer getTotalIncome() {
+		return totalIncome;
+	}
+
+	public void setTotalIncome(Integer totalIncome) {
+		this.totalIncome = totalIncome;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(totalIncome);
+	}
+
+}

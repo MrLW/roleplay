@@ -1,0 +1,48 @@
+package com.sim.server.game.message.response.productor;
+
+import java.sql.Types;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.ibatis.jdbc.Null;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.ProductTypeCount;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月29日 下午5:53:55
+ * @Function: 产品列表
+ * @version 1.0
+ */
+public class ProductListResponse extends BaseResponse {
+	@Setter
+	@Getter
+	private short responseId = RolePlayProtocolConstant.PRODUCT_LIST_RESPONSE_PROTOCOL;
+	@Setter
+	@Getter
+	private List<Integer> types = null ;
+	@Setter
+	@Getter
+	private List<Commodity> commodities ;
+
+	public ProductListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(types);
+		buf.writeArray(commodities);
+	}
+
+}

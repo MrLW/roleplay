@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.SaleEquipmentRequest;
+import com.sim.server.game.message.request.purchase.SaleMaterialRequest;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午3:04:11
+ * @Function:卖出原料
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.SALE_EQUIPMENT_REQUEST_PROTOCOL, desc = "卖出设备")
+public class SaleEquipmentlHandler extends BaseHandler {
+
+	public void run() {
+		SaleEquipmentRequest request = (SaleEquipmentRequest) baseRequest ;
+		
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		
+		purchaseManager.saleEquipment(request.getCount()) ;
+	}
+
+	@Override
+	public Object clone() {
+		SaleEquipmentlHandler handler = new SaleEquipmentlHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

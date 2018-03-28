@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.ProductLineListResponse;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午3:01:22
+ * @Function: 生产线列表处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PRODUCTLINE_LIST_REQUEST_PROTOCOL,desc="生产线请求处理")
+public class ProductLineListHandler extends BaseHandler {
+
+	public void run() {
+		// 获取已有的生产线列表u
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<ProductLine> productLines = room.getProductLines();
+		// 创建响应
+		ProductLineListResponse response = new ProductLineListResponse(ctx);
+		response.setProductLines(productLines);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		ProductLineListHandler handler = new ProductLineListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

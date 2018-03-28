@@ -1,0 +1,35 @@
+package com.sim.server.game.roleplay.handler.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.hr.EmployeeDismissRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月9日 下午3:20:47
+ * @Function: 员工辞退
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.EMPLOYEE_DISMISS_REQUEST_PROTOCOL,desc="员工辞退")
+public class EmployeeDismissHandler extends BaseHandler {
+
+	public void run() {
+		EmployeeDismissRequest request = (EmployeeDismissRequest) baseRequest ;
+		Room room = RoomManager.getNewRoomByCtx(channel);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		hrManager.dismiss(request.getEmpId());
+	}
+
+	@Override
+	public Object clone() {
+		EmployeeDismissHandler handler = new EmployeeDismissHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

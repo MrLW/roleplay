@@ -1,0 +1,282 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.List;
+import java.util.Queue;
+
+import com.sim.server.game.message.response.bazaar.AcceptOrderResponse;
+import com.sim.server.game.message.response.bazaar.ApplyForMoneyResponse;
+import com.sim.server.game.message.response.bazaar.CoffersResponse;
+import com.sim.server.game.message.response.bazaar.DeliveryOrderResponse;
+import com.sim.server.game.message.response.bazaar.FlushOrderResponse;
+import com.sim.server.game.message.response.bazaar.FlushOrderResultResponse;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.productor.ProductListResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.bean.WareHouse.WareHouseType;
+import com.sim.server.game.roleplay.init.OrderDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:31:15
+ * @Function: 市场总监
+ * @version 1.0
+ */
+public class BazaarManager extends BaseManager {
+
+	private int beforeCommitApplyForMoney = 0;
+
+	/**
+	 * 默认每次刷新订单需要消耗的money
+	 */
+	private Integer FLUSH_ORDER_MONEY = 10;
+
+	public BazaarManager() {
+		roleId = 5;
+		roleType = 5;
+		roleName = "市场总监";
+	}
+
+	/**
+	 * 接收订单
+	 * 
+	 * @param order
+	 * @return
+	 */
+	public void acceptOrder(Order order) {
+		int result;
+		try {
+			// 将当前订单添加到房间
+			Room room = RoomManager.getRoomByCtx(ctx);
+			room.insertOrder(order);
+			removeFromCurOrders(order);
+			this.applyForMoney -= order.getSpendIncome();
+			result = 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+
+		writeAcceptOrder(result);
+
+		List<Order> curOrders = OrderDataLoader.getInstance().getCurOrders();
+
+		updateOrders(curOrders);
+
+		writeCoffer();
+
+	}
+
+	/**
+	 * 接收订单的响应
+	 * 
+	 * @param result
+	 *            接收订单的结果
+	 */
+	private void writeAcceptOrder(int result) {
+		AcceptOrderResponse response = new AcceptOrderResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 将订单从客户端显示的订单列表移除
+	 * 
+	 * @param order
+	 *            订单对象
+	 */
+	private void removeFromCurOrders(Order order) {
+		OrderDataLoader.getInstance().getCurOrders().remove(order);
+	}
+
+	/**
+	 * 刷新订单
+	 * 
+	 * @return 下一个订单对象
+	 */
+	public void flushOrder() {
+		this.applyForMoney -= FLUSH_ORDER_MONEY;
+		writeCoffer();
+		writeOrders();
+	}
+
+	/**
+	 * 更新已有的所有订单
+	 */
+	private void writeOrders() {
+		List<Order> orders = OrderDataLoader.getInstance().next();
+		FlushOrderResponse response = new FlushOrderResponse(ctx);
+		response.setOrders(orders);
+		response.writeAndFlush();
+	}
+
+	private void updateOrders(List<Order> curOrders) {
+		FlushOrderResponse response = new FlushOrderResponse(ctx);
+		response.setOrders(curOrders);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 获取市场总监可用金额
+	 * 
+	 * @return
+	 */
+	public Integer getApplyForMoney() {
+		return applyForMoney;
+	}
+
+	/**
+	 * 判断当前剩余金额是否足够刷新
+	 * 
+	 * @return true:可以刷新,false:不可以刷新
+	 */
+	public boolean isFlush() {
+		return applyForMoney >= FLUSH_ORDER_MONEY ? true : false;
+	}
+
+	public void applyForMoney(Integer applyForMoney) {
+		// 其他部门向财务申请金额
+		Room room = RoomManager.getRoomByCtx(ctx);
+		if (room.isApplyFor(applyForMoney)) {
+			room.applyFor(applyForMoney);
+		}
+
+	}
+
+	public int getBeforeCommitApplyForMoney() {
+		return beforeCommitApplyForMoney;
+	}
+
+	public void setBeforeCommitApplyForMoney(int beforeCommitApplyForMoney) {
+		this.beforeCommitApplyForMoney = beforeCommitApplyForMoney;
+	}
+
+	/**
+	 * 市场小金库
+	 */
+	public void writeCoffer() {
+		CoffersResponse response = new CoffersResponse(ctx);
+		response.setCoffers(applyForMoney);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 申请小金库
+	 * 
+	 * @param money
+	 *            申请的钱
+	 */
+	public void coffers(Integer money) {
+		this.applyForMoney += money;
+		writeCoffer();
+	}
+
+	/**
+	 * 交付订单
+	 * 
+	 * @param orderId
+	 *            订单ID
+	 */
+	public void delivery(Integer orderId) {
+		// 交付订单的结果
+		int result = 1;
+		// 查找orderId的订单
+		Order order = room.getOrderById(orderId);
+
+		if (order != null) {
+			int productCount = order.getProductCount();
+			WareHouse wareHouse = room.getWareHouseByType(WareHouseType.PRODUCT.getValue());
+			Queue products = wareHouse.getQueue();
+			if (products.size() < productCount) {
+				result = 0; // 产品不够
+			} else {
+				result = 1; // 产品足够
+				for (int i = 0; i < productCount; i++) {
+					if (products != null)
+						products.poll();
+				}
+				// 设置当前订单为已交付
+				order.setDelivery((byte) 1);
+				// 盈利
+				Integer orderIncome = order.getOrderIncome();
+				room.earn(orderIncome);
+			}
+		}
+		// 刷新产品列表
+		ProductorManager productorManager = (ProductorManager) room.getProductManager();
+		productorManager.writeProductList();
+		
+		writeDeliveryOrder(result);
+	}
+
+	
+	/**
+	 * 响应交付订单
+	 * 
+	 * @param result
+	 *            交付订单结果
+	 */
+	private void writeDeliveryOrder(int result) {
+		DeliveryOrderResponse response = new DeliveryOrderResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 创建财务请款
+	 * 
+	 * @param applyMoney
+	 */
+	public void createFinancialReq(Integer applyMoney) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BaseManager bazaarManager = room.getBazaarManager();
+		// 创建财务请款实体bean
+		FinancialRequestMsg msg = new FinancialRequestMsg();
+		msg.setMoney(applyMoney);
+		msg.setRoleId(bazaarManager.getRoleId());
+		msg.setMsg("市场申请请款");
+		msg.setFinancialRequestMsgId(room.getFinancialRequestMsgs().size());
+		msg.setType(21);
+		room.getFinancialRequestMsgs().add(msg);
+
+		// 获取财务部经理
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		ApplyForMoneyResponse response = new ApplyForMoneyResponse(financeManager.getCtx());
+		response.setMoney(applyMoney);
+		response.writeAndFlush();
+
+		// 将财务请款列表同步给财务
+		syncFinancialMsgs(financeManager.getCtx(), room.getFinancialRequestMsgs());
+
+	}
+
+	/**
+	 * 同步所有请款列表
+	 * 
+	 * @param financeCtx
+	 */
+	private void syncFinancialMsgs(ChannelHandlerContext financeCtx, List<FinancialRequestMsg> financialRequestMsgs) {
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+	/**
+	 *  响应刷新订单结果
+	 */
+	public void writeFlushOrderResult() {
+		FlushOrderResultResponse response = new FlushOrderResultResponse(ctx);
+		if (isFlush())
+			response.setResult((byte) 1);
+		else
+			response.setResult((byte) 0);
+		response.writeAndFlush();
+	}
+
+}

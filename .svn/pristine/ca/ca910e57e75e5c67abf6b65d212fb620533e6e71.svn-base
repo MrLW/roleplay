@@ -1,0 +1,33 @@
+package com.sim.server.game.message.request.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2018年1月15日 下午2:40:42
+ * @Function: 未使用的仓库
+ * @version 1.0
+ */
+public class WarehouseStateRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.WAREHOUSE_STATE_REQUEST_PROTOCOL ;
+	
+	private int state ;
+
+	public WarehouseStateRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		state = buf.readInt();
+	}
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+	}
+	
+}

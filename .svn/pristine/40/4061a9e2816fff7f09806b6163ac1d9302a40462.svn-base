@@ -1,0 +1,65 @@
+package com.sim.server.game.roleplay.bean;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:38:58
+ * @Function: 设备(测试就当做生产桌)
+ * @version 1.0
+ */
+public class Equipment {
+
+	// 设备ID
+	public Integer equipmentId;
+	// 设备类型
+	public Integer equipmentType;
+	// 设备名
+	public String equipmentName;
+	// 设备价格
+	public static Integer price = 1000;
+	// (该设备)是否使用,默认没有使用
+	public boolean userd = false ;
+	
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public Integer getEquipmentType() {
+		return equipmentType;
+	}
+
+	public void setEquipmentType(Integer equipmentType) {
+		this.equipmentType = equipmentType;
+	}
+
+	public String getEquipmentName() {
+		return equipmentName;
+	}
+
+	public void setEquipmentName(String equipmentName) {
+		this.equipmentName = equipmentName;
+	}
+
+	public Integer getPrice() {
+		return price;
+	}
+
+	public void setPrice(Integer price) {
+		this.price = price;
+	}
+
+	public boolean getUserd() {
+		return userd;
+	}
+	/**
+	 *  设置当前的设备工作状态
+	 * @param userd
+	 */
+	public void setUserd(boolean userd) {
+		this.userd = userd;
+	}
+
+}

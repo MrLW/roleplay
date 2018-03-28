@@ -1,0 +1,97 @@
+package com.sim.server.game.roleplay.init;
+
+import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午5:27:17
+ * @Function: 求职者数据初始化
+ * @version 1.0
+ */
+public class JobhunterDataLoader extends BaseLoader {
+
+	private List<Jobhunter> jobhunters = new LinkedList<Jobhunter>();
+
+	private int position = 0;
+
+	private JobhunterDataLoader() {
+	}
+
+	private static JobhunterDataLoader loader = new JobhunterDataLoader();
+
+	private int JOBHOUNTER_COUNT_MAX = 2;
+
+	public static JobhunterDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (JobhunterDataLoader.class) {
+				if (loader == null) {
+					loader = new JobhunterDataLoader();
+				}
+			}
+		}
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据开始");
+		for (int i = 1; i <= JOBHOUNTER_COUNT_MAX; i++) {
+			Jobhunter jobhunter = new Jobhunter(i, "jobhounter-" + i, i, i);
+			jobhunters.add(jobhunter);
+			position++;
+			Field[] declaredFields = jobhunter.getClass().getDeclaredFields();
+			for (Field field : declaredFields) {
+				System.out.println("求职:" + field.getName());
+			}
+		}
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据结束");
+		return true;
+	}
+
+	public List<Jobhunter> getJobhunters() {
+		return jobhunters;
+	}
+
+	public void setJobhunters(List<Jobhunter> jobhunters) {
+		this.jobhunters = jobhunters;
+	}
+
+	/**
+	 * 根据求职者id查找求职者
+	 * 
+	 * @param jobhunterId
+	 *            求职者ID
+	 * @return 求职者对象
+	 */
+	public Jobhunter getJobhunterById(Integer jobhunterId) {
+		LinkedList<Jobhunter> list = (LinkedList<Jobhunter>) jobhunters;
+		for (Jobhunter jobhunter : list) {
+			if (jobhunterId != null && jobhunter != null && jobhunter.getJobhunterId() == jobhunterId) {
+				Jobhunter poll = list.poll();
+				return poll;
+			}
+		}
+		return null;
+	}
+
+	public void flush() {
+		// 清空之前的记录
+		jobhunters.clear();
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("刷新求职者数据开始");
+		int i = position;
+		int x = position;
+		for (; i < x + JOBHOUNTER_COUNT_MAX; i++) {
+			Jobhunter jobhunter = new Jobhunter(i, "jobhounter-" + i, i, i);
+			jobhunters.add(jobhunter);
+			position++;
+		}
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("刷新求职者数据结束");
+		////////////////////////////////
+
+	}
+}

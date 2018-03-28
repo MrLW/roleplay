@@ -1,0 +1,52 @@
+package com.sim.server.game.message.request.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午6:47:27
+ * @Function: 选择角色请求
+ * @version 1.0
+ */
+public class RoleRequest extends BaseRequest{
+
+	private Integer len;
+
+	private Short requestId = RolePlayProtocolConstant.ROLE_REQUEST_PROTOCOL;
+	
+	private Integer roleType ;
+	
+	
+	public RoleRequest(ByteBuf buf) {
+		super(buf);
+		this.len = buf.readableBytes() ;
+		this.roleType = buf.readInt();
+	}
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	public Integer getRoleType() {
+		return roleType;
+	}
+
+	public void setRoleType(Integer roleType) {
+		this.roleType = roleType;
+	}
+	
+}

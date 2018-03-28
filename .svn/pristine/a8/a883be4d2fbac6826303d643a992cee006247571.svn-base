@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.bazaar.FlushOrderResultResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:52:00
+ * @Function:订单刷新请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_FLUSH_RESULT_ORDER_REQUEST_PROTOCOL, desc = "订单刷新请求处理")
+public class FlushOrderResultHandler extends BaseHandler {
+
+	public void run() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 获取市场总监
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		
+		bazaarManager.writeFlushOrderResult();
+	}
+
+	
+
+	@Override
+	public Object clone() {
+		FlushOrderResultHandler handler = new FlushOrderResultHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

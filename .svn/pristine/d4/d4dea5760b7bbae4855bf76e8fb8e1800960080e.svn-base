@@ -1,0 +1,38 @@
+package com.sim.server.game.message.response.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午6:53:20
+ * @Function: 玩家选择角色响应
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class RoleResponse extends BaseResponse {
+
+	// 协议号
+	private short responseId = RolePlayProtocolConstant.ROLE_RESPONSE_PROTOCOL;
+	// 玩家ID
+	private int userId ;
+	// 玩家选择的角色类型
+	private int roleType ;
+	
+	
+	public RoleResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(userId);
+		buf.writeInt(roleType);
+	}
+
+}

@@ -1,0 +1,38 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月28日 下午3:21:17
+ * @Function: 开始生产处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.START_PRODUCTLINE_REQUEST_PROTOCOL,desc="开始生产处理")
+public class StartProductHandler extends BaseHandler {
+
+	public void run() {
+		// 查看当前系统所有生产线
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 获取生产总监
+		ProductorManager productorManager = (ProductorManager) room.getProductManager();
+		productorManager.startProduct() ;
+	}
+
+	@Override
+	public Object clone() {
+		StartProductHandler handler = new StartProductHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

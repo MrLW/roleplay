@@ -1,0 +1,30 @@
+package com.sim.server.game.message.request.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午10:43:51
+ * @Function: 初始化订单请求
+ * @version 1.0
+ */
+public class InitOrderRequest extends BaseRequest{
+
+	private Short requestId = RolePlayProtocolConstant.DB_ORDER_REQUEST_PROTOCOL;
+	
+	public InitOrderRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes() ;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+}

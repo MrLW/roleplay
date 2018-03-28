@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.PurchaseCommodityRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午6:28:47
+ * @Function: 购买某种商品
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PURCHASE_COMMODITY_REQUEST_PROTOCOL,desc="购买商品")
+public class PurchaseCommodityHandler extends BaseHandler {
+	
+	public void run() {
+		PurchaseCommodityRequest request = (PurchaseCommodityRequest) baseRequest ;
+		// 购买数量
+		int commodityCount = request.getCommodityCount();
+		// 购买类型
+		int commodityType = request.getCommodityType();
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		purchaseManager.purchaseCommodity(commodityType,commodityCount); 
+	}
+
+	@Override
+	public Object clone() {
+		PurchaseCommodityHandler handler = new PurchaseCommodityHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

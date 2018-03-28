@@ -1,0 +1,34 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.CheckMaterialResponse;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+@HandlerEntity(id = RolePlayProtocolConstant.CHECK_MATERIAL_REQUEST_PROTOCOL, desc = "")
+public class CheckMaterialHandler extends BaseHandler {
+
+	public void run() {
+		// 获取原料
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<Material> materials = room.getMaterials();
+		CheckMaterialResponse response = new CheckMaterialResponse(ctx);
+		response.setResult((byte) (materials.size() > 0 ? 1 : 0));
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		CheckMaterialHandler handler = new CheckMaterialHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

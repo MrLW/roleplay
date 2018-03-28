@@ -1,0 +1,26 @@
+package com.sim.server.game.roleplay.bean;
+
+import com.mysql.jdbc.Buffer;
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2018年1月17日 下午4:25:58
+ * @Function: 产品数量
+ * @version 1.0
+ */
+@Data
+public class ProductTypeCount implements IByteTo {
+
+	private int productTypeId;
+	private int productTypeCount;
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(productTypeId);
+		buf.writeInt(productTypeCount);
+	}
+
+}

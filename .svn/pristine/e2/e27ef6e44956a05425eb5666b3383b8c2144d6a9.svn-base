@@ -1,0 +1,102 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.sim.server.game.model.model.Food;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 上午11:38:02
+ * @Function: 食物数据加载启动类
+ * @version 1.0
+ */
+public class FoodDataLoader extends BaseLoader{
+	
+	private static FoodDataLoader foodDataLoader = new FoodDataLoader();
+	
+	private static List<Food> foods = new ArrayList<Food>();
+	
+	// key:食物id;value:食物加的经验
+	public static Map<String, Integer> foodMap = new HashMap<String, Integer>();
+	/**
+	 * 食物数量
+	 */
+	private static final int FOOD_COUNT = 20;
+	
+	static {
+		for (int i = 1; i <= FOOD_COUNT; i++) {
+			foodMap.put("food" + i,  50);
+		}
+	}
+
+	private FoodDataLoader() {
+	}
+
+	public static FoodDataLoader getInstance() {
+		return foodDataLoader;
+	}
+
+	
+
+	/***
+	 * init food
+	 * 
+	 * @return true:success;false:failed
+	 */
+	public boolean initData() {
+		try {
+			for (int i = 1; i <= FOOD_COUNT; i++) {
+				Food food = createFood(i);
+				while (!isAdd(food)) {
+					food = createFood(i);
+				}
+				foods.add(food);
+			}
+		} catch (Exception e) {
+			LoggerUtil.getLogger(FoodDataLoader.class).error("初始化食物失败");
+			return false;
+		}
+		return true;
+	}
+
+	private static Food createFood(int i) {
+		Food food = new Food();
+		food.setFoodName("food" + i);
+		int x = random.nextInt(3000);
+		int z = random.nextInt(3000);
+		food.setX(x);
+		food.setZ(z);
+		return food;
+	}
+
+	/**
+	 * get food list
+	 * 
+	 * @return 食物集合
+	 */
+	public static List<Food> getFoods() {
+		return foods;
+	}
+
+	/**
+	 * 食物是否会重叠
+	 * 
+	 * @param food
+	 * @return
+	 */
+	public static boolean isAdd(Food food) {
+		if (foods != null) {
+			for (Food f : foods) {
+				if (Math.abs(f.getX() - food.getX()) < 200 && Math.abs(f.getZ() - food.getZ()) < 200) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+}

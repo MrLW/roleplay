@@ -1,0 +1,36 @@
+package com.sim.server.game.message.response.finance;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class FinancialListResponse extends BaseResponse {
+
+	// –≠“È∫≈
+	private Short responseId = RolePlayProtocolConstant.FINANCIALLIST_RESPONSE_PROTOCOL; 
+
+	private List<FinancialRequestMsg> financialRequestMsgs;
+
+	public FinancialListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public List<FinancialRequestMsg> getFinancialRequestMsgs() {
+		return financialRequestMsgs;
+	}
+
+	public void setFinancialRequestMsgs(List<FinancialRequestMsg> financialRequestMsgs) {
+		this.financialRequestMsgs = financialRequestMsgs;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeList(financialRequestMsgs);
+	}
+
+}

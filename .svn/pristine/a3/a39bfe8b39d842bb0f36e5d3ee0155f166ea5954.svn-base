@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitOrderResponse;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.init.OrderDataLoader;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午10:49:38
+ * @Function: 订单初始化处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_ORDER_REQUEST_PROTOCOL, desc = "订单初始化处理")
+public class InitOrderHandler extends BaseHandler {
+
+	public void run() {
+		List<Order> dbOrders = OrderDataLoader.getInstance().getDbOrders();
+		Order order = dbOrders.get(OrderDataLoader.DEFAULT_INIT_INDEX);
+		
+		InitOrderResponse response = new InitOrderResponse(ctx) ;
+		response.setOrder(order);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitOrderHandler handler = new InitOrderHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

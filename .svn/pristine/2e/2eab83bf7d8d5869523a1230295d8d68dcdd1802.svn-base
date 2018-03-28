@@ -1,0 +1,460 @@
+package com.sim.server.game.roleplay.player;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.PurchaseResultResponse;
+import com.sim.server.game.message.response.productor.EquipmentStateResponse;
+import com.sim.server.game.message.response.productor.WarehouseStateResponse;
+import com.sim.server.game.message.response.purchase.CheckWarehouseResponse;
+import com.sim.server.game.message.response.purchase.SaleEquipmentResponse;
+import com.sim.server.game.message.response.purchase.SaleMaterialResponse;
+import com.sim.server.game.message.response.purchase.SaleWarehouseResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.model.model.FinancialRequestMsg.FinancialType;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.bean.WareHouse.WareHouseType;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.utils.CommodityUtil;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager implements IByteTo {
+
+	// 购买仓库/材料/操作桌的数量
+	private int count = -1;
+	// 采购需要的花费
+	private int cost;
+
+	public PurchaseManager() {
+		roleId = 4;
+		roleType = 4;
+		roleName = "采购总监";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public void purchaseWarehouse() {
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<WareHouse> wareHousesDB = (LinkedList<WareHouse>) ResourceDataLoader.getInstance()
+					.getWareHousesDB();
+			WareHouse wareHouse = wareHousesDB.pop();
+			room.addWarehouse(wareHouse);
+		}
+
+	}
+
+	/**
+	 * 真正购买原料
+	 */
+	public void purchaseMaterial() {
+		// 获取原料仓库
+		WareHouse materialWarehouse = room.getWareHouseByType(WareHouseType.MATERIALA.getValue());
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Material> materials = (LinkedList<Material>) ResourceDataLoader.getInstance().getMaterialsDB();
+			Material material = materials.pop();
+			// 获取仓库
+			if (materialWarehouse != null) {
+				materialWarehouse.add(material);
+			} else {
+				// 如果没有仓库,则需要提示客户端购买仓库.
+				writeCheckWarehouse();
+			}
+		}
+
+	}
+
+	public void purchaseEquipment() {
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Equipment> equipments = (LinkedList<Equipment>) ResourceDataLoader.getInstance()
+					.getEquipmentsDB();
+			Equipment equipment = equipments.pop();
+			room.addEquipment(equipment);
+		}
+
+	}
+
+	public int getCost() {
+		return cost;
+	}
+
+	public void setCost(int cost) {
+		this.cost = cost;
+	}
+
+	/**
+	 * 发出购买原料请求,并创建请款单
+	 * 
+	 * @param materialTypeId
+	 *            购买原料的类型Id
+	 * @param count
+	 *            购买原料的数量
+	 */
+	public void purchaseMaterial(int materialTypeId, int count) {
+		if (!checkWarehouse(materialTypeId, count)) {
+			return;
+		}
+		// 获取财务总监
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int cost = count * Material.MATERIAL_PRICE;
+		FinancialType MATERIALTYPE = materialTypeId == 1 ? FinancialType.MATERIAL : FinancialType.MATERIALB;
+		financeManager.createFinReq(roleId, MATERIALTYPE, cost);
+
+		// 同步请款单
+		syncPayee();
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param type
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 */
+	private boolean checkWarehouse(int type, int count) {
+		// 请求生产经理进行判断
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		return productManager.checkWarehouse(type, count, ctx);
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param type
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 */
+	private boolean checkWarehouse2(int type, int count) {
+		// 请求生产经理进行判断
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		return productManager.checkWarehouse(type, count, ctx);
+	}
+
+	/**
+	 * 提示仓库数量是否足够
+	 */
+	private void writeCheckWarehouse() {
+		CheckWarehouseResponse response = new CheckWarehouseResponse(ctx);
+		response.setResult((byte) 0); // 0,不够
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 同步请款单
+	 * 
+	 * @param room
+	 *            房间对象
+	 */
+	private void syncPayee() {
+		ChannelHandlerContext financeCtx = room.getFinanceManager().getCtx();
+		List<FinancialRequestMsg> financialRequestMsgs = room.getFinancialRequestMsgs();
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 购买指定数量的设备
+	 * 
+	 * @param count
+	 *            购买设备的数量
+	 */
+	public void purchaseEquipment(int count) {
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		// 计算生产桌总花费
+		int cost = count * Equipment.price;
+		// int type = FinancialType.EQUIPMENT.getValue();
+		financeManager.createFinReq(roleId, FinancialType.EQUIPMENT, cost);
+		syncPayee();
+	}
+
+	public void purchaseWarehouse(int count) {
+		// 计算开销
+		int cost = count * WareHouse.inPrice;
+		// int type = FinancialType.WAREHOUSE.getValue();
+		// 找到财务经理
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		financeManager.createFinReq(roleId, FinancialType.WAREHOUSE, cost);
+		syncPayee();
+	}
+
+	/**
+	 * 响应购买设备结果
+	 * 
+	 * @param result
+	 */
+	public void writePurchaseEquipmentResult(Byte result) {
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseEquipment();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+		writePurchaseResult(result);
+	}
+
+	/**
+	 * 响应购买原料结果
+	 * 
+	 * @param result
+	 */
+	public void writePurchaseMaterialResult(Byte result) {
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseMaterial();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+
+		writePurchaseResult(result);
+	}
+
+	/**
+	 * 响应购买仓库
+	 * 
+	 * @param result
+	 */
+	public void writePurchaseWarehouseResul(Byte result) {
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseWarehouse();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+		writePurchaseResult(result);
+	}
+
+	/**
+	 * 响应购买原料/仓库/设备
+	 * 
+	 * @param result
+	 */
+	private void writePurchaseResult(Byte result) {
+		PurchaseResultResponse response = new PurchaseResultResponse(ctx);
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 卖原料
+	 * 
+	 * @param materialId
+	 *            原料类型
+	 * @param count
+	 *            原料数量
+	 */
+	public void saleMaterial(int materialId, int count) {
+		int result;
+		try {
+			// 计算总价格
+			int money = count * Material.MATERIAL_SALE_PRICE;
+			room.earn(money);
+			result = 1;
+			WareHouse wareHouse = room.getWareHouseByType(materialId);
+			if (wareHouse != null) {
+				ConcurrentLinkedQueue list = (ConcurrentLinkedQueue) wareHouse.getQueue();
+				while (count > 0) {
+					list.poll();
+					count--;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		writeMaterialSale(result);
+	}
+
+	/**
+	 * 卖设备
+	 * 
+	 * @param count
+	 */
+	public void saleEquipment(int count) {
+		int result = 1;
+		try {
+			// 计算总价格
+			int money = count * 1000;
+			room.earn(money);
+			result = 1;
+			List<Equipment> equipments = room.getEquipments();
+			for (int i = 0; i < count; i++) {
+				Equipment equipment = equipments.get(i);
+				if (!equipment.getUserd()) {
+					equipments.remove(i);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		writeEquipmentSale(result);
+	}
+
+	/**
+	 * 卖仓库
+	 * 
+	 * @param count
+	 */
+	public void saleWarehouse(int count) {
+		int result = 1;
+		try {
+			// 计算总价格
+			int money = count * 10000;
+			room.earn(money);
+			result = 1;
+			List<WareHouse> wareHouses = room.getWareHouses();
+			for (int i = 0; i < count; i++) {
+				wareHouses.remove(i);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		writeWarehouseSale(result);
+	}
+
+	/**
+	 * 卖某个“产品”多少个
+	 * 
+	 * @param type
+	 * @param count
+	 */
+	public void sale(int type, int count) {
+
+	}
+
+	/**
+	 * 响应卖原料
+	 * 
+	 * @param result
+	 */
+	private void writeMaterialSale(int result) {
+		// 告诉采购方卖出结果
+		SaleMaterialResponse response = new SaleMaterialResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 响应卖原料
+	 * 
+	 * @param result
+	 */
+	private void writeEquipmentSale(int result) {
+		// 告诉采购方卖出结果
+		SaleEquipmentResponse response = new SaleEquipmentResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 响应卖原料
+	 * 
+	 * @param result
+	 */
+	private void writeWarehouseSale(int result) {
+		// 告诉采购方卖出结果
+		SaleWarehouseResponse response = new SaleWarehouseResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 更新设备管理
+	 */
+	public void updateEquipmentManager() {
+
+		for (int i = 1; i <= 4; i = i << 1) {
+			EquipmentStateResponse equipmentStateResponse = new EquipmentStateResponse(ctx);
+			equipmentStateResponse.setState(i);
+			List<Equipment> equipments = null;
+			switch (i) {
+			case 1:
+				equipments = room.getEquipments();
+				break;
+			case 2:
+				equipments = room.getBusyEquipments();
+				break;
+			case 4:
+				equipments = room.getIdleEquipments();
+				break;
+
+			default:
+				equipments = new LinkedList<Equipment>();
+				break;
+			}
+			equipmentStateResponse.setEquipments(equipments);
+			equipmentStateResponse.writeAndFlush();
+		}
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+	}
+
+	/**
+	 * 购买某种商品
+	 * 
+	 * @param commodityType
+	 *            商品的类型
+	 * @param commodityCount
+	 *            商品的数量
+	 */
+	public void purchaseCommodity(int commodityType, int commodityCount) {
+		// 注意:此处的commodityType不对
+		if (!CommodityUtil.isWarehouse(commodityType) & !CommodityUtil.isProTable(commodityType) ) {
+			if (!checkWarehouse(commodityType, count)) {
+				return;
+			}
+		}
+
+		Map<Integer, Commodity> commodities = ResourceDataLoader.getInstance().getCommodities();
+		// 获取商品
+		Commodity commodity = commodities.get(commodityType);
+
+		// 获取财务总监
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int cost = commodityCount * commodity.getInPrice();
+		financeManager.createFinReq(roleId, commodityType, cost);
+		// 同步请款单
+		syncPayee();
+
+	}
+
+}

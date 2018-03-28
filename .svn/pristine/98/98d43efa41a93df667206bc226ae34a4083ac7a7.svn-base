@@ -1,0 +1,77 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.springframework.beans.BeanUtils;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2018年1月12日 下午3:16:36
+ * @Function:原料/产品/设备,这里可以理解成商品类型表
+ * @version 1.0
+ */
+@Data
+public class Commodity  implements Cloneable,IByteTo{
+	// 商品ID
+	private int commodityId;
+	// 商品类型
+	private int commodityType;
+	// 商品名
+	private String commodityName;
+	// 商品买入价格
+	private int inPrice;
+	// 商品卖出价格
+	private int outPrice;
+	// 容量(只有仓库有)
+	private int capacity;
+	// 仓库容器
+	private ConcurrentLinkedQueue<Commodity> queue = null; 
+	// 仓库是否空,只是针对仓库而言
+	private boolean empty ;
+	// 商品是否在工作当中
+	private boolean work ;
+	
+	
+	
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(commodityId);
+		buf.writeInt(commodityType);
+		buf.writeString(commodityName);
+		buf.writeInt(inPrice);
+		buf.writeInt(outPrice);
+		buf.writeInt(capacity);
+	}
+	/**
+	 *  当前仓库是否已满
+	 */
+	public boolean isFull() {
+		return queue.size() >= capacity ;
+	}
+	/**
+	 *  当前仓库的剩余数量
+	 */
+	public int remainCount() {
+		return capacity - queue.size() ;
+	}
+	
+	@Override
+	public Commodity clone() throws CloneNotSupportedException {
+		Commodity commodity = (Commodity) super.clone();
+		return commodity ;
+	}
+
+
+
+	@Override
+	public String toString() {
+		return "Commodity [commodityId=" + commodityId + ", commodityType=" + commodityType + ", commodityName="
+				+ commodityName + ", inPrice=" + inPrice + ", outPrice=" + outPrice + ", capacity=" + capacity
+				+ ", queue=" + queue + ", empty=" + empty + "]";
+	}
+	
+}

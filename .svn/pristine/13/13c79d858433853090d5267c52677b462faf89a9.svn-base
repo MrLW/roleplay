@@ -1,0 +1,49 @@
+package com.sim.server.game.roleplay.room;
+
+import com.sim.server.game.data.db.pojo.TbUser;
+
+import io.netty.channel.socket.SocketChannel;
+
+/**
+ * @author liwen
+ * 2017年10月26日  下午6:53:35
+ * Function: 已经登录到服务器上的客户端实体
+ * @version 1.0
+ */
+public class Client {
+	
+	// 用户
+	private TbUser user ;
+	
+	// 客户端连接的socket
+	private SocketChannel socket ;
+	
+	// 客户端是否已经在房间了,1:在房间;0:已登录在大厅,-1:不在线
+	private Integer state ; 
+	
+	
+	public SocketChannel getSocket() {
+		return socket;
+	}
+	
+	public void setSocket(SocketChannel socket) {
+		this.socket = socket;
+	}
+	
+	public Integer getState() {
+		return state;
+	}
+	
+	public void setState(Integer state) {
+		this.state = state;
+	}
+
+	public TbUser getUser() {
+		return user;
+	}
+
+	public void setUser(TbUser user) {
+		this.user = user;
+	}
+
+}

@@ -1,0 +1,30 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class CheckMaterialResponse extends BaseResponse {
+	private Short responseId = RolePlayProtocolConstant.CHECK_MATERIAL_RESPONSE_PROTOCOL;
+
+	private Byte result ;
+	public CheckMaterialResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

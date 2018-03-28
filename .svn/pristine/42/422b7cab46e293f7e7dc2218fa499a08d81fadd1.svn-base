@@ -1,0 +1,43 @@
+package com.sim.server.game.roleplay.bean;
+/**
+ * @author liwen
+ * @date:2017年12月21日 上午11:50:52
+ * @Function: 仓库描述,不包括存储,主要是用来传输数据
+ * @version 1.0
+ */
+public class WareHouseDesc {
+	
+	// 仓库ID
+	public Integer warehouseId ;
+
+	// 仓库容量 其中包括 原材料+产品
+	public Integer capacity = 100;
+
+	// 仓库的价格
+	public static Integer price = 10000;
+
+	public int getCapacity() {
+		return capacity;
+	}
+
+	public void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	public Integer getPrice() {
+		return price;
+	}
+
+	public void setPrice(Integer price) {
+		this.price = price;
+	}
+
+	public Integer getWarehouseId() {
+		return warehouseId;
+	}
+
+	public void setWarehouseId(Integer warehouseId) {
+		this.warehouseId = warehouseId;
+	}
+	
+}

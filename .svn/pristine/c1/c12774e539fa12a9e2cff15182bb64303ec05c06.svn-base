@@ -1,0 +1,47 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.roleplay.bean.Jobhunter;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午5:27:17
+ * @Function: 求职者数据初始化
+ * @version 1.0
+ */
+public class JobhunterDataLoader extends BaseLoader {
+	
+	private BlockingQueue<Jobhunter> jobhunters = new LinkedBlockingQueue<Jobhunter>() ;
+	
+	private JobhunterDataLoader() {}
+	
+	private static JobhunterDataLoader loader = new JobhunterDataLoader() ;
+	
+	private int JOBHOUNTER_COUNT_MAX = 100 ;
+	
+	public static JobhunterDataLoader getInstance() {
+		if(loader == null ) {
+			synchronized (JobhunterDataLoader.class) {
+				if(loader == null ) {
+					loader = new JobhunterDataLoader() ;
+				}
+			}
+		}
+		return loader ;
+	}
+	
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据开始");
+		for(int i = 1 ; i <= JOBHOUNTER_COUNT_MAX ; i++ ) {
+			Jobhunter jobhunter = new Jobhunter(i,"jobhounter-"+i,i,i);
+			jobhunters.add(jobhunter);
+		}
+		LoggerUtil.getLogger(JobhunterDataLoader.class).info("初始化求职者数据结束");
+		return true;
+	}
+	
+}

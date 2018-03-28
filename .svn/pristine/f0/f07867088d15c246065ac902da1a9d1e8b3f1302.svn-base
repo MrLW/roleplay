@@ -1,0 +1,17 @@
+# 每个房间的队伍数量
+TEAM_COUNT=2
+# 两个队伍的总人数
+TEAM_PLAYER_COUNT=4
+# 每个房间的人数
+ROOM_PLAYER_COUNT=3
+# 5个经理对应的type
+#生产经理
+PRODUCTOR_MANAGER=1
+#HR经理
+HR_MANAGER=2
+# 财务经理
+FINANCE_MANAGER=3
+# 采购经理
+PURCHASE_MANAGER=4
+# 
+BAZAAR_MANAGER=5

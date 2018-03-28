@@ -1,0 +1,40 @@
+package com.sim.server.game.message.response.sys;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class ConnectResponse extends BaseResponse {
+
+	// 总长度
+	private Integer len ;
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.HEARTBEAT_RESPONSE_PROTOCOL;
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	public ConnectResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+	}
+
+}

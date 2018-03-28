@@ -1,0 +1,42 @@
+package com.sim.server.game.roleplay.handler.finance;
+
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.finance.PurchaseResultRequest;
+import com.sim.server.game.message.response.finance.PurchaseResultResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.handler.purchase.PurchaseEquipmentHandler;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月22日 下午2:48:55
+ * @Function: 采购结果响应
+ * @version 1.0
+ */
+public class PurchaseResultHandler extends BaseHandler{
+
+	public void run() {
+		PurchaseResultRequest request = (PurchaseResultRequest) baseRequest ;
+		Byte result = request.getResult();
+		// 获取采购经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BaseManager manager = room.getPurchaseManager();
+		ChannelHandlerContext purchaseCtx = manager.getCtx();
+		PurchaseResultResponse response = new PurchaseResultResponse(purchaseCtx) ;
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		PurchaseResultHandler handler = new PurchaseResultHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

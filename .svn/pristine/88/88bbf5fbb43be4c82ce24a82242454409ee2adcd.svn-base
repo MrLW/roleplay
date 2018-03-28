@@ -1,0 +1,35 @@
+package com.sim.server.game.roleplay.handler.play;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.room.PlayerListResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午7:13:39
+ * @Function: 获取房间列表
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.PLAYERLIST_REQUEST_PROTOCOL, desc = "请求玩家列表")
+public class PlayerListHandler extends BaseHandler {
+
+	public void run() {
+		// 获取房间内的客户端人数
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		PlayerListResponse response = new PlayerListResponse(ctx);
+		response.setPlayers(RoomManager.getPlayerInfosByRoomId(roomId));
+		response.setUserCount(RoomManager.getPlayerInfosByRoomId(roomId).size());
+		
+		response.writeAndFlush();
+		
+	}
+
+	@Override
+	public Object clone() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午6:42:18
+ * @Function: 请款成功
+ * @version 1.0
+ */
+public class FinancialSuccessResponse extends BaseResponse {
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.FINANCIALSUCCESS_RESPONSE_PROTOCOL; 
+	
+	private Byte result ;
+		
+	public FinancialSuccessResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

@@ -1,0 +1,36 @@
+package com.sim.server.game.message.response.sys;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+
+/**
+ * @author liwen
+ * @date:2017年11月28日 上午11:06:09
+ * @Function: 游戏结束响应
+ * @version 1.0
+ */
+public class GameOverResponse {
+	// 消息长度
+	private Integer len;
+
+	// 注册的协议ID
+	private Short responseId = RolePlayProtocolConstant.GAMEOVER_RESPONSE_PROTOCOL;
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+	
+	
+	
+}

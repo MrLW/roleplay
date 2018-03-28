@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2018年1月24日 下午5:22:39
+ * @Function:是否能选择角色请求
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class RoleWeatherResponse extends BaseResponse {
+	// 协议号
+	private short responseId = RolePlayProtocolConstant.ROLE_WEATHER_RESPONSE_PROTOCOL;
+	
+	private int roleType ;
+	// 玩家ID
+	private byte result ;
+
+	public RoleWeatherResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(roleType);
+		buf.writeByte(result);
+	}
+
+}

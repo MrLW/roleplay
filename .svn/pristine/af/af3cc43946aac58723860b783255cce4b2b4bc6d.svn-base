@@ -1,0 +1,16 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+public class CheckMaterialRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.CHECK_MATERIAL_REQUEST_PROTOCOL;
+
+	public CheckMaterialRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+}

@@ -1,0 +1,6 @@
+package com.sim.server.game.common;
+
+public enum State {
+	
+	SUCCESS(1)
+}

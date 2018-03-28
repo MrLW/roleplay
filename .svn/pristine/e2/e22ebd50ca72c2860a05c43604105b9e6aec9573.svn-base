@@ -1,0 +1,82 @@
+package com.sim.server.game.roleplay.manager;
+
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.player.PlayerTeam;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年11月15日 下午12:11:24
+ * @Function: 组队的工厂
+ * @version 1.0
+ */
+public class PlayerTeamManager {
+
+	
+	/**
+	 * 队伍此时处于闲置状态,也就是还未进入游戏
+	 */
+	public static final int TEAM_IDLE_STATE = 1;
+	/**
+	 * 队伍此时处于正忙状态,也就是已经进入游戏
+	 */
+	public static final int TEAM_BUSY_STATE = 0;
+	/**
+	 * 组队成功
+	 */
+	public static final boolean COMPLETE_TEAM = true;
+
+	/**
+	 * 组队成功
+	 */
+	public static final boolean NOCOMPLETE_TEAM = false;
+
+	/**
+	 * 判断用户是否在房间
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public static boolean isInRoom(ChannelHandlerContext ctx) {
+		BlockingQueue<Room> roomsList = RoomManager.newRoomsList;
+		PlayerInfo playerInfoByCtx = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+		for (Room room : roomsList) {
+				BlockingQueue<PlayerInfo> playerInfos = room.getPlayerInfos();
+				for (PlayerInfo playerInfo : playerInfos) {
+					if (playerInfoByCtx.getUserId() == playerInfo.getUserId()) {
+						return true;
+					}
+
+				}
+		}
+		return false;
+	}
+
+
+	public static void addPlayerInfoToTeam(PlayerTeam playerTeam, ChannelHandlerContext ctx) {
+		PlayerInfo playerInfo = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+		if (playerInfo != null && playerTeam != null)
+			playerInfo.setTeamId(playerTeam.getTeamId());
+		playerTeam.getPlayerInfos().add(playerInfo);
+		updateTeam(playerTeam);
+	}
+
+	/**
+	 * 更新队伍的匹配状态
+	 * 
+	 * @param playerTeam
+	 */
+	private static void updateTeam(PlayerTeam playerTeam) {
+		if (playerTeam.getPlayerInfos().size() == RoomConfig.SINGLE_TEAM_PLAYER_COUNT) {
+			playerTeam.setComplete(COMPLETE_TEAM);
+		}
+	}
+
+}

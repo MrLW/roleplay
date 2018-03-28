@@ -1,0 +1,34 @@
+package com.sim.server.game.roleplay.timer;
+
+import java.util.TimerTask;
+
+import com.sim.server.game.model.model.Employee;
+/**
+ * @author liwen
+ * @date:2018年1月9日 下午2:05:17
+ * @Function: 员工血量更新任务
+ * @version 1.0
+ */
+public class EmployeeHPTask extends TimerTask {
+
+	private int curState;
+	private Employee employee;
+	
+	public EmployeeHPTask(int curState, Employee employee) {
+		super();
+		this.curState = curState;
+		this.employee = employee;
+	}
+
+	@Override
+	public void run() {
+		if (curState == 1) { // 工作
+			employee.setHp(employee.getHp() - 1);
+		} else {
+			// 休息
+			employee.setHp(employee.getHp() + 1);
+		}
+
+	}
+
+}

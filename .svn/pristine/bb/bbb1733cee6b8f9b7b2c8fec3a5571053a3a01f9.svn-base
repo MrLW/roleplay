@@ -1,0 +1,42 @@
+package com.sim.server.game.message.request.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午5:35:49
+ * @Function: 请求角色列表请求
+ * @version 1.0
+ */
+public class RoleListRequest extends BaseRequest {
+
+
+	private Short requestId = RolePlayProtocolConstant.ROLELIST_REQUEST_PROTOCOL;
+	
+	private Integer userId ;
+	
+	public RoleListRequest(ByteBuf buf) {
+		super(buf);
+		this.len = buf.readableBytes(); 
+		this.userId = buf.readInt() ;
+	}
+	
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+	
+}

@@ -1,0 +1,492 @@
+package com.sim.server.game.roleplay.room;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.util.concurrent.GlobalEventExecutor;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 上午11:07:11
+ * @Function: 玩家房间,在本游戏相当于公司
+ * @version 1.0
+ */
+public class Room {
+
+	// 总收入,初始化情况下为10w
+	private Integer totalIncome = 100000;
+	// 房间号
+	private String roomId;
+	// 房间状态 1:正处于创建时期,可以添加玩家;2:玩家添加完毕,在进入开始游戏之前;3:房间正在玩游戏
+	private Byte state;
+	private boolean complete;
+
+	private static final Integer PRODUCTOR_MANAGER_TYPE = RoomConfig.PRODUCTOR_MANAGER;
+	private static final Integer FINANCE_MANAGER_TYPE = RoomConfig.FINANCE_MANAGER;
+	private static final Integer HR_MANAGER_TYPE = RoomConfig.HR_MANAGER;
+	private static final Integer PURCHASE_MANAGER_TYPE = RoomConfig.PURCHASE_MANAGER;
+	private static final Integer BAZAAR_MANAGER_TYPE = RoomConfig.BAZAAR_MANAGER;
+
+	// 每个房间维护一个channel组,用其广播消息
+	private ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+	private BlockingQueue<PlayerInfo> playerInfos = new LinkedBlockingQueue<PlayerInfo>();
+	// 该房间的玩家角色
+	private List<BaseManager> baseManagers = new LinkedList<BaseManager>();
+	// 仓库集合
+	private List<WareHouse> wareHouses = new LinkedList<WareHouse>();
+	// 原料集合
+	private List<Material> materials = new LinkedList<Material>();
+
+	// 产品集合
+	private List<Product> products = new LinkedList<Product>();
+
+	// 设备集合
+	private List<Equipment> equipments = new LinkedList<Equipment>();
+	// 生产线的设备集合
+	private List<Equipment> productLineEquipment = new LinkedList<Equipment>();
+	// 公司的所有订单,包括正在处理的订单和未处理的订单
+	private List<Order> allOrders = new LinkedList<Order>();
+	// 已经完成的订单
+	private List<Order> finishOrders = new LinkedList<Order>();
+	// 未完成的订单
+	private List<Order> noFinishOrders = new LinkedList<Order>();
+
+	private List<ProductLine> productLines = new LinkedList<ProductLine>();
+
+	// 公司员工
+	private List<Employee> employees = new LinkedList<Employee>();
+
+	public void setComplete(boolean complete) {
+		this.complete = complete;
+	}
+
+	public String getRoomId() {
+		return roomId;
+	}
+
+	public void setRoomId(String roomId) {
+		this.roomId = roomId;
+	}
+
+	public Byte getState() {
+		return state;
+	}
+
+	public void setState(Byte state) {
+		this.state = state;
+	}
+
+	public ChannelGroup getChannelGroup() {
+		return channelGroup;
+	}
+
+	public BlockingQueue<PlayerInfo> getPlayerInfos() {
+		return playerInfos;
+	}
+
+	public void setPlayerInfos(BlockingQueue<PlayerInfo> playerInfos) {
+		this.playerInfos = playerInfos;
+	}
+
+	public void setBaseManagers(LinkedList<BaseManager> baseManagers) {
+		this.baseManagers = baseManagers;
+	}
+
+	public List<BaseManager> getBaseManagers() {
+		return baseManagers;
+	}
+
+	public Integer getTotalIncome() {
+		return totalIncome;
+	}
+
+	public void setTotalIncome(Integer totalIncome) {
+		this.totalIncome = totalIncome;
+	}
+
+	public List<Equipment> getProductLineEquipment() {
+		return productLineEquipment;
+	}
+
+	public void setProductLineEquipment(List<Equipment> productLineEquipment) {
+		this.productLineEquipment = productLineEquipment;
+	}
+
+	/**
+	 * 开销
+	 */
+	public void spend(Integer value) {
+		this.totalIncome -= value;
+	}
+
+	public List<WareHouse> getWareHouses() {
+		return wareHouses;
+	}
+
+	public void setWareHouses(List<WareHouse> wareHouses) {
+		this.wareHouses = wareHouses;
+	}
+
+	public List<Order> getFinishOrders() {
+		return finishOrders;
+	}
+
+	public void setFinishOrders(List<Order> finishOrders) {
+		this.finishOrders = finishOrders;
+	}
+
+	public List<Order> getNoFinishOrders() {
+		return noFinishOrders;
+	}
+
+	public void setNoFinishOrders(List<Order> noFinishOrders) {
+		this.noFinishOrders = noFinishOrders;
+	}
+
+	public List<Material> getMaterials() {
+		return materials;
+	}
+
+	public List<ProductLine> getProductLines() {
+		return productLines;
+	}
+
+	public void setProductLines(List<ProductLine> productLines) {
+		this.productLines = productLines;
+	}
+
+	public void setMaterials(List<Material> materials) {
+		this.materials = materials;
+	}
+
+	public List<Product> getProducts() {
+		return products;
+	}
+
+	public void setProducts(LinkedList<Product> products) {
+		this.products = products;
+	}
+
+	public List<Equipment> getEquipments() {
+		return equipments;
+	}
+
+	public void setEquipments(List<Equipment> equipments) {
+		this.equipments = equipments;
+	}
+
+	public List<Order> getAllOrders() {
+		return allOrders;
+	}
+
+	public void setAllOrders(List<Order> allOrders) {
+		this.allOrders = allOrders;
+	}
+
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}
+
+	public void addWarehouse(WareHouse wareHouse) {
+		wareHouses.add(wareHouse);
+	}
+
+	/**
+	 * 获取财务经理
+	 * 
+	 * @return
+	 */
+	public BaseManager getFinanceManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == FINANCE_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	public BaseManager getHRManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == HR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	public void insertOrder(Order order) {
+		this.allOrders.add(order);
+	}
+
+	/**
+	 * 获取财务经理
+	 * 
+	 * @return
+	 */
+	public BaseManager getPurchaseManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == PURCHASE_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 获取生产经理
+	 */
+	public BaseManager getProductManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == PRODUCTOR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 获取市场经理
+	 */
+	public BaseManager getBazaarManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == BAZAAR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 房间第一次创建时调用
+	 */
+	public void onCreate() {
+
+	}
+
+	/**
+	 * 判断房间是否为空
+	 */
+	public boolean isEmpty() {
+		return getPlayerInfos().isEmpty();
+	}
+
+	/**
+	 * 获取房间内所有sockets连接
+	 * 
+	 * @return socket集合
+	 */
+	public List<SocketChannel> getSockets() {
+		List<SocketChannel> sockets = new ArrayList<SocketChannel>();
+		for (PlayerInfo info : playerInfos) {
+			SocketChannel socket = HallManager.getSocketByUserId(info.getUserId());
+			sockets.add(socket);
+		}
+		return sockets;
+	}
+
+	public boolean isAllSelected() {
+		return baseManagers.size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+	}
+
+	public boolean isComplete() {
+		complete = getPlayerInfos().size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+		return complete;
+	}
+
+	/**
+	 * 此房间是否已经满了
+	 * 
+	 * @return
+	 */
+	public boolean isFullAddCtxs(List<ChannelHandlerContext> ctxs) {
+		int nowsize = this.getPlayerInfos().size() + ctxs.size();
+		return nowsize <= RoomConfig.TEAM_PLAYER_COUNT;
+	}
+
+	/**
+	 * 添加玩家到房间,组队应该是房间内部实现
+	 * 
+	 * @param ctx
+	 * @return 添加房间是否成功
+	 */
+	public boolean addPlayerInfo(ChannelHandlerContext ctx) {
+		//
+		return false;
+	}
+
+	/**
+	 * 房间销毁时调用
+	 */
+	public void onDestroy() {
+		RoomManager.newRoomsList.remove(this);
+	}
+
+	public void join(PlayerInfo playerInfo) {
+		this.playerInfos.add(playerInfo);
+		if (this.getPlayerInfos().size() >= RoomConfig.ROOM_PLAYER_COUNT) {
+			state = 2;
+		}
+	}
+
+	/**
+	 * 判断是否申请金额
+	 * 
+	 * @param applyForMoney
+	 *            申请的金额
+	 * @return true: 可以申请;false:不可以申请
+	 */
+	public boolean isApplyFor(Integer applyForMoney) {
+		return totalIncome >= applyForMoney ? true : false;
+	}
+
+	/**
+	 * 从公司申请金额
+	 * 
+	 * @param applyForMoney
+	 *            申请的金额
+	 */
+	public void applyFor(Integer applyForMoney) {
+		this.totalIncome -= applyForMoney;
+	}
+
+	/**
+	 * 添加原材料
+	 * 
+	 * @param material
+	 */
+	public void addMaterial(Material material) {
+		this.materials.add(material);
+	}
+
+	public void addEquipment(Equipment equipment) {
+		this.equipments.add(equipment);
+	}
+
+	/**
+	 * 添加新员工
+	 * 
+	 * @param jobhunter
+	 */
+	public void addEmployee(Jobhunter jobhunter) {
+		Employee employee = new Employee();
+		employee.setEmpId(employees.size());
+		employee.setEmpCompany(this.roomId);
+		employee.setEmpName(jobhunter.getName());
+		employee.setEmpType(jobhunter.getType());
+		employee.setSalary(jobhunter.getSalary());
+		employee.setEmpAbility(jobhunter.getAbility());
+		this.employees.add(employee);
+	}
+
+	public WareHouse popWareHouseById(Integer warehouseId) {
+		return null;
+	}
+
+	public Equipment popEquipmentById(Integer equipmentId) {
+		List<Equipment> es = new LinkedList<Equipment>();
+		Equipment equip = null;
+		for (Equipment equipment : equipments) {
+			if (equipment.getEquipmentId() != equipmentId) {
+				es.add(equipment);
+			} else {
+				equip = equipment;
+			}
+		}
+		equipments = es;
+		return equip;
+	}
+
+	public Equipment popEquipment() {
+		LinkedList<Equipment> es = (LinkedList<Equipment>) equipments;
+		return es.pop();
+	}
+
+	/**
+	 * 更新员工状态
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int update(Integer empId, Integer state) {
+		try {
+			// 找到empId员工
+			for (Employee employee : employees) {
+				if (empId == employee.getEmpId()) {
+					employee.setState(state);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+
+	/**
+	 * 获取闲置的员工列表
+	 * 
+	 * @return 员工列表
+	 */
+	public List<Employee> getIdleEmployees() {
+		List<Employee> emps = new LinkedList<Employee>();
+		for (Employee employee : employees) {
+			if (employee.getState() == 0) { // 如果当前原工此时状态为休息
+				emps.add(employee);
+			}
+		}
+		return emps;
+	}
+
+	/**
+	 * 获取工作中的员工列表
+	 * 
+	 * @return 员工列表
+	 */
+	public List<Employee> getWorkingEmployees() {
+		List<Employee> emps = new LinkedList<Employee>();
+		for (Employee employee : employees) {
+			if (employee.getState() == 1) { // 如果当前原工此时状态为休息
+				emps.add(employee);
+			}
+		}
+		return emps;
+	}
+	/**
+	 *  根据id查找生产线
+	 * @param productLineId
+	 * @return
+	 */
+	public ProductLine getProductLineById(Integer productLineId) {
+		for (ProductLine productLine : productLines) {
+			if(productLine != null && productLine.getEquipmentId() == productLineId) {
+				return productLine ;
+			}
+		}
+		return null;
+	}
+
+}

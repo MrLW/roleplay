@@ -1,0 +1,33 @@
+package com.sim.server.game.message.request.finance;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午4:50:10
+ * @Function: 财务请款列表
+ * @version 1.0
+ */
+public class FinancialListRequest extends BaseRequest{
+
+	private Short requestId = RolePlayProtocolConstant.FINANCIALLIST_REQUEST_PROTOCOL;
+	
+	public FinancialListRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+	
+	public Short getRequestId() {
+		return requestId;
+	}
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+	
+}

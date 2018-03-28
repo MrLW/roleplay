@@ -1,0 +1,55 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.message.response.init.InitJobhunterResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.roleplay.init.JobhunterDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:02:09
+ * @Function: HR 总监
+ * @version 1.0
+ */
+public class HRManager extends BaseManager {
+
+	public HRManager() {
+		roleId = 2;
+		roleType = 2;
+		roleName = "HRManager";
+	}
+
+	/**
+	 * 招聘指定ID的求职者
+	 * 
+	 * @param jobhunterId
+	 *            求职者ID
+	 * @return 是否招聘成功,1:招聘成功;0:招聘失败
+	 */
+	public int invite(Integer jobhunterId) {
+		int result = 0 ;
+		try {
+			// 1、根据id找到求职者
+			Jobhunter jobhunter = JobhunterDataLoader.getInstance().getJobhunterById(jobhunterId);
+			// 2、将当前求职者添加到公司
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			room.addEmployee(jobhunter);
+			result = 1 ;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	/**
+	 *  刷新求职者
+	 */
+	public void flushJobhunter() {
+		// 刷新
+		JobhunterDataLoader.getInstance().flush();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(JobhunterDataLoader.getInstance().getJobhunters());
+		response.writeAndFlush();
+	}
+}

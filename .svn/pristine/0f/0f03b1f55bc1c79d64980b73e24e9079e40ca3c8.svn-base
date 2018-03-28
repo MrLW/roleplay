@@ -1,0 +1,27 @@
+package com.sim.server.game.message.request.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2018年1月24日 下午5:21:17
+ * @Function: 是否能选择角色请求
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class RoleWeatherRequest extends BaseRequest{
+
+	private short requestId = RolePlayProtocolConstant.ROLE_WEATHER_REQUEST_PROTOCOL;
+	// 角色类型
+	private int roleType ;
+	
+	public RoleWeatherRequest(ByteBuf buf) {
+		super(buf);
+		roleType = buf.readInt();
+	}
+}

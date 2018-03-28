@@ -1,0 +1,46 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.PurchaseWarehouseRequest;
+import com.sim.server.game.message.response.purchase.PurchaseWarehouseResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 上午11:33:40
+ * @Function: 采购仓库请求
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PURCHASE_WAREHOUSE_REQUEST_PROTOCOL,desc="采购仓库请求处理")
+public class PurchaseWarehouseHandler extends BaseHandler {
+
+	public void run() {
+		PurchaseWarehouseRequest request = (PurchaseWarehouseRequest) baseRequest ;
+		// 计算开销
+		int cost = request.getCount() * 10000 ;
+		// 找到财务经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BaseManager financeManager = room.getFinanceManager();
+		ChannelHandlerContext financeCtx = financeManager.getCtx();
+		
+		PurchaseWarehouseResponse response = new PurchaseWarehouseResponse(financeCtx);
+		response.setCost(cost);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		PurchaseWarehouseHandler handler = new PurchaseWarehouseHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

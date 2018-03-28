@@ -1,0 +1,34 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Employee;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2018年1月11日 下午2:50:43
+ * @Function: 生产线配置员工的状态响应
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class EmployeeProductLineStateResponse extends BaseResponse {
+	
+	private short responseId = RolePlayProtocolConstant.EMPLOYEEPRODUCTLINESTATE_RESPONSE_PROTOCOL;
+	
+	private Employee employee ;
+
+	public EmployeeProductLineStateResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeBaseObj(employee);
+	}
+
+}

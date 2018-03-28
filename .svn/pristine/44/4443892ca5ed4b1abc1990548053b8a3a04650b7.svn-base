@@ -1,0 +1,32 @@
+package com.sim.server.game.model.model;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午6:26:04
+ * @Function:
+ * @version 1.0
+ */
+public class ProductorType {
+
+	private Integer productorTypeId ;
+	
+	private String productorTypeName;
+
+	public Integer getProductorTypeId() {
+		return productorTypeId;
+	}
+
+	public void setProductorTypeId(Integer productorTypeId) {
+		this.productorTypeId = productorTypeId;
+	}
+
+	public String getProductorTypeName() {
+		return productorTypeName;
+	}
+
+	public void setProductorTypeName(String productorTypeName) {
+		this.productorTypeName = productorTypeName;
+	} 
+	
+	
+	
+}

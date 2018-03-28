@@ -1,0 +1,42 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:51:24
+ * @Function: 仓库列表响应
+ * @version 1.0
+ */
+public class MaterialListResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.MATERIAL_LIST_RESPONSE_PROTOCOL;
+
+	private ConcurrentLinkedQueue materials = new ConcurrentLinkedQueue();
+
+	public MaterialListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeQueue(materials);
+	}
+
+	public ConcurrentLinkedQueue getMaterials() {
+		return materials;
+	}
+
+	public void setMaterials(ConcurrentLinkedQueue materials) {
+		this.materials = materials;
+	}
+
+	
+
+}

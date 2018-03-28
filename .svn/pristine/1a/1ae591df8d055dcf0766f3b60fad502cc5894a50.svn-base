@@ -1,0 +1,145 @@
+package com.sim.server.game.model.model;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.productor.EmployeeSyncHPResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午1:39:57
+ * @Function:职员
+ * @version 1.0
+ */
+@Data
+public class Employee implements IByteTo{
+
+	// 职员ID
+	public int empId;
+	// 员工所属公司/房间
+	public String empCompany;
+	// 员工姓名
+	public String empName;
+	// 职员类型.1:操作员;2:运输员
+	public int empType;
+	// 职员能力
+	public int empAbility;
+	// 状态：理解为人物HP，均为0~100，随工作时间减少，为0时拒绝工作
+	public int hp = 100;
+	// 薪水
+	public int salary;
+	// 职员此时状态.1:工作;0:休息
+	public int state = 0;
+	// 员工所负责的生产线ID
+	public int productLineId = -1 ;
+	// 生产线
+	private ProductLine productLine ;
+	// 员工是否处于正在工作状态
+	private boolean isWorking = false;
+	// 员工是否处于血量上升或者下降的状态,或者说是否正在执行更新血量的任务
+	// true:正在恢复
+	private boolean recover = false;
+	// 定时器
+	private Timer timer = new Timer();
+	
+	private EmployeeHPTask task = new EmployeeHPTask() ;
+	// HR连接
+	private ChannelHandlerContext hrCtx ; 
+	// 生产连接
+	private ChannelHandlerContext productCtx ; 
+	
+	public Employee() {
+		timer.schedule(task,0,3000);
+	}
+	
+	public void setHp(Integer hp) {
+		if (hp >= 100) {
+			hp = 100;
+			recover = false ;
+		} else {
+			this.hp = hp;
+		}
+		if (hp <= 0) {
+			hp = 0;
+			recover = false ;
+			// 当员工血量为0时,停止生产
+			if(productLine != null ) {
+				productLine.setWork(false);
+			}
+		} else {
+			this.hp = hp;
+		}
+
+	}
+
+
+	/**
+	 * 更新员工的状态
+	 * 
+	 * @param state
+	 *            1:工作;0:休息
+	 */
+	public void setState(final Integer state) {
+		this.state = state;
+		recover = true ;
+		// 更新该员工对应的生产线
+		if(productLine != null) {
+			productLine.setWork(state == 1);
+		}
+	}
+
+	public void setWorking(boolean isWorking) {
+		this.isWorking = isWorking;
+		setState(isWorking?1:0);
+	}
+	
+	class EmployeeHPTask extends TimerTask{
+		
+		@Override
+		public void run() {
+			while (recover) {
+				if (state == 1) { // 工作
+					setHp(hp - 1);
+				} else {
+					// 休息
+					setHp(hp + 1);
+				}
+				EmployeeSyncHPResponse hr = new EmployeeSyncHPResponse(hrCtx);
+				hr.setEmpId(empId);
+				hr.setHp(hp);
+				hr.writeAndFlush();
+				EmployeeSyncHPResponse product = new EmployeeSyncHPResponse(productCtx);
+				product.setEmpId(empId);
+				product.setHp(hp);
+				product.writeAndFlush();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		
+		}
+		
+	}
+
+
+	public void toData(EnhancedByteBuf enhancedByteBuf) {
+		enhancedByteBuf.writeInt(empId);
+		enhancedByteBuf.writeString(empCompany);
+		enhancedByteBuf.writeString(empName);
+		enhancedByteBuf.writeInt(empType);
+		enhancedByteBuf.writeInt(empAbility);
+		enhancedByteBuf.writeInt(hp);
+		enhancedByteBuf.writeInt(salary);
+		enhancedByteBuf.writeInt(state);
+		enhancedByteBuf.writeInt(productLineId);
+	}
+}

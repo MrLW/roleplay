@@ -1,0 +1,18 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.model.model.BaseManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:03:07
+ * @Function: 生产总监
+ * @version 1.0
+ */
+public class ProductorManager extends BaseManager {
+
+	public ProductorManager() {
+		super.roleId = 1;
+		super.roleType = 1;
+		super.roleName = "ProductorManager";
+	}
+}

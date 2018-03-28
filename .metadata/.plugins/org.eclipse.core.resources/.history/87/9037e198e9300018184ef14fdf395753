@@ -1,0 +1,87 @@
+package com.lw.test;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import com.sim.server.game.model.model.Order;
+
+public class Test {
+
+	public static void main(String[] args) throws CloneNotSupportedException, Exception {
+		List<String> list = new ArrayList<String>();
+		for (int i = 0; i < 10; i++) {
+			list.add("a-" + i);
+		}
+		System.out.println(list);
+
+		for (int i = 0; i < 5; i++) {
+			list.remove(i);
+		}
+
+		System.out.println(list);
+
+		// 测试枚举
+		// System.out.println(WareHouseType.PRODUCTA.getValue());
+
+		/*
+		 * Class<Obj> clazz = Obj.class; Field[] fields = clazz.getFields();
+		 * System.out.println("fiels:" + fields.length); for (Field field : fields) {
+		 * System.out.println(field.getName()); }
+		 */
+
+		Test test = new Test();
+		int a = 2;
+		System.out.println("a:" + (a << 0));
+		System.out.println("a:" + (a << 1));
+		System.out.println("a:" + (a << 2));
+		System.out.println("a:" + (a << 3));
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1, "a");
+		map.put(2, "b");
+		Collection<String> values = map.values();
+		Iterator<String> iterator = values.iterator();
+
+		System.out.println(values);
+
+		
+//		System.out.println(clone.getQueue() == c.getQueue());
+		System.out.println("-----------------------");
+		for (Field field : declaredFields) {
+			System.out.println(field.getName());
+		}
+		System.out.println("================");
+		List<String> list2 = new LinkedList<>();
+		list2.add("aa");
+		list2.add("bb");
+		list2.add("cc");
+		/*for (String s : list2) {
+			if ("aa".equals(s)) {
+				list2.add("aaaa");
+			}
+		}*/
+		System.out.println(list);
+		System.out.println("----------------------------------");
+		Thread t1 = new Thread();
+		t1.setName("thread1");
+		t1.start();
+		ThreadGroup currentGroup = Thread.currentThread().getThreadGroup();
+		int noThreads = currentGroup.activeCount();
+		Thread[] lstThreads = new Thread[noThreads];
+		currentGroup.enumerate(lstThreads);
+		for (int i = 0; i < noThreads; i++)
+			System.out.println("线程号：" + i + " = " + lstThreads[i].getName());
+		Thread.sleep(1000);
+		for (int i = 0; i < noThreads; i++)
+			System.out.println("线程号：" + i + " = " + lstThreads[i].getName());
+		
+		
+		
+	}
+
+}

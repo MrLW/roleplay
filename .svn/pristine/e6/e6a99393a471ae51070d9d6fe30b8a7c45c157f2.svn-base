@@ -1,0 +1,45 @@
+package com.sim.server.game.roleplay.handler.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.finance.FinancialStateRequest;
+import com.sim.server.game.message.response.finance.FinancialStateResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.FinanceManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午5:56:15
+ * @Function: 请款状态
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.FINANCIALSTATE_REQUEST_PROTOCOL,desc="请款状态")
+public class FinancialStateHandler extends BaseHandler {
+
+	public void run() {
+		FinancialStateRequest request = (FinancialStateRequest) baseRequest ;
+		Integer financialRequestMsgId = request.getFinancialRequestMsgId();
+		// 找到财务总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		FinanceManager  financeManager = (FinanceManager) room.getFinanceManager();
+		// 通知请款人
+		int result = financeManager.notifyPayee(financialRequestMsgId,request.getState()) ;
+		// 通知财务总监
+		FinancialStateResponse response = new FinancialStateResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		FinancialStateHandler handler = new FinancialStateHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

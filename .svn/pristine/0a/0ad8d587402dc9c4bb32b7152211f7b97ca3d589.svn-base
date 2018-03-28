@@ -1,0 +1,41 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.productor.ProductLineAndTypeRequest;
+import com.sim.server.game.message.response.productor.ProductLineAndTypeResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月28日 下午4:15:56
+ * @Function:选择生产A/B请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PRODUCTLINE_TYPE_REQUEST_PROTOCOL,desc="选择生产A/B请求处理")
+public class ProductLineAndTypeHandler extends BaseHandler {
+
+	public void run() {
+		ProductLineAndTypeRequest request = (ProductLineAndTypeRequest) baseRequest ;
+		// 找到生产总监进行
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		productManager.setProductForLine(request.getProductLineId(),request.getProductTypeId()); 
+		ProductLineAndTypeResponse response = new ProductLineAndTypeResponse(ctx);
+		response.setResult((byte) 1);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		ProductLineAndTypeHandler handler = new ProductLineAndTypeHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

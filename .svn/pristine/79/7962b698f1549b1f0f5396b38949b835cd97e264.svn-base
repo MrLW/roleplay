@@ -1,0 +1,81 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 上午10:53:04
+ * @Function: 仓库、原材料、设备的初始化,相当于数据库
+ * @version 1.0
+ */
+public class ResourceDataLoader extends BaseLoader {
+
+	private static ResourceDataLoader loader = null;
+
+	private List<Material> materialsDB = new LinkedList<Material>();
+	private List<Equipment> equipmentsDB = new LinkedList<Equipment>();
+	private List<WareHouse> wareHousesDB = new LinkedList<WareHouse>();
+
+	private ResourceDataLoader() {
+	}
+
+	public static ResourceDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (ResourceDataLoader.class) {
+				if (loader == null)
+					loader = new ResourceDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		for (int i = 1; i <= 10; i++) {
+			WareHouse house = new WareHouse();
+			house.setWarehouseId(i);
+			wareHousesDB.add(house);
+			Material material = new Material(i, i, "Material-" + i);
+			materialsDB.add(material);
+			Equipment equipment = new Equipment();
+			equipment.setEquipmentId(i);
+			equipment.setEquipmentType(1);
+			equipment.setEquipmentName("equipment-" + i );
+			equipmentsDB.add(equipment);
+		}
+		return false;
+	}
+
+	public List<Material> getMaterialsDB() {
+		return materialsDB;
+	}
+
+	public void setMaterialsDB(List<Material> materialsDB) {
+		this.materialsDB = materialsDB;
+	}
+
+	public List<Equipment> getEquipmentsDB() {
+		return equipmentsDB;
+	}
+
+	public void setEquipmentsDB(List<Equipment> equipmentsDB) {
+		this.equipmentsDB = equipmentsDB;
+	}
+
+	public List<WareHouse> getWareHousesDB() {
+		return wareHousesDB;
+	}
+
+	public void setWareHousesDB(List<WareHouse> wareHousesDB) {
+		this.wareHousesDB = wareHousesDB;
+	}
+
+}

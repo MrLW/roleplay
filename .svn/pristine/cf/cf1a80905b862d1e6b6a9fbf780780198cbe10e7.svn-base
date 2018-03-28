@@ -1,0 +1,143 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:54:12
+ * @Function: 订单初始化数据
+ * @version 1.0
+ */
+public class OrderDataLoader extends BaseLoader {
+
+	private static OrderDataLoader loader = null;
+	/**
+	 * 默认初始化获取订单列表角标
+	 */
+	public static int DEFAULT_INIT_INDEX = 0;
+
+	public static int CURRENT_INDEX = DEFAULT_INIT_INDEX;
+
+	private int size = 2;
+
+	private OrderDataLoader() {
+
+	}
+
+	public static OrderDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (OrderDataLoader.class) {
+				if (loader == null)
+					loader = new OrderDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	// 相当于数据库中的数据
+	private List<Order> dbOrders = new LinkedList<Order>();
+	// 客户端当前显示的订单
+	private List<Order> curOrders = new LinkedList<Order>() ;
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据开始");
+		try {
+			for (int i = 1; i <= 10; i++) {
+				Order order = new Order();
+				order.setOrderId(i);
+				order.setOrderNum("orderNum-" + i);
+				order.setValidTime((long) i * 30);
+				order.setLatestPay((long) 10);
+				order.setOrderName("A");
+				order.setProductCount(i);
+//				if (i % 2 == 0) {
+//				} else {
+//					order.setOrderName("B");
+//					order.setProductCount(0);
+//				}
+				dbOrders.add(order);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据异常");
+			return false;
+		}
+		LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据结束");
+		return true;
+	}
+
+	public List<Order> getDbOrders() {
+		return dbOrders;
+	}
+
+	public void setDbOrders(List<Order> dbOrders) {
+		this.dbOrders = dbOrders;
+	}
+
+	public List<Order> getCurOrders() {
+		return curOrders;
+	}
+
+	public void setCurOrders(List<Order> curOrders) {
+		this.curOrders = curOrders;
+	}
+
+	public List<Order> next() {
+		curOrders.clear();
+		List<Order> orders = new LinkedList<Order>();
+		if (CURRENT_INDEX >= dbOrders.size()) {
+			CURRENT_INDEX = 0 ;
+		}
+		int i = CURRENT_INDEX;
+		int curIndex = CURRENT_INDEX;
+		for (; i < curIndex + size; i++) {
+			if(i < dbOrders.size() ) {
+				Order order = dbOrders.get(i);
+				orders.add(order);
+				curOrders.add(order);
+			}
+		}
+		CURRENT_INDEX = i;
+		return orders;
+	}
+
+	/**
+	 * 根据订单号获取订单
+	 * 
+	 * @param orderId
+	 *            订单号
+	 * @return 订单对象
+	 */
+	public Order getOrderById(Integer orderId) {
+		LinkedList<Order> TEMP = (LinkedList<Order>) dbOrders;
+		for (Order order : dbOrders) {
+			if (orderId != null && order != null && orderId == order.getOrderId()) {
+				TEMP.remove(order);
+				return order;
+			}
+		}
+		TEMP = null;
+		return null;
+	}
+
+	public List<Order> init() {
+		List<Order> orders = new LinkedList<Order>();
+		CURRENT_INDEX = 0 ;
+		int i = CURRENT_INDEX;
+		int curIndex = CURRENT_INDEX;
+		for (; i < curIndex + size; i++) {
+			if(i < dbOrders.size() ) {
+				Order order = dbOrders.get(i);
+				orders.add(order);
+			}
+		}
+		CURRENT_INDEX = i;
+		return orders;
+	}
+
+}

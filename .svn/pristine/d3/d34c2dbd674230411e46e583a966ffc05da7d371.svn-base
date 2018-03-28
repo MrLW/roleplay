@@ -1,0 +1,21 @@
+package com.sim.server.game.message.request.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2018年1月5日 下午2:45:55
+ * @Function: 检查仓库数量
+ * @version 1.0
+ */
+public class CheckWarehouseRequest extends BaseRequest {
+	
+	private Short requestId = RolePlayProtocolConstant.WAREHOUSE_CHECK_REQUEST_PROTOCOL;
+
+	public CheckWarehouseRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+}

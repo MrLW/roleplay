@@ -1,0 +1,42 @@
+package com.sim.server.game.model.model;
+/**
+ * @author liwen
+ * @date:2018年1月2日 上午10:13:50
+ * @Function: 财务报表实体Bean
+ * @version 1.0
+ */
+public class FinancialStatement {
+
+	public Integer financialStatementId; 
+	// 谁的消费/收入
+	private BaseManager baseManager ;
+	// 收入/花费的钱
+	public Integer money ;
+	// 此笔收入/消费的原因
+	public String msg ;
+	public Integer getFinancialStatementId() {
+		return financialStatementId;
+	}
+	public void setFinancialStatementId(Integer financialStatementId) {
+		this.financialStatementId = financialStatementId;
+	}
+	public Integer getMoney() {
+		return money;
+	}
+	public void setMoney(Integer money) {
+		this.money = money;
+	}
+	public String getMsg() {
+		return msg;
+	}
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+	public BaseManager getBaseManager() {
+		return baseManager;
+	}
+	public void setBaseManager(BaseManager baseManager) {
+		this.baseManager = baseManager;
+	}
+	
+}

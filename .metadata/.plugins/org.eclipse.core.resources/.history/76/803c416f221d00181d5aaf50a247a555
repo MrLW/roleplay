@@ -1,0 +1,45 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitCommodityResponse;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午5:06:40
+ * @Function: 商品列表
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_COMMODITIES_REQUEST_PROTOCOL, desc = "商品列表")
+public class InitCommodityHandler extends BaseHandler {
+
+	public void run() {
+		Map<Integer, Commodity> commodityMap = ResourceDataLoader.getInstance().getCommodities();
+		Collection<Commodity> collection = commodityMap.values();
+		// 创建响应
+		InitCommodityResponse response = new InitCommodityResponse(channel);
+		Queue<Commodity> commodities = new ConcurrentLinkedQueue<Commodity>(collection);
+		response.setCommodities(commodities);
+		response.writeAndFlush();
+
+	}
+
+	@Override
+	public Object clone() {
+		InitCommodityHandler handler = new InitCommodityHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+		
+	}
+
+}

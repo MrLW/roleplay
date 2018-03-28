@@ -1,0 +1,40 @@
+package com.sim.server.game.message.response.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午3:12:29
+ * @Function: 市场经理申请money响应
+ * @version 1.0
+ */
+public class ApplyForMoneyResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.APPLYFOR_MONEY_RESPONSE_PROTOCOL;
+
+	private Integer money;
+
+	public ApplyForMoneyResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public Integer getMoney() {
+		return money;
+	}
+
+	public void setMoney(Integer money) {
+		this.money = money;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(money);
+	}
+	
+}

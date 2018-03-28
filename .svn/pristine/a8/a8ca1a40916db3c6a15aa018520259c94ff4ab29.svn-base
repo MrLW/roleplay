@@ -1,0 +1,151 @@
+package com.sim.server.game.engine.script;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.request.bazaar.AcceptOrderRequest;
+import com.sim.server.game.message.request.bazaar.ApplyForMoneyRequest;
+import com.sim.server.game.message.request.bazaar.FlushOrderRequest;
+import com.sim.server.game.message.request.bazaar.FlushOrderResultRequest;
+import com.sim.server.game.message.request.common.OwnedWareHouseRequest;
+import com.sim.server.game.message.request.common.RoleListRequest;
+import com.sim.server.game.message.request.common.RoleRequest;
+import com.sim.server.game.message.request.common.TotalIncomeRequest;
+import com.sim.server.game.message.request.finance.ApplyForMoneyResultRequest;
+import com.sim.server.game.message.request.finance.PurchaseResultRequest;
+import com.sim.server.game.message.request.init.InitEquipmentRequest;
+import com.sim.server.game.message.request.init.InitMaterialRequest;
+import com.sim.server.game.message.request.init.InitOrderRequest;
+import com.sim.server.game.message.request.init.InitWareHouseRequest;
+import com.sim.server.game.message.request.purchase.PurchaseEquipmentRequest;
+import com.sim.server.game.message.request.purchase.PurchaseMaterialRequest;
+import com.sim.server.game.message.request.purchase.PurchaseWarehouseRequest;
+import com.sim.server.game.message.request.sys.DropOutRequest;
+import com.sim.server.game.message.request.sys.MatchRequest;
+import com.sim.server.game.message.request.sys.StartGameRequest;
+import com.sim.server.game.message.request.user.LoginInfoRequest;
+import com.sim.server.game.message.request.user.LoginRequest;
+import com.sim.server.game.message.request.user.RegistRequest;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年11月29日 下午5:51:37
+ * @Function: 消息脚本,维护协议系统
+ * @version 1.0
+ */
+public class MessageScript {
+
+	public static Map<Short, BaseHandler> haldlerMap = new ConcurrentHashMap<Short, BaseHandler>();
+
+	private static MessageScript pool = new MessageScript();
+	/**
+	 * 服务器名字和协议的映射关系,key:服务器名称,value:协议map
+	 */
+	private static Map<String, Map<Short, Class<? extends BaseRequest>>> modelProtocolMap = new ConcurrentHashMap<String, Map<Short, Class<? extends BaseRequest>>>();
+
+	/**
+	 * 初始化一个模块
+	 */
+	public void init(String modelName) {
+		Map<Short, Class<? extends BaseRequest>> protocolIdMap = new ConcurrentHashMap<Short, Class<? extends BaseRequest>>();
+		LoggerUtil.getLogger(getClass()).info("初始化协议信息开始...");
+		initCommon(protocolIdMap);
+		initFinance(protocolIdMap);
+		initBazaar(protocolIdMap);
+		initUser(protocolIdMap);
+		initSys(protocolIdMap);
+		initPurchase(protocolIdMap);
+		// 初始化模块
+		initInitDB(protocolIdMap);
+		// 添加到全局中心
+		modelProtocolMap.put(modelName, protocolIdMap);
+		LoggerUtil.getLogger(getClass()).info("初始化协议信息结束");
+	}
+
+	/**
+	 * 初始化市场模块
+	 */
+	private void initBazaar(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.DB_FLUSH_RESULT_ORDER_REQUEST_PROTOCOL, FlushOrderResultRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.DB_FLUSH_ORDER_REQUEST_PROTOCOL, FlushOrderRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.APPLYFOR_MONEY_REQUEST_PROTOCOL, ApplyForMoneyRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.ACCEPT_ORDER_REQUEST_PROTOCOL, AcceptOrderRequest.class);
+	}
+
+	/**
+	 * 初始化采购模块
+	 */
+	private void initPurchase(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.PURCHASE_MATERIAL_REQUEST_PROTOCOL, PurchaseMaterialRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.PURCHASE_WAREHOUSE_REQUEST_PROTOCOL, PurchaseWarehouseRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.PURCHASE_PRODUCTTABLE_REQUEST_PROTOCOL,
+				PurchaseEquipmentRequest.class);
+	}
+
+	/**
+	 * 初始化财务模块
+	 */
+	private void initFinance(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.PURCHASE_RESULT_REQUEST_PROTOCOL, PurchaseResultRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.APPLYFOR_MONEY_RESULT_REQUEST_PROTOCOL, ApplyForMoneyResultRequest.class);
+	}
+
+	/**
+	 * 通用模块
+	 */
+	private void initCommon(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.ROLELIST_REQUEST_PROTOCOL, RoleListRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.ROLE_REQUEST_PROTOCOL, RoleRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.OWNED_WAREHOUSE_REQUEST_PROTOCOL, OwnedWareHouseRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.TOTAL_INCOME_REQUEST_PROTOCOL, TotalIncomeRequest.class);
+	}
+
+	private void initUser(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.LOGIN_REQUEST_PROTOCOL, LoginRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.LOGIN_SUCCESS_REQUEST_PROTOCOL, LoginInfoRequest.class);
+
+		protocolIdMap.put(RolePlayProtocolConstant.REGISTE_REQUEST_PROTOCOL, RegistRequest.class);
+	}
+
+	/**
+	 * 系统模块
+	 */
+	private void initSys(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		protocolIdMap.put(RolePlayProtocolConstant.DROPOUT_REQUEST_PROTOCOL, DropOutRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.MATCH_REQUEST_PROTOCOL, MatchRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.STARTGAME_REQUEST_PROTOCOL, StartGameRequest.class);
+	}
+
+	/**
+	 * 数据模块
+	 */
+	private void initInitDB(Map<Short, Class<? extends BaseRequest>> protocolIdMap) {
+		// 初始化模块
+		protocolIdMap.put(RolePlayProtocolConstant.DB_WAREHOUSE_REQUEST_PROTOCOL, InitWareHouseRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.DB_MATERIALS_REQUEST_PROTOCOL, InitMaterialRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.DB_EQUIPMENT_REQUEST_PROTOCOL, InitEquipmentRequest.class);
+		protocolIdMap.put(RolePlayProtocolConstant.DB_ORDER_REQUEST_PROTOCOL, InitOrderRequest.class);
+	}
+
+	public static MessageScript getInstance() {
+		return pool;
+	}
+
+	public void put(String modelName, Map<Short, Class<? extends BaseRequest>> map) {
+		modelProtocolMap.put(modelName, map);
+	}
+
+	public Map<Short, Class<? extends BaseRequest>> get(String modelName) {
+		return modelProtocolMap.get(modelName);
+	}
+
+	public static BaseHandler getHaldlerMap(Short id) {
+		BaseHandler handler = haldlerMap.get(id);
+		handler.clone();
+		return handler;
+	}
+}

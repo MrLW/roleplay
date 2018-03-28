@@ -1,0 +1,9 @@
+package com.sim.server.game.common;
+
+public enum State {
+	int state;
+	private State(int state) {
+		this.state = state;
+	}
+	SUCCESS(1)
+}

@@ -1,0 +1,30 @@
+package com.sim.server.game.roleplay.bean;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+/**
+ * @author liwen
+ * @date:2018年1月17日 下午3:31:24
+ * @Function: 原料数量
+ * @version 1.0
+ */
+@Data
+public class MaterialTypeCount implements IByteTo{
+	// 原料类型ID
+	private int materialTypeId ;
+	// 原料数量
+	private int materialTypeCount ;
+	
+	@Override
+	public String toString() {
+		return "MaterialTypeCount [materialTypeId=" + materialTypeId + ", materialTypeCount=" + materialTypeCount + "]";
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(materialTypeId);
+		buf.writeInt(materialTypeCount);
+	}
+
+}

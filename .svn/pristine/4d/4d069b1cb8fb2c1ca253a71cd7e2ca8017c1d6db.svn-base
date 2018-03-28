@@ -1,0 +1,86 @@
+package com.sim.server.game.model.model;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午1:39:57
+ * @Function:职员
+ * @version 1.0
+ */
+public class Employee {
+	
+	// 职员ID
+	public Integer empId;
+	// 员工所属公司/房间 
+	public String empCompany  ;
+	// 员工姓名
+	public String empName; 
+	// 职员类型.1:操作员;2:运输员
+	public Integer empType;
+	// 职员能力
+	public Integer empAbility;
+	// 状态：理解为人物HP，均为0~100，随工作时间减少，为0时拒绝工作
+	public Integer hp = 0 ;
+	// 薪水
+	public Integer salary ;
+	
+	// 职员此时状态.1:工作;0:休息
+	public Integer state = 1;
+	// 员工是否处于正在工作状态
+	private boolean isWorking = false ;
+	
+	public Integer getEmpId() {
+		return empId;
+	}
+	public void setEmpId(Integer empId) {
+		this.empId = empId;
+	}
+	public Integer getEmpType() {
+		return empType;
+	}
+	public void setEmpType(Integer empType) {
+		this.empType = empType;
+	}
+	public Integer getHp() {
+		return hp;
+	}
+	public void setHp(Integer hp) {
+		this.hp = hp;
+	}
+	public Integer getState() {
+		return state;
+	}
+	public void setState(Integer state) {
+		this.state = state;
+	}
+	public Integer getSalary() {
+		return salary;
+	}
+	public void setSalary(Integer salary) {
+		this.salary = salary;
+	}
+	public String getEmpCompany() {
+		return empCompany;
+	}
+	public void setEmpCompany(String empCompany) {
+		this.empCompany = empCompany;
+	}
+	public String getEmpName() {
+		return empName;
+	}
+	public void setEmpName(String empName) {
+		this.empName = empName;
+	}
+	public Integer getEmpAbility() {
+		return empAbility;
+	}
+	public void setEmpAbility(Integer empAbility) {
+		this.empAbility = empAbility;
+	}
+	public boolean isWorking() {
+		return isWorking;
+	}
+	public void setWorking(boolean isWorking) {
+		this.isWorking = isWorking;
+	}
+	
+}

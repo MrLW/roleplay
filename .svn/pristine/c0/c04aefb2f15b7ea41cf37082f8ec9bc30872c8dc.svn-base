@@ -1,0 +1,26 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2017年12月29日 下午5:52:06
+ * @Function: 产品列表
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class ProductListRequest extends BaseRequest {
+
+	private short requestId = RolePlayProtocolConstant.PRODUCT_LIST_REQUEST_PROTOCOL;
+
+	public ProductListRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+}

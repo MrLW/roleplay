@@ -1,0 +1,34 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+import lombok.Setter;
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午6:17:27
+ * @Function: 购买商品
+ * @version 1.0
+ */
+public class PurchaseCommodityResponse extends BaseResponse {
+
+	// 协议号
+	@Getter
+	@Setter
+	private short responseId = RolePlayProtocolConstant.PURCHASE_COMMODITY_RESPONSE_PROTOCOL ;
+	@Setter
+	@Getter
+	private int cost;
+
+	public PurchaseCommodityResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+
+	}
+
+}

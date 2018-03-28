@@ -1,0 +1,60 @@
+package com.sim.server.game.roleplay.handler.common;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.common.RoleRequest;
+import com.sim.server.game.message.response.common.AllSelectResponse;
+import com.sim.server.game.message.response.common.RoleResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.factory.BaseManagerFactory;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.PlayerManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午6:45:54
+ * @Function: 选择角色请求
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.ROLE_REQUEST_PROTOCOL, desc = "角色选中请求处理")
+public class RoleHandler extends BaseHandler {
+
+	public void run() {
+		RoleRequest request = (RoleRequest) baseRequest;
+		int roleType = request.getRoleType();
+		int userId = HallManager.getUserIdByCtx(ctx);
+		PlayerInfo info = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+		// 判断当前玩家是否已经选择了角色
+		if(info.getRoleType() == -1 ) {
+			info.setRoleType(roleType);
+			Room room = RoomManager.getRoomByCtx(ctx);
+			BaseManager manager = BaseManagerFactory.getBaseManager(roleType);
+			manager.setCtx(ctx);
+			manager.setRoom(room);
+			room.getBaseManagers().add(manager);
+			room.notifyChooseRole(request.getRoleType(),userId);
+		} else {
+			// 当前玩家已经选择角色,需要提示玩家
+			
+		}
+	}
+
+	@Override
+	public Object clone() {
+		RoleHandler handler = new RoleHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

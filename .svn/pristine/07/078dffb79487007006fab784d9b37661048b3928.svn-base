@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 上午11:18:03
+ * @Function:采购仓库响应
+ * @version 1.0
+ */
+public class PurchaseWarehouseResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.PURCHASE_WAREHOUSE_RESPONSE_PROTOCOL;
+
+	private Integer cost;
+
+	public PurchaseWarehouseResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Integer getCost() {
+		return cost;
+	}
+
+	public void setCost(Integer cost) {
+		this.cost = cost;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(cost);
+	}
+
+}

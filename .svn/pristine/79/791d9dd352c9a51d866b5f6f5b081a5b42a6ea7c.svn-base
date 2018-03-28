@@ -1,0 +1,127 @@
+package com.sim.server.game.model.model;
+
+import java.util.LinkedList;
+
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:34:14
+ * @Function: 生产线
+ * @version 1.0
+ */
+public class ProductLine implements Runnable {
+
+	// 生产桌ID
+	public Integer equipmentId;
+	// 该生产线要生产的产品ID,默认情况下该生产线不生产产品
+	public Integer productTypeId = 0;
+	// 员工ID
+	public Integer employeeId = -1;
+	// 上一次创建产品的时间
+	private Long lastCreateProductTime = -1l;
+	// 默认不工作
+	private boolean work = false;
+	// 生产总监
+	private ProductorManager productorManager ;
+
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public Integer getProductTypeId() {
+		return productTypeId;
+	}
+
+	public void setProductTypeId(Integer productTypeId) {
+		this.productTypeId = productTypeId;
+	}
+
+	public Integer getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(Integer employeeId) {
+		this.employeeId = employeeId;
+	}
+
+
+	public ProductorManager getProductorManager() {
+		return productorManager;
+	}
+
+	public void setProductorManager(ProductorManager productorManager) {
+		this.productorManager = productorManager;
+	}
+
+	public Long getLastCreateProductTime() {
+		return lastCreateProductTime;
+	}
+
+	public void setLastCreateProductTime(Long lastCreateProductTime) {
+		this.lastCreateProductTime = lastCreateProductTime;
+	}
+
+	public boolean isWork() {
+		return work;
+	}
+
+	public void setWork(boolean work) {
+		this.work = work;
+	}
+	
+
+	public void run() {
+		while (work) { // 如果是在工作状态,每秒创建一个产品
+			createProduct();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * 创建产品
+	 */
+	private void createProduct() {
+
+		Room room = RoomManager.getNewRoomByCtx(productorManager.getCtx());
+		if (!productorManager.checkWarehouse(3, 0)) { // 仓库库存不足
+			work = false;
+			return;
+		}
+		// 移除原料
+		LinkedList<Material> materials = (LinkedList<Material>) room.getMaterials();
+		if (materials.size() == 0) { // 如果原料不足,则停止生产并通知客户端
+			LoggerUtil.getLogger(ProductorManager.class).info("原料不够,请客户端重新购买原料,当前公司产品的个数:" + room.getProducts());
+			work = false;
+			productorManager.writeCheckMaterial();
+			return;
+		}
+		materials.removeFirst();
+
+		
+		Product product = new Product();
+		product.setProId(room.getProducts().size());
+		product.setProName(getProductTypeId() == 1 ? "A" : "B");
+		product.setProType(getProductTypeId());
+		System.out.println("创建产品-" + product.hashCode() + "的时间是:" + System.currentTimeMillis());
+		WareHouse wareHouse = room.getOrUpdateWareHouseByType(3);
+
+		wareHouse.getList().add(product);
+		
+	}
+
+}

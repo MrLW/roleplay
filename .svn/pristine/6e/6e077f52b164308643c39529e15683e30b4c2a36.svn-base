@@ -1,0 +1,36 @@
+package com.sim.server.game.message.request.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午5:52:33
+ * @Function: 请款状态
+ * @version 1.0
+ */
+public class FinancialStateRequest extends BaseRequest {
+	
+	@Getter
+	@Setter
+	private short requestId = RolePlayProtocolConstant.FINANCIALSTATE_REQUEST_PROTOCOL;
+	@Getter
+	@Setter
+	private int financialRequestMsgId;
+	@Getter
+	@Setter
+	private byte state;
+
+	public FinancialStateRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		financialRequestMsgId = buf.readInt();
+		state = buf.readByte();
+	}
+
+}

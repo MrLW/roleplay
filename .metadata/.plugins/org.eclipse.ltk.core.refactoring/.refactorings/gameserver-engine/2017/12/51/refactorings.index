@@ -1,0 +1,5 @@
+1513914341682	Extract method 'init'
+1513914367799	Extract method 'initSys'
+1513914381210	Extract method 'initRole'
+1513926278550	Extract method 'initUser'
+1513926289947	Extract method 'initRole'

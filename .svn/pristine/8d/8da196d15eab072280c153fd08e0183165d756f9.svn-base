@@ -1,0 +1,49 @@
+package com.sim.server.game.roleplay.handler.hr;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.hr.InviteRequest;
+import com.sim.server.game.message.response.hr.EmployeeListResponse;
+import com.sim.server.game.message.response.hr.InviteResponse;
+import com.sim.server.game.message.response.init.InitJobhunterResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.roleplay.init.JobhunterDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月26日 下午2:04:25
+ * @Function: 招聘处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.INVITE_JOBHUNTER__REQUEST_PROTOCOL,desc="招聘处理")
+public class InviteHandler extends BaseHandler{
+
+	public void run() {
+		InviteRequest request = (InviteRequest) baseRequest ;
+		// 找到HR经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		// hr经理进行招聘进行招聘
+		hrManager.invite(request.getJobhunterId()) ;
+		
+	}
+
+	
+
+	@Override
+	public Object clone() {
+		InviteHandler handler = new InviteHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

@@ -1,0 +1,53 @@
+package com.sim.server.game.message.request.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午5:52:33
+ * @Function: 请款状态
+ * @version 1.0
+ */
+public class FinancialStateRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.FINANCIALSTATE_REQUEST_PROTOCOL;
+	
+	private Integer financialRequestMsgId ;
+	
+	private Byte  state ;
+	
+	public FinancialStateRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		financialRequestMsgId = buf.readInt() ;
+		state = buf.readByte();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	public Integer getFinancialRequestMsgId() {
+		return financialRequestMsgId;
+	}
+
+	public void setFinancialRequestMsgId(Integer financialRequestMsgId) {
+		this.financialRequestMsgId = financialRequestMsgId;
+	}
+
+	public Byte getState() {
+		return state;
+	}
+
+	public void setState(Byte state) {
+		this.state = state;
+	}
+	
+	
+}

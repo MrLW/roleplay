@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+/**
+ * @author liwen
+ * @date:2018年1月24日 上午11:16:20
+ * @Function: 生产线状态响应
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class ProductLineStateResponse extends BaseResponse {
+
+	private short responseId = RolePlayProtocolConstant.PRODUCTLINE_STATE_RESPONSE_PROTOCOL;
+	// 生产线ID
+	private int productLineId ;
+	// 生产线工作状态,>0位工作;<=0为不工作
+	private byte state ;
+	
+	public ProductLineStateResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(productLineId);
+		buf.writeByte(state);
+	}
+
+}

@@ -1,0 +1,38 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.CommodityViewRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月19日 下午6:02:28
+ * @Function: 查看商品数量
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.COMMODITY_VIEW_REQUEST_PROTOCOL,desc="查看商品数量")
+public class CommodityViewHandler extends BaseHandler {
+
+	public void run() {
+		CommodityViewRequest request = (CommodityViewRequest) baseRequest; 
+		int commodityState = request.getCommodityState();
+		int commodityType = request.getCommodityType();
+		
+		Room room = RoomManager.getNewRoomByCtx(channel);
+		ProductorManager productor = (ProductorManager) room.getProductManager();
+		productor.writeCommodityByTypeAndState(commodityType,commodityState,ctx) ;
+	}
+
+	@Override
+	public Object clone() {
+		CommodityViewHandler handler = new CommodityViewHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

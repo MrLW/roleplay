@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.finance.PurchaseResultRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 下午2:48:55
+ * @Function: 采购结果响应
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.PURCHASE_RESULT_REQUEST_PROTOCOL, desc = "采购结果响应")
+public class PurchaseResultHandler extends BaseHandler {
+
+	public void run() {
+		PurchaseResultRequest request = (PurchaseResultRequest) baseRequest;
+		Byte result = request.getResult();
+		// 获取采购经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		purchaseManager.writePurchaseWarehouseResul(result);
+	}
+
+
+	@Override
+	public Object clone() {
+		PurchaseResultHandler handler = new PurchaseResultHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

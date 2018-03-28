@@ -1,0 +1,35 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class CommodityViewResponse extends BaseResponse {
+
+	// –≠“È∫≈
+	private short responseId = RolePlayProtocolConstant.COMMODITY_VIEW_RESPONSE_PROTOCOL;
+	private int commodityType;
+	private int commodityState;
+	private int commodityCount;
+	
+
+	public CommodityViewResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(commodityType);
+		buf.writeInt(commodityState);
+		buf.writeInt(commodityCount);
+	}
+
+}

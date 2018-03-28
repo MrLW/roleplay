@@ -1,0 +1,42 @@
+
+package com.sim.server.game.message.response.room;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午5:42:08
+ * @Function:已拥有的仓库响应
+ * @version 1.0
+ */
+public class OwnedWareHouseResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_WAREHOUSE_RESPONSE_PROTOCOL;
+
+	private Integer wareHouseCount;
+
+	public OwnedWareHouseResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Integer getWareHouseCount() {
+		return wareHouseCount;
+	}
+
+	public void setWareHouseCount(Integer wareHouseCount) {
+		this.wareHouseCount = wareHouseCount;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(wareHouseCount);
+	}
+
+}

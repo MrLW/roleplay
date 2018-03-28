@@ -1,0 +1,40 @@
+package com.sim.server.game.message.request.user;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+
+/**
+ * @author liwen
+ * 2017年11月2日 下午4:16:56
+ * 此类的功能:登录后获取房间列表的请求
+ * @version 1.0
+ */
+public class LoginRoomRequest {
+
+	private Integer len ;
+	
+	private Short requestId = RolePlayProtocolConstant.LOGIN_ROOMLIST_REQUEST_PROTOCOL ;
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	@Override
+	public String toString() {
+		return "LoginRoomRequest [len=" + len + ", requestId=" + requestId + "]";
+	}
+
+	
+	
+}

@@ -1,0 +1,41 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.productor.EmployeeStateRequest;
+import com.sim.server.game.message.response.productor.EmployeeStateResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午5:05:00
+ * @Function: 同步员工状态
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.EMPLOYEE_STATE_REQUEST_PROTOCOL,desc="员工状态")
+public class EmployeeStateHandler extends BaseHandler {
+	
+	public void run() {
+		EmployeeStateRequest request = (EmployeeStateRequest) baseRequest ;
+		// 获取生产总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		int result = productManager.updateState(request.getEmpId(),request.getState());
+		// 创建响应
+		EmployeeStateResponse response = new EmployeeStateResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		EmployeeStateHandler handler = new EmployeeStateHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

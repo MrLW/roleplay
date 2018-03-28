@@ -1,0 +1,34 @@
+package com.sim.server.game.message.request.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午6:14:59
+ * @Function: 购买商品请求
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class PurchaseCommodityRequest extends BaseRequest {
+	private short requestId = RolePlayProtocolConstant.PURCHASE_COMMODITY_REQUEST_PROTOCOL;
+	// 商品类型
+	private int commodityType;
+	// 商品数量
+	private int commodityCount;
+
+	public PurchaseCommodityRequest(ByteBuf buf) {
+		super(buf);
+		commodityType = buf.readInt();
+		commodityCount =  buf.readInt() ;
+	}
+
+}

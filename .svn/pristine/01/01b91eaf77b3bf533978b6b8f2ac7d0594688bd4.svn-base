@@ -1,0 +1,30 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2018年1月3日 下午3:07:11
+ * @Function: 定
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class OrderTypeRequest extends BaseRequest {
+	private short requestId = RolePlayProtocolConstant.ORDERTYPE_REQUEST_PROTOCOL;
+	private int orderId;
+	private int orderType;
+
+	public OrderTypeRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		orderId = buf.readInt();
+		orderType = buf.readInt();
+	}
+
+}

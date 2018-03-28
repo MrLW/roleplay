@@ -1,0 +1,30 @@
+package com.sim.server.game.message.request.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2018年1月15日 下午2:39:51
+ * @Function:未使用的操作桌
+ * @version 1.0
+ */
+public class EquipmentStateRequest extends BaseRequest {
+	@Setter
+	@Getter
+	private Short requestId = RolePlayProtocolConstant.EQUIPMENT_STATE_REQUEST_PROTOCOL;
+	// 1:全部 ;2:使用;4:未使用
+	@Setter
+	@Getter
+	private int state;
+
+	public EquipmentStateRequest(ByteBuf buf) {
+		super(buf);
+		state = buf.readInt();
+	}
+
+}

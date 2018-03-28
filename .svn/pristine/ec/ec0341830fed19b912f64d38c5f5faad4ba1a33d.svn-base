@@ -1,0 +1,46 @@
+package com.sim.server.game.message.response.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月3日 上午11:35:09
+ * @Function: 市场总监的小金库
+ * @version 1.0
+ */
+public class CoffersResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.COFFERS_RESPONSE_PROTOCOL;
+	// 1:可以刷新,0:市场总监钱不够,需要向财务申请钱
+	private Integer coffers;
+
+	public CoffersResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	public Integer getCoffers() {
+		return coffers;
+	}
+
+	public void setCoffers(Integer coffers) {
+		this.coffers = coffers;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(coffers);
+	}
+
+}

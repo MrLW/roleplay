@@ -1,0 +1,43 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.EquipmentListResponse;
+import com.sim.server.game.message.response.productor.WarehouseListResponse;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:57:23
+ * @Function: 设备列表处理
+ * @version 1.0
+ */
+
+@HandlerEntity(id=RolePlayProtocolConstant.EQUIPMENT_LIST_REQUEST_PROTOCOL,desc="设备列表处理")
+public class EquipmentListHandler extends BaseHandler {
+
+	public void run() {
+		// 获取公司所有仓库
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<Equipment> equipments = room.getEquipments();
+		// 创建响应
+		EquipmentListResponse response = new EquipmentListResponse(ctx);
+		response.setEquipments(equipments);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		EquipmentListHandler handler = new EquipmentListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

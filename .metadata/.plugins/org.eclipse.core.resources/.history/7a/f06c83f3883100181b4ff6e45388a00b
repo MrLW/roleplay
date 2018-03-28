@@ -1,0 +1,20 @@
+package com.sim.server.game.message.response.room;
+
+import com.sim.server.game.message.response.BaseResponse;
+/**
+ * @author liwen
+ * @date:2018年3月27日 下午2:34:06
+ * @Function: 抢地主响应
+ * @version 1.0
+ */
+public class GlabLandlordResponse extends BaseResponse{
+
+	// 协议号
+	private short responseId = 1; 
+	
+	@Override
+	public void write() {
+		
+	}
+
+}

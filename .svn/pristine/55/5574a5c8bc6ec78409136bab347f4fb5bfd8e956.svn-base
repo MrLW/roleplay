@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitMaterialTypeListResponse;
+import com.sim.server.game.model.model.MaterialType;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.init.ProducterDataLoader;
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午6:22:34
+ * @Function: 原料类型集合
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.MATERIALTYPES_REQUEST_PROTOCOL,desc="原料类型")
+public class InitMaterialTypeListHandler extends BaseHandler{
+
+	public void run() {
+		List<Material> materialTypes = ProducterDataLoader.getInstance().getMaterialTypes();
+		InitMaterialTypeListResponse response = new InitMaterialTypeListResponse(ctx);
+		response.setMaterialTypes(materialTypes);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitMaterialTypeListHandler handler = new InitMaterialTypeListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

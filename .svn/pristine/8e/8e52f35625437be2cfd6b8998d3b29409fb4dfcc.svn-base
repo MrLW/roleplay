@@ -1,0 +1,181 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+
+import com.sim.server.game.message.request.productor.ProductLineAddRequest;
+import com.sim.server.game.message.response.productor.CheckMaterialResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:03:07
+ * @Function: 生产总监
+ * @version 1.0
+ */
+public class ProductorManager extends BaseManager {
+
+	private boolean isProduct = false;
+
+	private Timer timer = new Timer();
+
+	public ProductorManager() {
+		super.roleId = 1;
+		super.roleType = 1;
+		super.roleName = "ProductorManager";
+	}
+
+	/**
+	 * 添加生产线
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public int addProductLine(ProductLineAddRequest request) {
+		Room room = RoomManager.getRoomByCtx(ctx);
+		Integer equipmentCount = request.getEquipmentCount();
+		for (int i = 0; i < equipmentCount; i++) {
+			Equipment equipment = room.popEquipment();
+			room.getProductLineEquipment().add(equipment);
+			// 将当前equipment添加到生产线设备列表
+			ProductLine productLine = new ProductLine();
+			productLine.setEquipmentId(equipment.getEquipmentId());
+			room.getProductLines().add(productLine);
+		}
+		return 1;
+	}
+
+	/**
+	 * 更新员工的状态
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int updateState(Integer empId, Integer state) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		int result = room.update(empId, state);
+		return result;
+	}
+
+	/**
+	 * 给生产线配置生产产品
+	 * 
+	 * @param productLineId
+	 *            产品线ID
+	 * @param productTypeId
+	 *            产品类型ID
+	 */
+	public void setProductForLine(Integer productLineId, Integer productTypeId) {
+		// 找到指定生产线
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductLine productLine = room.getProductLineById(productLineId);
+		productLine.setProductTypeId(productTypeId);
+	}
+
+	/**
+	 * 开始生产
+	 */
+	public int startProduct() {
+		final List<ProductLine> productLines = RoomManager.getNewRoomByCtx(ctx).getProductLines();
+		isProduct = true;
+		new Thread() {
+			public void run() {
+				while (isProduct) {
+					for (ProductLine productLine : productLines) {
+						if (productLine.getEmployeeId() == -1) {
+							Employee employee = getIdleAndNotWorking();
+							productLine.setEmployeeId(employee.getEmpId());
+							employee.setWorking(true);
+						}
+						// 计算当前时间
+						long currentTime = System.currentTimeMillis();
+						if ((currentTime
+								- productLine.getLastCreateProductTime()) >= RoomConfig.PRODUCT_CREATE_INTERVAL) {
+							createProduct(productLine, currentTime);
+						}
+					}
+				}
+			}
+
+		}.start();
+		return 1;
+	}
+
+	/**
+	 * 停止生产
+	 */
+	public int stopProduct() {
+		int result = 1;
+		try {
+			isProduct = false;
+			// 遍历生产线
+			List<ProductLine> productLines = RoomManager.getNewRoomByCtx(ctx).getProductLines();
+			for (ProductLine productLine : productLines) {
+				productLine.setEmployeeId(-1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		return result;
+	}
+
+	/**
+	 * 获取一个闲置状态下的尚未工作的员工
+	 */
+	public Employee getIdleAndNotWorking() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<Employee> idleEmployees = room.getIdleEmployees();
+		for (Employee employee : idleEmployees) {
+			if (!employee.isWorking()) {
+				return employee;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 生产产品
+	 */
+	private void createProduct(ProductLine productLine, long currentTimeMillis) {
+		System.out.println("创建一个产品的当前毫秒值:" + System.currentTimeMillis());
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 更新时间
+		productLine.setLastCreateProductTime(currentTimeMillis);
+		Product product = new Product();
+		product.setProId(room.getProducts().size());
+		product.setProName(productLine.getProductTypeId() == 1 ? "A" : "B");
+		product.setProType(productLine.getProductTypeId());
+		WareHouse wareHouse = room.getWareHouseByType(3);
+//		wareHouse.getList().add(product);
+		room.getProducts().add(product);
+		// 移除原料
+		LinkedList<Material> materials = (LinkedList<Material>) room.getMaterials();
+		if (materials.size() == 0) { // 如果原料不足,则停止生产并通知客户端
+			LoggerUtil.getLogger(ProductorManager.class).info("原料不够,请客户端重新购买原料,当前公司产品的个数:" + room.getProducts());
+			isProduct = false;// 停止生产
+			// 通知客户端
+			CheckMaterialResponse response = new CheckMaterialResponse(ctx);
+			response.setResult((byte) 0);
+			response.writeAndFlush();
+			return;
+		}
+		materials.removeFirst();
+	};
+}

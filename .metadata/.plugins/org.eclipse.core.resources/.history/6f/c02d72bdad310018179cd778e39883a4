@@ -1,0 +1,234 @@
+package com.sim.server.game.roleplay.room;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.common.State;
+import com.sim.server.game.message.response.room.InitLandlordResponse;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.Session;
+import com.sim.server.game.utils.LoggerUtil;
+
+import io.netty.channel.Channel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 上午11:07:11
+ * @Function: 玩家房间,在本游戏相当于公司
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Room {
+
+	// 房间号
+	private String roomId;
+	// 房间状态 1:正处于创建时期,可以添加玩家;2:玩家添加完毕,在进入开始游戏之前;3:房间正在玩游戏
+	public static final int ROOM_STATE_INIT = 1 ;
+	public static final int ROMM_STATE_FINISH = 2; 
+	public static final int ROOM_STATE_PLAY = 3 ;
+	private byte state =ROOM_STATE_INIT ;
+	// 房间是否组队成功
+	private boolean complete;
+	
+	// 玩家信息
+	private BlockingQueue<PlayerInfo> playerInfos = new LinkedBlockingQueue<PlayerInfo>();
+	
+	// 客户端连接
+	private List<Session> sessions = new CopyOnWriteArrayList<>();
+	
+	private static byte[] cs = new byte[] {
+		0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,// 黑桃A~黑桃K,大王
+		0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,// 紅桃A~紅桃K,小王
+		0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,// 梅花A~梅花K
+		0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,// 方片A~方片K
+	} ;
+	// 54张牌
+	private static List<Byte> cards = new LinkedList<>() ;
+	// 玩家打出的牌
+	private static List<Byte> garbage = new LinkedList<>() ;
+	// 是否发牌
+	private volatile boolean license = false ;
+	// 抢地主是否结束
+	private volatile boolean rob = false ;
+	// 当前抢地主玩家在集合的位置
+	private int robIndex = 0 ;
+	// 当前地主玩家
+	private Session landlord ;
+	// 底牌数量
+	private static final int UNDER_CARD_COUNT = 3 ;
+	// 洗牌次数
+	private static final int SHUFFLE_COUNT = 5 ;
+	
+	
+	/**
+	 * 房间第一次创建时调用
+	 */
+	public void onCreate() {
+		LoggerUtil.getLogger(Room.class).info("初始化房间信息开始");
+		System.out.println("当前房间对象:" + this.hashCode() + ";房间的棋牌对象: " + cards.hashCode());
+		cards.clear();
+		for(byte c:cs) {
+			cards.add(c);
+		}
+		// 洗牌
+		for(int i = 0 ; i < SHUFFLE_COUNT ;i++) {
+			Collections.shuffle(cards);
+		}
+		LoggerUtil.getLogger(Room.class).info("初始化各房间信息结束");
+	}
+	
+	
+
+
+	/**
+	 * 判断房间是否为空
+	 */
+	public boolean isEmpty() {
+		return getPlayerInfos().isEmpty();
+	}
+	/**
+	 * 房间是否已 满
+	 * @return
+	 */
+	public boolean isAllSelected() {
+		return sessions.size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+	}
+
+	public boolean isComplete() {
+		complete = getPlayerInfos().size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+		return complete;
+	}
+
+	/**
+	 * 房间销毁时调用
+	 */
+	public void onDestroy() {
+		LoggerUtil.getLogger(Room.class).info("房间销毁...");
+		RoomManager.newRoomsList.remove(this);
+	}
+
+	public void join(PlayerInfo playerInfo) {
+		this.playerInfos.add(playerInfo);
+		if (playerInfos.size() >= RoomConfig.ROOM_PLAYER_COUNT) {
+			state = ROMM_STATE_FINISH;
+		}
+	}
+	/**
+	 *  房间添加一个玩家
+	 * @param session 玩家session
+	 */
+	public void addSession(Session session) {
+		sessions.add(session);
+	}
+
+
+
+	/**
+	 *  为每个玩家发牌
+	 */
+	public synchronized void license() {
+		if( !license ) {
+			LinkedList<Byte> ll = (LinkedList<Byte>) cards ;
+			Iterator<Session> sessionIterator = sessions.iterator();
+			Session session = null ;
+			int count = cs.length - UNDER_CARD_COUNT;
+			for(int i = 1 ; i <= count ; i++ ) {
+				byte c = ll.poll();
+				if(i % 17 == 1) {
+					session = sessionIterator.next();
+				}
+				session.getCards().add(c);
+			}
+		}
+		license = true ;
+		System.out.println("底牌为:"+ cards );
+	}
+	
+	/**
+	 *  根据连接获取牌集合
+	 * @param channel 连接
+	 * @return 牌集合
+	 */
+	public List<Byte> getCardsByChannel(Channel channel){
+		List<Byte> cards = null; 
+		for (Session session : sessions) {
+			Channel c = session.getChannel();
+			if(channel == c) {
+				cards = session.getCards() ;
+			}
+		}
+		return cards ;
+	}
+	
+	private Random random = new Random() ;
+	
+	/**
+	 *  选出一个地主
+	 */
+	public void shffuleLandlord() {
+		if(sessions!=null && sessions.size()>0) {
+			landlord = sessions.get(0);
+		}
+		robIndex++ ;
+		initLandlord(landlord.getChannel());
+	}
+	
+	/**
+	 *  初始化地主响应
+	 */
+	private void initLandlord(Channel channel) {
+		InitLandlordResponse response = new InitLandlordResponse(landlord.getChannel());
+//		response.writeAndFlush();
+	}
+
+
+
+	/**
+	 *  抢地主
+	 * @param channel
+	 * @param result
+	 */
+	public void glabLandlor(Channel channel, byte result) {
+		for(int i = 1 ; i <= sessions.size() ; i++ ) {
+			Session session = sessions.get(i-1);
+			if(session.getChannel() == channel) {
+				if(result == State.SUCCESS) {
+					session.setLandlord(true);
+					robIndex = i ;
+					rob = true ;
+					landlord = session;
+				}else {
+					session.setLandlord(false);
+					robIndex++;
+					if(robIndex == 3) {
+						session.setLandlord(true);
+						rob = true ;
+					}
+				}
+			}
+		}
+		if(rob) {
+			// 开始进行游戏
+			System.out.println("地主已选定,为:" + sessions.get(robIndex) + ";可以开始进行游戏");
+		} else {
+			// 通知下一个玩家是否抢地主
+			Session session = sessions.get(robIndex-1);
+			initLandlord(session.getChannel());
+		}
+	}
+
+	
+}

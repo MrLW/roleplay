@@ -1,0 +1,46 @@
+package com.sim.server.game.roleplay.player;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
+
+/**
+ * @author liwen
+ * @date:2017年12月5日 下午5:09:41
+ * @Function: 用户session
+ * @version 1.0
+ */
+public class Session {
+
+	// 玩家sessionID,简单点可以使用userId
+	private Integer sessionId;
+	// 玩家对应的socket连接
+	private SocketChannel socket;
+	//
+	private ChannelHandlerContext context;
+
+	public Integer getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(Integer sessionId) {
+		this.sessionId = sessionId;
+	}
+
+	public SocketChannel getSocket() {
+		return socket;
+	}
+
+	public void setSocket(SocketChannel socket) {
+		this.socket = socket;
+	}
+
+	public ChannelHandlerContext getContext() {
+		return context;
+	}
+
+	public void setContext(ChannelHandlerContext context) {
+		this.context = context;
+		this.socket = (SocketChannel) context.channel();
+	}
+
+}

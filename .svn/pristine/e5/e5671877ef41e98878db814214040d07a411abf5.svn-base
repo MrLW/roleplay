@@ -1,0 +1,40 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+import com.sim.server.game.roleplay.bean.Commodity;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午5:01:33
+ * @Function:初始化商品
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class InitCommodityResponse extends BaseResponse {
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_COMMODITIES_RESPONSE_PROTOCOL;
+	// 商品集合
+	private List<Commodity> commodities;
+
+	public InitCommodityResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(commodities);
+	}
+
+}

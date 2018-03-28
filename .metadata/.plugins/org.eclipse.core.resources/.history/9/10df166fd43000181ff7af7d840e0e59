@@ -1,0 +1,25 @@
+package com.sim.server.game.roleplay.player;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月5日 下午5:09:41
+ * @Function: 用户session
+ * @version 1.0
+ */
+@Data
+public class Session {
+	
+	// 玩家sessionID,简单点可以使用userId
+	private int sessionId;
+	// 玩家对应的socket连接
+	private Channel channel;
+	// 玩家所在的房间号,在未加入房间时为""
+	private String roomId ;
+	//
+	
+}

@@ -1,0 +1,23 @@
+package com.sim.server.game.message.request.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2018年1月25日 下午1:56:06
+ * @Function: 初始化求职者
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class InitJobhunterRequest extends BaseRequest {
+	private short requestId = RolePlayProtocolConstant.DB_JOBHUNTER__REQUEST_PROTOCOL;
+
+	public InitJobhunterRequest(ByteBuf buf) {
+		super(buf);
+	}
+}

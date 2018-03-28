@@ -1,0 +1,47 @@
+package com.sim.server.game.message.response.hr;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Jobhunter;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2018年1月3日 上午11:45:41
+ * @Function: 刷新求职者
+ * @version 1.0
+ */
+public class FlushJobhunterResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.JOBHUNTER_FLUSH_RESPONSE_PROTOCOL;
+
+	private List<Jobhunter> jobhunters;
+
+	public FlushJobhunterResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	
+	public Short getResponseId() {
+		return responseId;
+	}
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+	public List<Jobhunter> getJobhunters() {
+		return jobhunters;
+	}
+	public void setJobhunters(List<Jobhunter> jobhunters) {
+		this.jobhunters = jobhunters;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(jobhunters);
+	}
+
+}

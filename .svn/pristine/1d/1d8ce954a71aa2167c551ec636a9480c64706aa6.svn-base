@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitJobhunterResponse;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.roleplay.init.JobhunterDataLoader;
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午5:13:00
+ * @Function:获取求职者列表请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.DB_JOBHUNTER__REQUEST_PROTOCOL,desc="获取求职者列表请求处理")
+public class InitJobhunterHandler extends BaseHandler {
+
+	public void run() {
+		// 获取求职者列表
+		List<Jobhunter> jobhunters = JobhunterDataLoader.getInstance().getJobhunters();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(jobhunters);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitJobhunterHandler handler = new InitJobhunterHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.ctx = this.ctx; 
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

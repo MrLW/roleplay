@@ -1,0 +1,38 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午5:44:26
+ * @Function: 原料类型
+ * @version 1.0
+ */
+public class MaterialType implements IByteTo{
+
+	// 原料类型
+	private Integer materialTypeId ;
+	// 原料类型名
+	private String materialTypeName ;
+	
+	public Integer getMaterialTypeId() {
+		return materialTypeId;
+	}
+	public void setMaterialTypeId(Integer materialTypeId) {
+		this.materialTypeId = materialTypeId;
+	}
+	public String getMaterialTypeName() {
+		return materialTypeName;
+	}
+	public void setMaterialTypeName(String materialTypeName) {
+		this.materialTypeName = materialTypeName;
+	}
+	
+	
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(materialTypeId);
+		buf.writeString(materialTypeName);
+	}
+	
+}

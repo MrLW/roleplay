@@ -1,0 +1,156 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.hr.EmployeeDismissResponse;
+import com.sim.server.game.message.response.hr.EmployeeListResponse;
+import com.sim.server.game.message.response.hr.EmployeeWorkResponse;
+import com.sim.server.game.message.response.hr.InviteResponse;
+import com.sim.server.game.message.response.hr.TalkWithEmpResponse;
+import com.sim.server.game.message.response.init.InitJobhunterResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.roleplay.init.JobhunterDataLoader;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:02:09
+ * @Function: HR 总监
+ * @version 1.0
+ */
+public class HRManager extends BaseManager implements IByteTo {
+
+	public HRManager() {
+		roleId = 2;
+		roleType = 2;
+		roleName = "HR总监";
+	}
+
+	/**
+	 * 招聘指定ID的求职者
+	 * 
+	 * @param jobhunterId
+	 *            求职者ID
+	 * @return 是否招聘成功,1:招聘成功;0:招聘失败
+	 */
+	public int invite(Integer jobhunterId) {
+		int result = 0;
+		try {
+			// 1、根据id找到求职者
+			Jobhunter jobhunter = JobhunterDataLoader.getInstance().getJobhunterById(jobhunterId);
+			// 2、将当前求职者添加到公司
+			room.addEmployee(jobhunter);
+			result = 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		InviteResponse response = new InviteResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+		// 更新已有员工列表
+		writeEmployees(room.getProductManager().getCtx());
+		// 更新HR列表
+		syncList();
+		return result;
+	}
+
+	private void syncList() {
+		List<Jobhunter> jobhunters = JobhunterDataLoader.getInstance().getJobhunters();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(jobhunters);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 刷新求职者
+	 */
+	public void flushJobhunter() {
+		// 刷新
+		JobhunterDataLoader.getInstance().flush();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(JobhunterDataLoader.getInstance().getJobhunters());
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 已工作的员工列表
+	 */
+	public void writeEmployeeWork(ChannelHandlerContext ctx) {
+		List<Employee> es = room.getEmployeeWork();
+		EmployeeWorkResponse response = new EmployeeWorkResponse(ctx);
+		response.setCount(es.size());
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 公司已有员工数量
+	 * 
+	 * @param ctx
+	 */
+	public void writeEmployees(ChannelHandlerContext ctx) {
+		List<Employee> employees = room.getEmployees();
+		EmployeeListResponse response = new EmployeeListResponse(ctx);
+		response.setEmployees(employees);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 员工辞退
+	 * 
+	 * @param empId
+	 *            员工ID
+	 */
+	public void dismiss(int empId) {
+		Employee employee = room.getEmployeeById(empId);
+		room.dismiss(employee);
+		// 辞退响应
+		writeDismiss();
+		// 更新当前员工列表
+		writeEmployees(ctx);
+		writeEmployees(room.getProductManager().getCtx());
+	}
+
+	/**
+	 * 辞退响应
+	 */
+	private void writeDismiss() {
+		EmployeeDismissResponse response = new EmployeeDismissResponse(ctx);
+		response.setResult((byte) 1);
+		response.writeAndFlush();
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+	}
+
+	/**
+	 * 洽谈
+	 * 
+	 * @param empId
+	 *            员工ID
+	 */
+	public void talk(int empId) {
+		Employee emp = room.getEmployeeById(empId);
+		emp.setHp(100);
+		writeTalk();
+	}
+
+	/**
+	 * 洽谈响应
+	 */
+	private void writeTalk() {
+		TalkWithEmpResponse response = new TalkWithEmpResponse(ctx);
+		response.writeAndFlush();
+	}
+
+}

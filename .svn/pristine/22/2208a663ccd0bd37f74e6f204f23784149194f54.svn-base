@@ -1,0 +1,60 @@
+package com.sim.server.game.roleplay.bean;
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:05:04
+ * @Function: 原料
+ * @version 1.0
+ */
+public class Material {
+
+	// 原料ID
+	public Integer materialId ;
+	// 原料类型
+	public Integer materialType = 1 ;
+	// 原料名字
+	public String materialName = "A";
+	// 原料价格
+	public static Integer price = 100 ;
+	// 该原料生产的产品
+	private Integer productType = 1 ;
+	
+	public Material(Integer materialId) {
+		this.materialId = materialId;
+	}
+	public Integer getMaterialId() {
+		return materialId;
+	}
+	public void setMaterialId(Integer materialId) {
+		this.materialId = materialId;
+	}
+	public Integer getMaterialType() {
+		return materialType;
+	}
+	public void setMaterialType(Integer materialType) {
+		this.materialType = materialType;
+	}
+	public String getMaterialName() {
+		return materialName;
+	}
+	public void setMaterialName(String materialName) {
+		this.materialName = materialName;
+	}
+	public Integer getPrice() {
+		return price;
+	}
+	public void setPrice(Integer price) {
+		this.price = price;
+	}
+	public Integer getProductType() {
+		return productType;
+	}
+	public void setProductType(Integer productType) {
+		this.productType = productType;
+	}
+	@Override
+	public String toString() {
+		return "Material [materialId=" + materialId + ", materialType=" + materialType + ", materialName="
+				+ materialName + ", productType=" + productType + "]";
+	}
+	
+}

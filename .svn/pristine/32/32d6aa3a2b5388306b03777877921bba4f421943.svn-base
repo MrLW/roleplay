@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.bazaar.DeliveryOrderRequest;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月3日 下午1:47:59
+ * @Function: 交付订单
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.DELIVERYORDER_REQUEST_PROTOCOL,desc="交付订单")
+public class DeliveryOrderHandler extends BaseHandler {
+
+	public void run() {
+		DeliveryOrderRequest request = (DeliveryOrderRequest) baseRequest ;
+		Integer orderId = request.getOrderId();
+		// 获取市场经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		// 交付订单
+		bazaarManager.delivery(orderId) ;
+	}
+
+	@Override
+	public Object clone() {
+		DeliveryOrderHandler handler = new DeliveryOrderHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

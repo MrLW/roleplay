@@ -1,0 +1,52 @@
+package com.sim.server.game.roleplay.bean;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:38:58
+ * @Function: 设备(测试就当做生产桌)
+ * @version 1.0
+ */
+public class Equipment {
+
+	// 设备ID
+	private Integer equipmentId;
+	// 设备类型
+	private Integer equipmentType;
+	// 设备名
+	private String equipmentName;
+	// 设备价格
+	private Integer price = 100;
+
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public Integer getEquipmentType() {
+		return equipmentType;
+	}
+
+	public void setEquipmentType(Integer equipmentType) {
+		this.equipmentType = equipmentType;
+	}
+
+	public String getEquipmentName() {
+		return equipmentName;
+	}
+
+	public void setEquipmentName(String equipmentName) {
+		this.equipmentName = equipmentName;
+	}
+
+	public Integer getPrice() {
+		return price;
+	}
+
+	public void setPrice(Integer price) {
+		this.price = price;
+	}
+
+}

@@ -1,0 +1,316 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.PurchaseEquipmentResultResponse;
+import com.sim.server.game.message.response.finance.PurchaseMaterialResultResponse;
+import com.sim.server.game.message.response.finance.PurchaseResultResponse;
+import com.sim.server.game.message.response.purchase.CheckWarehouseResponse;
+import com.sim.server.game.message.response.purchase.PurchaseMaterialResponse;
+import com.sim.server.game.message.response.purchase.SaleMaterialResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager {
+
+	// 购买仓库/材料/操作桌的数量
+	private int count = -1;
+	// 采购需要的花费
+	private int cost;
+
+	public PurchaseManager() {
+		roleId = 4;
+		roleType = 4;
+		roleName = "采购总监";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public void purchaseWarehouse() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<WareHouse> wareHousesDB = (LinkedList<WareHouse>) ResourceDataLoader.getInstance()
+					.getWareHousesDB();
+			WareHouse wareHouse = wareHousesDB.pop();
+			room.addWarehouse(wareHouse);
+		}
+
+	}
+
+	public void purchaseMaterial() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Material> materials = (LinkedList<Material>) ResourceDataLoader.getInstance().getMaterialsDB();
+			Material material = materials.pop();
+			// 获取仓库
+			WareHouse wareHouse = room.getWareHouseByType(1);
+			if (wareHouse != null) {
+				wareHouse.getList().add(material);
+			} else {
+				// 如果没有仓库,则需要提示客户端购买仓库.
+
+			}
+			room.addMaterial(material);
+		}
+
+	}
+
+	public void purchaseEquipment() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		for (int i = 0; i < count; i++) {
+			// 从数据库中取出一个存到公司
+			LinkedList<Equipment> equipments = (LinkedList<Equipment>) ResourceDataLoader.getInstance()
+					.getEquipmentsDB();
+			Equipment equipment = equipments.pop();
+			room.addEquipment(equipment);
+		}
+
+	}
+
+	public int getCost() {
+		return cost;
+	}
+
+	public void setCost(int cost) {
+		this.cost = cost;
+	}
+
+	public void purchaseMaterial(int count) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		if (!checkWarehouse(room, 1, count)) {
+			return;
+		}
+		// 获取财务总监
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int cost = count * 100;
+		int type = 13;
+		financeManager.createFinReq(roleId, type, cost);
+
+		// 同步请款单
+		syncPayee(room);
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param room
+	 *            房间对象
+	 * @param type
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 */
+	private boolean checkWarehouse(Room room, int type, int count) {
+		WareHouse wareHouse = room.getOrUpdateWareHouseByType(type);
+		if (wareHouse == null) {
+			// 通知客户端没有剩余的仓库
+			writeCheckWarehouse();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 检查仓库数量是否足够
+	 */
+	private void writeCheckWarehouse() {
+		CheckWarehouseResponse response = new CheckWarehouseResponse(ctx);
+		response.setResult((byte) 0);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 同步请款单
+	 * 
+	 * @param room
+	 *            房间对象
+	 */
+	private void syncPayee(Room room) {
+		ChannelHandlerContext financeCtx = room.getFinanceManager().getCtx();
+		System.out.println("当前财务ID:" + HallManager.getUserIdByCtx(financeCtx));
+		List<FinancialRequestMsg> financialRequestMsgs = room.getFinancialRequestMsgs();
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 购买指定数量的设备
+	 * 
+	 * @param count
+	 *            购买设备的数量
+	 */
+	public void purchaseEquipment(int count) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		// 计算生产桌总花费
+		int cost = count * 1000;
+		int type = 12;
+		financeManager.createFinReq(roleId, type, cost);
+		syncPayee(room);
+	}
+
+	public void purchaseWarehouse(int count) {
+		// 计算开销
+		int cost = count * 10000;
+		int type = 11;
+		// 找到财务经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		financeManager.createFinReq(roleId, type, cost);
+		syncPayee(room);
+	}
+
+	/**
+	 * 响应购买设备结果
+	 * 
+	 * @param result
+	 */
+	public void writePurchaseEquipmentResult(Byte result) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseEquipment();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+		writePurchaseResult(result);
+	}
+
+	/**
+	 * 响应购买原料结果
+	 * 
+	 * @param result
+	 */
+	public void writePurchaseMaterialResult(Byte result) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseMaterial();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+
+		writePurchaseResult(result);
+	}
+
+	/**
+	 * 响应购买仓库
+	 * @param result
+	 */
+	public void writePurchaseWarehouseResul(Byte result) {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 如果财务经理同意
+		if (result == 1) {
+			purchaseWarehouse();
+			// 同步总金额
+			room.applyFor(getCost());
+			room.syncTotoalMoney();
+		}
+		writePurchaseResult(result);
+	}
+	/**
+	 *  响应购买原料/仓库/设备
+	 * @param result
+	 */
+	private void writePurchaseResult(Byte result) {
+		PurchaseResultResponse response = new PurchaseResultResponse(ctx);
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+	/**
+	 * 卖原料
+	 * @param count
+	 */
+	public void saleMaterial(int count) {
+		int result = 1 ;
+		try {
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			// 计算总价格
+			int money = count * 50;
+			room.earn(money);
+			result = 1 ;
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0 ;
+		}
+		writeSale(result);
+	}
+	
+	/**
+	 * 卖设备
+	 * @param count
+	 */
+	public void saleEquipment(int count) {
+		int result = 1 ;
+		try {
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			// 计算总价格
+			int money = count * 500;
+			room.earn(money);
+			result = 1 ;
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0 ;
+		}
+		writeSale(result);
+	}
+	
+	/**
+	 * 卖仓库
+	 * @param count 
+	 */
+	public void saleWarehouse(int count) {
+		int result = 1 ;
+		try {
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			// 计算总价格
+			int money = count * 5000;
+			room.earn(money);
+			result = 1 ;
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0 ;
+		}
+		writeSale(result);
+	}
+	
+	/**
+	 *  响应卖原料/设备/仓库
+	 * @param result 
+	 */
+	private void writeSale(int result) {
+		//告诉采购方卖出结果
+		SaleMaterialResponse response = new SaleMaterialResponse(ctx);
+		response.setResult((byte)result);
+		response.writeAndFlush();
+	}
+
+}

@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.productor.OrderTypeRequest;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月3日 下午3:12:45
+ * @Function: 修改订单状态
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.ORDERTYPE_REQUEST_PROTOCOL,desc="修改订单状态")
+public class OrderTypeHandler extends BaseHandler {
+
+	public void run() {
+		OrderTypeRequest request = (OrderTypeRequest) baseRequest ;
+		Integer orderId = request.getOrderId();
+		Integer orderType = request.getOrderType();
+		// 获取生产总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		
+		productManager.changeOrderType(orderId,orderType) ;
+	}
+
+	@Override
+	public Object clone() {
+		OrderTypeHandler handler = new OrderTypeHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

@@ -1,0 +1,33 @@
+package com.sim.server.game.message.response.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class EmployeeDismissResponse extends BaseResponse {
+
+	// –≠“È∫≈
+	private Short responseId = RolePlayProtocolConstant.EMPLOYEE_DISMISS_RESPONSE_PROTOCOL;
+
+	private Byte result;
+
+	public EmployeeDismissResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

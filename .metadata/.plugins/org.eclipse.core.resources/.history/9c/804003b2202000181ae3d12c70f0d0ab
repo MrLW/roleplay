@@ -1,0 +1,644 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.hr.EmployeeDieResponse;
+import com.sim.server.game.message.response.hr.EmployeeListResponse;
+import com.sim.server.game.message.response.hr.EmployeeWorkResponse;
+import com.sim.server.game.message.response.productor.CheckEmployeeResponse;
+import com.sim.server.game.message.response.productor.CheckMaterialResponse;
+import com.sim.server.game.message.response.productor.EmployeeProductLineResponse;
+import com.sim.server.game.message.response.productor.EmployeeStateResponse;
+import com.sim.server.game.message.response.productor.EmployeeSyncHPResponse;
+import com.sim.server.game.message.response.productor.OrderTypeResponse;
+import com.sim.server.game.message.response.productor.ProductLineAddResponse;
+import com.sim.server.game.message.response.productor.ProductLineStateResponse;
+import com.sim.server.game.message.response.productor.ProductLineStopResponse;
+import com.sim.server.game.message.response.productor.ProductListResponse;
+import com.sim.server.game.message.response.purchase.CheckWarehouseResponse;
+import com.sim.server.game.message.response.purchase.CommodityViewResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.Employee.EmployeeState;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.pool.ThreadPoolManager;
+import com.sim.server.game.utils.CommodityUtil;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:03:07
+ * @Function: 生产总监
+ * @version 1.0
+ */
+public class ProductorManager extends BaseManager implements IByteTo {
+
+	private Timer timer = new Timer();
+	// 生产
+	private boolean isProduct = false;
+
+	public ProductorManager() {
+		roleId = 1;
+		roleType = 1;
+		roleName = "生产总监";
+	}
+
+	/**
+	 * 使用产品
+	 * 
+	 * @param commodityType
+	 *            产品类型
+	 * @param commodityCount
+	 *            产品数量
+	 */
+	/*public void addProductLine(int commodityType, int commodityCount) {
+		Map<Integer, Queue<Commodity>> commodityMap = room.getCommdityMap();
+		if (CommodityUtil.isProTable(commodityType)) { // 如果是生产桌,则添加生产线
+			for (int i = 0; i < commodityCount; i++) {
+				ConcurrentLinkedQueue<Commodity> list = (ConcurrentLinkedQueue<Commodity>) commodityMap
+						.get(commodityType);
+				// 获取一个设备
+				Commodity commodity = list.poll();
+				Queue<Commodity> busyPruTableList = commodityMap.get(CommodityUtil.BUSY_PROTABLE_PRE_TYPE);
+				if (busyPruTableList == null) {
+					busyPruTableList = new LinkedList<>();
+					commodityMap.put(CommodityUtil.BUSY_PROTABLE_PRE_TYPE, busyPruTableList);
+				}
+				busyPruTableList.add(commodity);
+
+				// 将当前equipment添加到生产线设备列表
+				ProductLine productLine = new ProductLine();
+				productLine.setProductLineId(room.getProductLines().size());
+				productLine.setEquipmentId(commodity.getCommodityData().getCommodityId());
+				// 设置生产总监
+				productLine.setProductorManager((ProductorManager) room.getProductManager());
+				room.getProductLines().add(productLine);
+			}
+			writeProductLineAdd(1);
+		}
+
+	}*/
+	
+	public void addProductLine(int commodityType, int commodityCount) {
+		Map<Commodity, Integer> commodityMap = room.getCommodityMap2();
+		Commodity template = ResourceDataLoader.getInstance().getProductTable();
+		if (CommodityUtil.isProTable(commodityType)) { // 如果是生产桌,则添加生产线
+			int productTableCount = commodityMap.get(template);
+			productTableCount -= commodityCount ; 
+			commodityMap.put(template, productTableCount);
+			for (int i = 0; i < commodityCount; i++) {
+				// 获取一个设备
+				Commodity productTable;
+				try {
+					productTable = template.clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+					throw new RuntimeException("克隆生产桌失败");
+				}
+				// 将当前equipment添加到生产线设备列表
+				ProductLine productLine = new ProductLine();
+				productLine.setProductLineId(room.getProductLines().size());
+				productLine.setEquipmentId(productTable.getCommodityData().getCommodityId());
+				// 设置生产总监
+				productLine.setProductorManager((ProductorManager) room.getProductManager());
+				room.getProductLines().add(productLine);
+			}
+			writeProductLineAdd(1);
+		}
+
+	}
+
+	/**
+	 * 创建生产线响应
+	 * 
+	 * @param result
+	 */
+	private void writeProductLineAdd(int result) {
+		// 创建响应
+		ProductLineAddResponse response = new ProductLineAddResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 更新员工的状态
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int updateState(int empId, final int state) {
+		HRManager hrManager = (HRManager) room.getHRManager();
+		int result = hrManager.update(empId, state);
+		Employee employee = hrManager.getEmployeeById(empId);
+		List<Employee> employees = hrManager.getEmployeeWork();
+
+		// 通知HR
+		EmployeeWorkResponse hrResponse = new EmployeeWorkResponse(room.getHRManager().getCtx());
+		hrResponse.setCount(employees.size());
+		hrResponse.writeAndFlush();
+		// 通知生产
+		EmployeeWorkResponse productResponse = new EmployeeWorkResponse(room.getProductManager().getCtx());
+		productResponse.setCount(employees.size());
+		productResponse.writeAndFlush();
+
+		writeEmployeeSyncHP(empId, employee, ctx);
+		writeEmployeeSyncHP(empId, employee, room.getHRManager().getCtx());
+		writeEmployeeStateResponse(result, room.getHRManager().getCtx());
+		return result;
+	}
+
+	/**
+	 * 更新某个员工的血量
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param hp
+	 *            血量
+	 */
+	private void writeEmployeeSyncHP(int empId, final Employee emp, Channel ctx) {
+		// 更新生产血量值
+		EmployeeSyncHPResponse response = new EmployeeSyncHPResponse(ctx);
+		response.setEmp(emp);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 给生产线配置生产产品
+	 * 
+	 * @param productLineId
+	 *            产品线ID
+	 * @param productTypeId
+	 *            产品类型ID
+	 */
+	// 哈哈哈哈哈
+	/*public int setProductForLine(int productLineId, int productTypeId) {
+		int result = 0;
+		// 检查是否有生产该产品的原料
+		int materialType = CommodityUtil.getMaterialTypeByProductType(productTypeId);
+		// 根据原料类型获取仓库集合
+		int warehoustType = CommodityUtil.getWarehouseTypeByMaterialType(materialType);
+		Queue<Commodity> warehouseList = room.getCommdityMap().get(warehoustType);
+		if (warehouseList != null) {
+			for (Commodity warehouse : warehouseList) {
+				if (warehouse != null && warehouse.getQueue() != null && warehouse.getQueue().size() > 0) {
+					result = 1;
+				}
+			}
+		}
+		if (result == 1) {
+			// 找到指定生产线
+			ProductLine productLine = room.getProductLineById(productLineId);
+			productLine.setProductType(productTypeId);
+		}
+		return result;
+	}*/
+	
+	/**
+	 * 给生产线配置生产产品
+	 * 
+	 * @param productLineId
+	 *            产品线ID
+	 * @param productTypeId
+	 *            产品类型ID
+	 */
+	public int setProductForLine(int productLineId, int productTypeId) {
+		int result = 0;
+		// 检查是否有生产该产品的原料
+		int materialType = CommodityUtil.getMaterialTypeByProductType(productTypeId);
+		Queue<Commodity> warehouseList = room.getCommodities();
+		if (warehouseList != null) {
+			for (Commodity warehouse : warehouseList) {
+				if (warehouse != null ) {
+					Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+					for(Map.Entry<Commodity, Integer> entry:atomMap.entrySet()) {
+						Commodity atom = entry.getKey();
+						if(atom.getCommodityData().getCommodityType()==materialType) {
+							result = 1;
+							int count = entry.getValue();
+							if(count >=1 )
+								result = 1 ;
+						}
+					}
+				}
+			}
+		}
+		if (result == 1) {
+			// 找到指定生产线
+			ProductLine productLine = room.getProductLineById(productLineId);
+			productLine.setProductType(productTypeId);
+		}
+		return result;
+	}
+
+	/**
+	 * 开始生产
+	 */
+	public int startProduct() {
+		List<ProductLine> productLines = room.getProductLines();
+		for (ProductLine productLine : productLines) {
+			Employee employee = productLine.getEmployee();
+			// 已配置员工并且配置了生产产品才可以生产
+			if (employee != null && productLine.getProductType() >= 0) {
+				// 将生产线上的员工设置成工作状态
+				employee.setState(EmployeeState.WORK.getState());
+				productLine.setWork(true);
+				ThreadPoolManager.executeTaskUseFixedThreadPool(productLine);
+			}
+		}
+		return 1;
+	}
+
+	/**
+	 * 停止生产
+	 */
+	public int stopProduct() {
+		int result = 1;
+		try {
+			isProduct = false;
+			// 遍历生产线
+			List<ProductLine> productLines = room.getProductLines();
+			for (ProductLine productLine : productLines) {
+				productLine.setEmployee(null);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		return result;
+	}
+
+	/**
+	 * 响应原料不足
+	 */
+	public void writeCheckMaterial() {
+		// 通知客户端
+		CheckMaterialResponse response = new CheckMaterialResponse(ctx);
+		response.setResult((byte) 0);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param commodityType
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 * @param ctx
+	 *            客户端
+	 */
+	// 哈哈哈哈哈
+	/*public boolean checkWarehouse(int commodityType, int count, ChannelHandlerContext ctx) {
+		int warehouseType = CommodityUtil.isMaterial(commodityType) ? CommodityUtil.getWarehouseTypeByMaterialType(commodityType)
+				: CommodityUtil.getWarehouseTypeByProductType(commodityType);
+
+		// 统计出当前所有仓库能存的总容量
+		Queue<Commodity> totalList = room.getCommdityMap().get(warehouseType);
+		int totalCount = 0;
+		if (totalList != null) {
+			for (Commodity commodity : totalList) {
+				ConcurrentLinkedQueue<Commodity> queue = commodity.getQueue();
+				if (queue != null && queue.size() > 0) {
+					totalCount += commodity.remainCount();
+				}
+			}
+		}
+		Queue<Commodity> list = room.getCommdityMap().get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+		if (list != null) {
+			for (Commodity commodity : list) {
+				totalCount += commodity.getCommodityData().getCapacity();
+			}
+		}
+		return totalCount >= count;
+
+	}*/
+	
+	public boolean checkWarehouse(int commodityType, int count,Channel channel) {
+		// 统计出当前所有仓库能存的总容量
+		Queue<Commodity> commodities = room.getCommodities();
+		Map<Commodity, Integer> commodityMap = room.getCommodityMap2();
+		int totalCount = 0;
+		if (commodities != null) {
+			for (Commodity commodity : commodities) {
+				Map<Commodity, Integer> atomMap = commodity.getAtomMap();
+				for(Map.Entry<Commodity, Integer> entry:atomMap.entrySet()) {
+					Commodity atom = entry.getKey();
+					if(commodityType == atom.getCommodityData().getCommodityType()) {
+						totalCount += commodity.remainCount();
+					}
+				}
+			}
+		}
+		// 计算设备仓库中的容量
+		Commodity ws = ResourceDataLoader.getInstance().getWarehouse();
+		Set<Commodity> keys = commodityMap.keySet();
+		for (Commodity commodity : keys) {
+			if(commodity.hashCode() == ws.hashCode()) {
+				int size = commodityMap.get(commodity);
+				totalCount += size * ws.getCommodityData().getCapacity();
+			}
+		}
+		return totalCount >= count;
+	}
+
+	/**
+	 * 响应仓库数量是否足够
+	 * 
+	 * @param ctx
+	 */
+	public void writeCheckWarehouse(Channel ctx) {
+		CheckWarehouseResponse response = new CheckWarehouseResponse(ctx);
+		response.setResult((byte) 0);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 修改订单状态
+	 * 
+	 * @param orderId
+	 *            订单ID
+	 * @param orderType
+	 *            订单类型
+	 */
+	public void changeOrderType(Integer orderId, Integer orderType) {
+		// 获取指定订单类型
+		BazaarManager bazaarManager2 = room.getBazaarManager();
+		List<Order> allOrders = getAllOrders();
+		for (Order order : allOrders) {
+			if (order.getOrderId() == orderId) {
+				order.setOrderType(orderType);
+			}
+		}
+		OrderTypeResponse response = new OrderTypeResponse(ctx);
+		response.setResult((byte) 1);
+		response.writeAndFlush();
+		// 通知市场需要改变
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		bazaarManager.writeOrders();
+	}
+	/**
+	 *  响应所有产品集合
+	 */
+	public void writeProductList() {
+		Map<Integer, Commodity> commodities = ResourceDataLoader.getInstance().getCommodities();
+		Set<Integer> types = commodities.keySet();
+		for (Integer type : types) {
+			if(CommodityUtil.isProduct(type)) {
+				writeProductList(type);
+			}
+		}
+	}
+	/**
+	 *  计算原料/产品的个数
+	 * @param productType 原料/产品类型
+	 * @return 数量大小
+	 */
+	public int calculate(int productType) {
+		int size = 0 ;
+		// 工作仓库集合
+		Queue<Commodity> commodities = room.getCommodities();
+		for (Commodity warehouse : commodities) {
+			Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+			for(Map.Entry<Commodity, Integer> entry : atomMap.entrySet()) {
+				Commodity atom = entry.getKey();
+				if(atom.getCommodityData().getCommodityType() == productType) {
+					size += entry.getValue() ;
+				}
+			}
+
+		}
+		return size ;
+	}
+	
+	public void writeProductList(int productType) {
+		int size = calculate(productType);
+		writeProductListToChannel(ctx,productType, size);
+		writeProductListToChannel(room.getBazaarManager().getCtx(),productType, size);
+	}
+	
+	private void writeProductListToChannel(Channel ctx,int productType, int size) {
+		// 创建响应
+		ProductListResponse response = new ProductListResponse(ctx);
+		response.setProductType(productType);
+		response.setSize(size);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 检查员工是否足够
+	 */
+	public void checkEmployee() {
+		// 检查生产线是否配置人员
+		List<ProductLine> productLines = room.getProductLines();
+		CheckEmployeeResponse response = new CheckEmployeeResponse(ctx);
+		byte result = 1;
+		for (ProductLine productLine : productLines) {
+			if (productLine.getEmployee() == null) {
+				result = 0;
+			}
+		}
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 写员工状态
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param state
+	 *            员工状态
+	 */
+	public void writeEmployeeState(Integer empId, Integer state) {
+		int result = updateState(empId, state);
+		writeEmployeeStateResponse(result, ctx);
+	}
+
+	private void writeEmployeeStateResponse(int result, Channel ctx) {
+		// 创建响应
+		EmployeeStateResponse response = new EmployeeStateResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 取消HP的更新
+	 */
+	public void cancel() {
+		timer.cancel();
+	}
+
+	/**
+	 * 为生产线配置员工
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param productLineId
+	 *            生产线ID
+	 */
+	public void deployProductLine(int empId, int productLineId) {
+		HRManager hrManager = (HRManager) room.getHRManager();
+		ProductLine productLine = room.getProductLineById(productLineId);
+		Employee emp = hrManager.getEmployeeById(empId);
+		byte result = 1;
+		// 判断当前员工是否已经配置到生产线
+		if (emp.getProductLine() != null) {
+			result = 0;
+		} else {
+			productLine.setEmployee(emp);
+			emp.setProductLine(productLine);
+		}
+		writeEmployeeProductLine(result, productLineId);
+		// 通知员工列表状态更新
+		writeEmployees(ctx);
+	}
+
+	/**
+	 * 生产线配置员工响应
+	 */
+	private void writeEmployeeProductLine(byte result, int productLineId) {
+		EmployeeProductLineResponse response = new EmployeeProductLineResponse(ctx);
+		response.setProductLineId(productLineId);
+		response.setResult(result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 公司已有员工数量
+	 * 
+	 * @param ctx
+	 *            客户端对象
+	 */
+	public void writeEmployees(Channel ctx) {
+		HRManager hrManager = (HRManager) room.getHRManager();
+		List<Employee> employees = hrManager.getEmployees();
+		EmployeeListResponse response = new EmployeeListResponse(ctx);
+		response.setEmployees(employees);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 通知客户端
+	 * 
+	 * @param productLineId
+	 *            生产线ID
+	 */
+	public void writeProductLineStop(int productLineId) {
+		ProductLineStopResponse response = new ProductLineStopResponse(ctx);
+		response.setReason(productLineId);
+		response.writeAndFlush();
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+
+	}
+
+	
+	
+	public void writeCommodityByTypeAndState(int commodityType, int commodityState, Channel ctx) {
+		CommodityViewResponse response = new CommodityViewResponse(ctx);
+		response.setCommodityType(commodityType);
+		response.setCommodityState(commodityState);
+		int commodityCount = 0;
+		Queue<Commodity> commodities = room.getCommodities();
+		List<ProductLine> productLines = room.getProductLines();
+		Map<Commodity, Integer> commodityMap = room.getCommodityMap2();
+		switch (commodityState) {
+		case 1:
+			// 统计工作中的数量
+			if(CommodityUtil.isWarehouse(commodityType)) {
+				commodityCount += commodities.size() ;
+			} else if(CommodityUtil.isProTable(commodityType)) {
+				commodityCount += productLines.size() ;
+			}
+			// 统计闲置中的数量
+			for(Map.Entry<Commodity, Integer> entry : commodityMap.entrySet()) {
+				Commodity equip = entry.getKey();
+				if(commodityType == equip.getCommodityData().getCommodityType()) {
+					commodityCount += entry.getValue(); 
+				} 
+			}
+			break;
+		case 2: // 工作中
+			if(CommodityUtil.isWarehouse(commodityType)) {
+				commodityCount = commodities.size() ;
+			} else if(CommodityUtil.isProTable(commodityType)) {
+				commodityCount = productLines.size() ;
+			}
+			break;
+		case 4: // 闲置中
+			for(Map.Entry<Commodity, Integer> entry : commodityMap.entrySet()) {
+				Commodity equip = entry.getKey();
+				if(commodityType == equip.getCommodityData().getCommodityType()) {
+					commodityCount = entry.getValue(); 
+				} 
+			}
+			break;
+		}
+		// 判断当前类型是否为原料
+		if (CommodityUtil.isMaterial(commodityType)) {
+			for(Commodity c:commodities) {
+				Map<Commodity, Integer> atomMap = c.getAtomMap();
+				for(Map.Entry<Commodity, Integer> entry : atomMap.entrySet()) {
+					Commodity atom = entry.getKey();
+					if(atom.getCommodityData().getCommodityType() == commodityType) {
+						commodityCount +=entry.getValue();
+					}
+				}
+			}
+			response.setCommodityCount(commodityCount);
+			response.writeAndFlush();
+			return;
+		}
+		response.setCommodityCount(commodityCount);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 通知生产总监对应生产线的状态改变
+	 * 
+	 * @param productLineId
+	 * @param state
+	 */
+	public void writeProductLineState(int productLineId, byte state) {
+		ProductLineStateResponse response = new ProductLineStateResponse(ctx);
+		response.setProductLineId(productLineId);
+		response.setState(state);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 告诉生产者员工死亡
+	 * 
+	 * @param employee
+	 *            员工对象
+	 */
+	public void writeEmployeeDie(Employee employee) {
+		EmployeeDieResponse response = new EmployeeDieResponse(ctx);
+		response.setProductLineId(
+				employee.getProductLine() == null ? -1 : employee.getProductLine().getProductLineId());
+		response.setEmpId(employee.getEmpId());
+		response.writeAndFlush();
+	}
+}

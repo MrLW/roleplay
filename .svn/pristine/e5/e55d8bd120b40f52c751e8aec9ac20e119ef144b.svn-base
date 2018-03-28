@@ -1,0 +1,42 @@
+package com.sim.server.game.message.request.sys;
+
+import com.sim.server.game.common.ProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen 2017年11月6日 下午6:08:10 Function: 退出请求
+ * @version 1.0
+ */
+public class DropOutRequest extends BaseRequest {
+
+	private Integer len;
+
+	private Short requestId = ProtocolConstant.DROPOUT_REQUEST_PROTOCOL;
+
+	public DropOutRequest(ByteBuf buf) {
+		this.len = buf.readableBytes();
+	}
+
+	public DropOutRequest() {
+	}
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+}

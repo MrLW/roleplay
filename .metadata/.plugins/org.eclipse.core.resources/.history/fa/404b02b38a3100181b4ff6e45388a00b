@@ -1,0 +1,52 @@
+package com.sim.server.game.roleplay.handler.sys;
+
+import java.util.Queue;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.sys.StartGameResponse;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.Session;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午6:10:43
+ * @Function:开始游戏响应
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.STARTGAME_REQUEST_PROTOCOL, desc = "开始游戏响应")
+public class StartGameHandler extends BaseHandler {
+
+	public void run() {
+
+		try {
+			RoomConfig.cyclicBarrier.await();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Room room = RoomManager.getNewRoomByCtx(channel);
+		
+		Queue<Session> sessions = room.getSessions();
+		for (Session session : sessions) {
+			StartGameResponse response = new StartGameResponse(session.getChannel());
+			response.setPlayerCount(RoomConfig.SINGLE_TEAM_PLAYER_COUNT);
+			response.setResult((byte) 1);
+			response.setCards(room.getCardsByChannel(session.getChannel()));
+			response.writeAndFlush();
+		}
+		
+		room.license(); 
+	}
+
+	@Override
+	public Object clone() {
+		StartGameHandler handler = new StartGameHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

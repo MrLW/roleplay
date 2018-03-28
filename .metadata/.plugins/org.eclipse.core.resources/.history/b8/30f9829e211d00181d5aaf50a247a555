@@ -1,0 +1,49 @@
+package com.sim.server.game.roleplay.handler.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.common.RoleRequest;
+import com.sim.server.game.message.request.common.RoleWeatherRequest;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.manager.PlayerManager;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月24日 下午5:28:02
+ * @Function: 玩家是否选择角色
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.ROLE_WEATHER_REQUEST_PROTOCOL,desc="玩家是否选择角色")
+public class RoleWeatherHandler extends BaseHandler {
+
+	@Override
+	public void run() {
+		RoleWeatherRequest request = (RoleWeatherRequest) baseRequest ;
+		int type = request.getRoleType();
+		RoleWeatherResponse response = new RoleWeatherResponse(channel);
+		PlayerInfo info = PlayerManager.getInstance().getPlayerInfoByCtx(channel);
+		int roleType = info.getRoleType();
+		byte result ;
+		if(roleType == -1) {
+			result = 1 ;
+		} else {
+			result = 0 ;
+		}
+		response.setResult(result);
+		response.setRoleType(type);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		RoleWeatherHandler handler = new RoleWeatherHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.ctx = this.ctx; 
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

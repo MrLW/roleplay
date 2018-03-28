@@ -1,0 +1,111 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import com.sim.server.game.engine.core.NoSize;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:03:27
+ * @Function: 仓库,里面存放着原料.暂时只有一种类型
+ * @version 1.0
+ */
+public class WareHouse extends WareHouseDesc {
+
+	/**
+	 * 判断该仓库是否为null,主要用于客户端展示已使用/未使用
+	 */
+	public boolean used = false ;
+
+	/**
+	 * 仓库的最大容量
+	 */
+	private static final int MAXIMUM_CAPACITY = 20;
+
+	// 1:存放material-A;2:存放material-B;3:存放Product-A;存放Product-B;5
+	private Integer wareHouseType = -1;
+
+	// 原料或者产品
+	//private List list = new LinkedList();
+	
+	private ConcurrentLinkedQueue queue = new ConcurrentLinkedQueue() ;
+
+	public void setUsed(boolean used) {
+		this.used = used;
+	}
+
+	public boolean getUsed() {
+		return used;
+	}
+
+	public Integer getWareHouseType() {
+		return wareHouseType;
+	}
+
+	public void setWareHouseType(Integer wareHouseType) {
+		this.wareHouseType = wareHouseType;
+	}
+
+	/*public List getList() {
+		return list;
+	}
+
+	public void setList(List list) {
+		this.list = list;
+	}*/
+
+	
+	/**
+	 *  购买原料
+	 * @param material 原料对象
+	 */
+	public void add(Material material) {
+		this.queue.add(material);
+	}
+	/**
+	 *  添加产品
+	 * @param product 产品对象
+	 */
+	public void add(Product product) {
+		this.queue.add(product);
+	}
+	
+	public static enum WareHouseType {
+
+		PRODUCTA(3), 
+		PRODUCTB(4),
+		MATERIALA(1),
+		MATERIALB(2);
+		int value;
+
+		WareHouseType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+	}
+	
+	public ConcurrentLinkedQueue getQueue() {
+		return queue;
+	}
+
+	public void setQueue(ConcurrentLinkedQueue queue) {
+		this.queue = queue;
+	}
+
+	/**
+	 *  判断当前仓库是否已经满
+	 */
+	public boolean isFull() {
+		return queue.size() == MAXIMUM_CAPACITY;
+	}
+
+	
+}

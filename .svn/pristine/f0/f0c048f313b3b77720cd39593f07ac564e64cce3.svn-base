@@ -1,0 +1,61 @@
+package com.sim.server.game.message.response.common;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.BaseManager;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午5:35:33
+ * @Function: 请求角色列表响应
+ * @version 1.0
+ */
+public class RoleListResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.ROLELIST_RESPONSE_PROTOCOL;
+	
+	private Integer roleCount ;
+	// 角色列表
+	private List<BaseManager> roles;
+	
+	public RoleListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+	
+	public List<BaseManager> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<BaseManager> roles) {
+		this.roles = roles;
+	}
+	
+
+	public Integer getRoleCount() {
+		return roleCount;
+	}
+
+	public void setRoleCount(Integer roleCount) {
+		this.roleCount = roleCount;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeList(roles);
+	}
+
+}

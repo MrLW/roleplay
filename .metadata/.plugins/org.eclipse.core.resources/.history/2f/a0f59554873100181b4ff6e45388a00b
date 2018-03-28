@@ -1,0 +1,12 @@
+package com.sim.server.game.message.response.room;
+
+import com.sim.server.game.message.response.BaseResponse;
+
+public class GrabLandlordResponse extends BaseResponse {
+
+	@Override
+	public void write() {
+
+	}
+
+}

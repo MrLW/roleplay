@@ -1,0 +1,62 @@
+package com.sim.server.game.message.response.gamemode;
+
+import com.sim.server.game.common.ProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年11月13日 下午3:31:07
+ * @Function: 开始匹配游戏响应
+ * @version 1.0
+ */
+public class StartGameResponse extends BaseResponse {
+
+	private Short responseId = ProtocolConstant.STARTGAME_RESPONSE_PROTOCOL;
+
+	// 开始游戏是否成功
+	private Byte result;
+
+	// 人数
+	private Integer playerCount;
+
+	public StartGameResponse() {
+	}
+
+	public StartGameResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	public Integer getPlayerCount() {
+		return playerCount;
+	}
+
+	public void setPlayerCount(Integer playerCount) {
+		this.playerCount = playerCount;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+		buf.writeInt(playerCount);
+	}
+
+}

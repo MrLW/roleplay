@@ -1,0 +1,22 @@
+package com.sim.server.game.model.model;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2018年1月2日 上午10:13:50
+ * @Function: 财务报表实体Bean
+ * @version 1.0
+ */
+@Data
+public class FinancialStatement {
+
+	public int financialStatementId; 
+	// 谁的消费/收入
+	private BaseManager baseManager ;
+	// 收入/花费的钱
+	public int money ;
+	// 此笔收入/消费的原因
+	public String msg ;
+	
+}

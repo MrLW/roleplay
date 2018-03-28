@@ -1,0 +1,26 @@
+package com.sim.server.game.message.request.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2018年1月26日 下午5:27:49
+ * @Function: hr配置参数
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class HRConfigRequest extends BaseRequest {
+	// 请求协议号
+	private short requestId = RolePlayProtocolConstant.HRCONFIG_REQUEST_PROTOCOL;
+	
+	public HRConfigRequest(ByteBuf buf) {
+		super(buf);
+	}
+	
+}

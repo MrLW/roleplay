@@ -1,0 +1,72 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import org.aspectj.bridge.MessageWriter;
+
+import com.sim.server.game.model.model.MaterialType;
+import com.sim.server.game.model.model.ProductorType;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午6:19:57
+ * @Function: 产品类型
+ * @version 1.0
+ */
+public class ProducterDataLoader extends BaseLoader {
+	
+	// 原料类型集合
+	private List<MaterialType> materialTypes = new LinkedList<MaterialType>() ;
+
+	private static ProducterDataLoader loader = null ;
+	
+	private ProducterDataLoader() {}
+	
+	public static ProducterDataLoader getInstance() {
+		if(loader == null  ) {
+			synchronized (ProducterDataLoader.class) {
+				if(loader == null ) {
+					loader = new ProducterDataLoader() ;
+				}
+			}
+		}
+		return loader ;
+	}
+	
+	private List<ProductorType> productorTypes = new LinkedList<ProductorType>();
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各产品/原料类型开始");
+		for (int i = 1; i <= 2; i++) {
+			ProductorType productorType = new ProductorType();
+			productorType.setProductorTypeId(i);
+			productorType.setProductorTypeName(i == 1 ? "A" : "B");
+			productorTypes.add(productorType);
+			MaterialType materialType = new MaterialType() ;
+			materialType.setMaterialTypeId(i);
+			materialType.setMaterialTypeName(i == 1 ? "A" : "B");
+			materialTypes.add(materialType);
+		}
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各产品类型结束");
+		return true;
+	}
+
+	public List<ProductorType> getProductorTypes() {
+		return productorTypes;
+	}
+
+	public void setProductorTypes(List<ProductorType> productorTypes) {
+		this.productorTypes = productorTypes;
+	}
+
+	public List<MaterialType> getMaterialTypes() {
+		return materialTypes;
+	}
+
+	public void setMaterialTypes(List<MaterialType> materialTypes) {
+		this.materialTypes = materialTypes;
+	}
+}

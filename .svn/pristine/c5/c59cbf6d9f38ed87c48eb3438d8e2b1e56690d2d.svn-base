@@ -1,0 +1,31 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class CheckEmployeeResponse extends BaseResponse {
+	private Short responseId = RolePlayProtocolConstant.CHECK_EMPLOYEE_RESPONSE_PROTOCOL;
+
+	private Byte result;
+
+	public CheckEmployeeResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

@@ -1,0 +1,36 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+/**
+ * @author liwen
+ * @date:2018年1月24日 下午2:07:11
+ * @Function: 卖商品
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class SaleCommodityResponse extends BaseResponse {
+
+	// 协议号
+	private short responseId = RolePlayProtocolConstant.SALE_COMMODITY_RESPONSE_PROTOCOL;
+	private byte result;
+
+	public SaleCommodityResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

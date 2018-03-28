@@ -1,0 +1,33 @@
+package com.sim.server.game.message.response.hr;
+
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2018年1月25日 下午4:00:22
+ * @Function: 洽谈
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class TalkWithEmpResponse extends BaseResponse {
+	
+	// 协议号
+	private short responseId ;
+	// 洽谈的消耗cd,单位秒
+	private int seconds = 5 ;
+	
+	public TalkWithEmpResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(seconds);
+	}
+
+}

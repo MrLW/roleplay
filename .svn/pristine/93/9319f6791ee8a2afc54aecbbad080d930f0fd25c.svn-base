@@ -1,0 +1,77 @@
+package com.sim.server.game.message.request.user;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen 
+ * 2017年10月25日 上午10:24:09 
+ * Function: 注册请求
+ * @version 1.0
+ */
+public class RegistRequest extends BaseRequest{
+	
+	// 消息长度
+	private Integer len;
+	// 注册的协议ID
+	private Short requestId = RolePlayProtocolConstant.REGISTE_REQUEST_PROTOCOL;
+	// 用户名
+	private String userName;
+	// 密码
+	private String password;
+	// 邮箱
+	private String email;
+	
+	public RegistRequest(ByteBuf buf) {
+		super(buf);
+		this.len = buf.readableBytes();
+		this.userName = byteBuf.readString();
+		this.password = byteBuf.readString();
+	}
+	
+	public RegistRequest() {
+	}
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+}

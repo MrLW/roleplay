@@ -1,0 +1,49 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午5:10:51
+ * @Function:员工血量同步
+ * @version 1.0
+ */
+public class EmployeeSyncHPResponse extends BaseResponse {
+	
+	
+	private Short responseId = RolePlayProtocolConstant.EMPLOYEESYNCHP_RESPONSE_PROTOCOL ;
+	// 员工ID
+	private Integer empId ;
+	// 血量
+	private Integer hp ;
+	
+	public EmployeeSyncHPResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Integer getEmpId() {
+		return empId;
+	}
+
+	public void setEmpId(Integer empId) {
+		this.empId = empId;
+	}
+
+	public Integer getHp() {
+		return hp;
+	}
+
+	public void setHp(Integer hp) {
+		this.hp = hp;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(empId);
+		buf.writeInt(hp);
+	}
+
+}

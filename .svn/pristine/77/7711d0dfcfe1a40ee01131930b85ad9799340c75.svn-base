@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.List;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:07:29
+ * @Function: 产品
+ * @version 1.0
+ */
+public class Product {
+	// 产品ID
+	public Integer proId ;
+	// 产品类型
+	public Integer proType ;
+	// 产品名
+	public String proName ;
+	
+	public Integer getProId() {
+		return proId;
+	}
+	public void setProId(Integer proId) {
+		this.proId = proId;
+	}
+	public Integer getProType() {
+		return proType;
+	}
+	public void setProType(Integer proType) {
+		this.proType = proType;
+	}
+	public String getProName() {
+		return proName;
+	}
+	public void setProName(String proName) {
+		this.proName = proName;
+	}
+}

@@ -1,0 +1,120 @@
+package com.sim.server.game.roleplay.init;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+import com.sim.server.game.roleplay.bean.Commodity;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 上午10:53:04
+ * @Function: 仓库、原材料、设备的初始化,相当于数据库
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class ResourceDataLoader extends BaseLoader {
+
+	private static ResourceDataLoader loader = null;
+
+	private Map<Integer,Commodity> commodities = new ConcurrentHashMap<Integer,Commodity>() ;
+	
+
+	private ResourceDataLoader() {
+	}
+
+	public static ResourceDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (ResourceDataLoader.class) {
+				if (loader == null)
+					loader = new ResourceDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		// 初始化商品类型表
+		initCommodity();
+		return false;
+	}
+
+	
+	/**
+	 *  初始化商品类型
+	 */
+	private void initCommodity() {
+		// 创建原料A
+		Commodity materialA = new Commodity(); 
+		materialA.setCommodityId(1);
+		materialA.setCommodityType(10011000);// 原料A
+		materialA.setCommodityName("原料A");
+		materialA.setInPrice(10);
+		materialA.setOutPrice(5);
+		materialA.setCapacity(0);
+		commodities.put(10011000, materialA);
+		// 创建原料B
+		Commodity materialB = new Commodity(); 
+		materialB.setCommodityId(2);
+		materialB.setCommodityType(10021000);// 原料B
+		materialB.setCommodityName("原料B");
+		materialB.setInPrice(10);
+		materialB.setOutPrice(5);
+		materialB.setCapacity(0);
+		commodities.put(10021000, materialB);
+		// 创建生产台
+		Commodity prodTable = new Commodity(); 
+		prodTable.setCommodityId(3);
+		prodTable.setCommodityType(20011000);// 生产桌
+		prodTable.setCommodityName("生产桌");
+		prodTable.setInPrice(50);
+		prodTable.setOutPrice(25);
+		prodTable.setCapacity(0);
+		commodities.put(20011000, prodTable);
+		// 创建仓库
+		Commodity wareHouse = new Commodity(); 
+		wareHouse.setCommodityId(4);
+		wareHouse.setCommodityType(30011000);// 仓库
+		wareHouse.setCommodityName("仓库");
+		wareHouse.setInPrice(100);
+		wareHouse.setOutPrice(50);
+		wareHouse.setCapacity(10);
+		commodities.put(30011000, wareHouse);
+		
+		Commodity productA = new Commodity(); 
+		productA.setCommodityId(5);
+		productA.setCommodityType(40011000);// 产品
+		productA.setCommodityName("产品A");
+		productA.setInPrice(20);
+		productA.setOutPrice(10);
+		productA.setCapacity(0);
+		commodities.put(40011000, productA);
+		
+		Commodity productB = new Commodity(); 
+		productB.setCommodityId(6);
+		productB.setCommodityType(40021000);// 产品
+		productB.setCommodityName("产品B");
+		productB.setInPrice(20);
+		productB.setOutPrice(10);
+		productB.setCapacity(0);
+		commodities.put(40021000, productB);
+		
+		Field[] declaredFields = productB.getClass().getDeclaredFields();
+		System.out.println("产品长度:" + declaredFields.length);
+		for (Field field : declaredFields) {
+			System.out.println("产品:" + field.getName());
+		}
+		
+	}
+
+
+	
+}

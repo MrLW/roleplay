@@ -1,0 +1,311 @@
+package com.sim.server.game.roleplay.manager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.model.model.PlayerAttr;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.utils.LoggerUtil;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen 2017年11月8日 下午3:47:51 Function: 玩家管理器
+ * @version 1.0
+ */
+public class PlayerManager {
+
+	private static PlayerManager playerManager;
+
+	private PlayerManager() {
+	}
+
+	public static PlayerManager getInstance() {
+		if (playerManager == null) {
+			synchronized (PlayerManager.class) {
+				if (playerManager == null)
+					playerManager = new PlayerManager();
+			}
+		}
+		return playerManager;
+	}
+
+	/**
+	 * 玩家信息列表,包括没有进入游戏的玩家信息
+	 */
+	public static List<PlayerInfo> playerInfoList = new ArrayList<PlayerInfo>();
+
+	/**
+	 * 根据上下文获取玩家信息
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public PlayerInfo getPlayerInfoByCtx(ChannelHandlerContext ctx) {
+		int userId = HallManager.getUserIdByCtx(ctx);
+		for (PlayerInfo info : playerInfoList) {
+			if (userId == info.getUserId())
+				return info;
+		}
+		return null;
+	}
+	/**
+	 *  根据上下文对象集合获取玩家对象集合
+	 * @param ctxs 上下文集合
+	 * @return 玩家对象集合
+	 */
+	public List<PlayerInfo> getPlayerInfosByCtxs(List<ChannelHandlerContext> ctxs) {
+		List<PlayerInfo> infos = new CopyOnWriteArrayList<PlayerInfo>() ;
+		for (ChannelHandlerContext ctx : ctxs) {
+			PlayerInfo info = this.getPlayerInfoByCtx(ctx);
+			infos.add(info);
+		}
+		return infos ;
+	}
+
+	public PlayerInfo getPlayerInfoByUserId(ChannelHandlerContext ctx) {
+		int userId = HallManager.getUserIdByCtx(ctx);
+		for (PlayerInfo info : playerInfoList) {
+			if (userId == info.getUserId())
+				return info;
+		}
+		return null;
+	}
+
+	/**
+	 * 根据房间号和玩家id获取玩家信息
+	 * 
+	 * @param roomId
+	 *            房间号
+	 * @param userId
+	 *            玩家ID
+	 * @return 玩家信息
+	 */
+	public PlayerInfo getPlayerInfoByUserId(String roomId, Integer userId) {
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null) {
+			for (PlayerInfo player : list) {
+				if (player.getUserId() == userId) {
+					return player;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 从内存中移除玩家信息
+	 */
+	public void removePlayer(String roomId, Integer userId) {
+		List<PlayerInfo> infos = RoomManager.getPlayerInfosByRoomId(roomId);
+		List<PlayerInfo> list = new ArrayList<PlayerInfo>();
+		if (infos != null && infos.size() > 0) {
+			for (PlayerInfo player : infos) {
+				if ((player.getUserId() == userId)) {
+					list.remove(player);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 更新当前socket玩家在内存中的的位置
+	 */
+	public void updatePos(ChannelHandlerContext ctx, Integer x, Integer z, Integer directionX, Integer directionY,
+			Integer yangle) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中的玩家信息
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setX(x);
+					playerInfo.setZ(z);
+					playerInfo.setDirectionX(directionX);
+					playerInfo.setDirectionY(directionY);
+					playerInfo.setYangle(yangle);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 更新当前socket玩家在内存中的的能量
+	 */
+	public void updateEnergy(ChannelHandlerContext ctx, Integer energy) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		int userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setEnergy(energy);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 更新当前socket玩家在内存中的的经验
+	 */
+	public void updateExp(ChannelHandlerContext ctx, Integer exp) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setExp(exp);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 更新玩家怒气
+	 */
+	public void updateRage(ChannelHandlerContext ctx, Integer rage) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setRage(rage);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 更新玩家血量
+	 */
+	public void updateHp(ChannelHandlerContext ctx, Integer hp) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setCurHP(hp);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 更新玩家等级
+	 */
+	public static void updateLevel(ChannelHandlerContext ctx, Integer level) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setLevel(level);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 吃完食物之后涨的经验
+	 */
+	public void updateExpAfterFood(ChannelHandlerContext ctx, Integer exp) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中经验值
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					Integer curExp = playerInfo.getExp() + exp;
+					playerInfo.setExp(curExp);
+				}
+			}
+		}
+	}
+
+	public void updateHpAfterHarm(ChannelHandlerContext ctx, Integer value) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					Integer curValue = playerInfo.getCurHP() - value;
+					playerInfo.setCurHP(curValue);
+				}
+			}
+		}
+	}
+
+	public void updateTeamId(ChannelHandlerContext ctx, Long teamId) {
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		Integer userId = HallManager.getUserIdByCtx(ctx);
+		// 修改内存中
+		List<PlayerInfo> list = RoomManager.getPlayerInfosByRoomId(roomId);
+
+		if (list != null && list.size() > 0) {
+			for (PlayerInfo playerInfo : list) {
+				if (playerInfo.getUserId() == userId) {
+					playerInfo.setTeamId(teamId);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 判断玩家是否能升级
+	 * 
+	 * @param playerInfo
+	 * @return
+	 */
+	public boolean isUpgrade(PlayerInfo playerInfo) {
+		// 获取当前玩家的level
+		Integer exp = playerInfo.getExp();
+		Integer maxExp = playerInfo.getMaxExp();
+		if (exp >= maxExp) {
+			return true;
+		}
+		return false;
+
+	}
+
+	/**
+	 * 从内存中移除玩家
+	 * 
+	 * @param ctx
+	 *            玩家上下文
+	 * @return 是否成功
+	 */
+	public boolean remove(ChannelHandlerContext ctx) {
+		PlayerInfo playerInfo = getPlayerInfoByCtx(ctx);
+		try {
+			playerInfoList.remove(playerInfo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(getClass()).error("从内存中移除玩家失败");
+			return false;
+		}
+		LoggerUtil.getLogger(getClass()).info("从内存中移除玩家成功");
+		return true;
+	}
+
+}

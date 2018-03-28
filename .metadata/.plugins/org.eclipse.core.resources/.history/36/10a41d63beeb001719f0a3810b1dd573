@@ -1,0 +1,20 @@
+package com.lw.test;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class Test {
+
+	public static void main(String[] args) {
+		Timer timer = new Timer();
+		CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList();
+		list.add("a");
+		list.add("b");
+		list.add("c");
+		for (String string : list) {
+			
+		}
+	}
+}

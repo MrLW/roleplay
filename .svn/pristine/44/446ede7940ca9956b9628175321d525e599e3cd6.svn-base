@@ -1,0 +1,45 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Order;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class InitOrderResponse extends BaseResponse {
+
+	public InitOrderResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_ORDER_RESPONSE_PROTOCOL;
+	// 订单对象
+	private List<Order> orders;
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	
+
+	public List<Order> getOrders() {
+		return orders;
+	}
+
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(orders);
+	}
+
+}

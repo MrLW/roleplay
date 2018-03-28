@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.bazaar;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Order;
+
+import io.netty.channel.ChannelHandlerContext;
+
+public class FlushOrderResponse extends BaseResponse {
+
+	// –≠“È∫≈
+	private Short responseId = RolePlayProtocolConstant.DB_FLUSH_ORDER_RESPONSE_PROTOCOL;
+
+	private List<Order> orders;
+	
+	public FlushOrderResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	
+	public List<Order> getOrders() {
+		return orders;
+	}
+
+
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
+	}
+
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeList(orders);
+	}
+
+}

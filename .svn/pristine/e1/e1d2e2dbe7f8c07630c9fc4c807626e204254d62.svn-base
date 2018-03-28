@@ -1,0 +1,44 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.bazaar.FlushOrderRequest;
+import com.sim.server.game.message.response.bazaar.FlushOrderResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.init.OrderDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午11:10:54
+ * @Function:刷新订单处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_FLUSH_ORDER_REQUEST_PROTOCOL, desc = "刷新订单处理")
+public class FlushOrderHandler extends BaseHandler {
+
+	public void run() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 获取市场总监
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		// 查看市场总监申请的金额是否用完
+		Order order = bazaarManager.flushOrder() ;
+		FlushOrderResponse response = new FlushOrderResponse(ctx);
+		response.setOrder(order);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		FlushOrderHandler handler = new FlushOrderHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

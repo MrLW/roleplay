@@ -1,0 +1,228 @@
+package com.sim.server.game.model.model;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import com.sim.server.game.message.response.productor.EmployeeSyncHPResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午1:39:57
+ * @Function:职员
+ * @version 1.0
+ */
+public class Employee {
+
+	// 职员ID
+	public Integer empId;
+	// 员工所属公司/房间
+	public String empCompany;
+	// 员工姓名
+	public String empName;
+	// 职员类型.1:操作员;2:运输员
+	public Integer empType;
+	// 职员能力
+	public Integer empAbility;
+	// 状态：理解为人物HP，均为0~100，随工作时间减少，为0时拒绝工作
+	public Integer hp = 100;
+	// 薪水
+	public Integer salary;
+
+	// 职员此时状态.1:工作;0:休息
+	public Integer state = 0;
+	// 员工所负责的生产线ID
+	public Integer productLineId = -1 ;
+	// 生产线
+	private ProductLine productLine ;
+	// 员工是否处于正在工作状态
+	private boolean isWorking = false;
+	// 员工是否处于血量上升或者下降的状态,或者说是否正在执行更新血量的任务
+	// true:正在恢复
+	private boolean recover = false;
+	// 定时器
+	private Timer timer = new Timer();
+	
+	private EmployeeHPTask task = new EmployeeHPTask() ;
+	// HR连接
+	private ChannelHandlerContext hrCtx ; 
+	// 生产连接
+	private ChannelHandlerContext productCtx ; 
+	
+	public Employee() {
+		timer.schedule(task,0,1000);
+	}
+	
+	public ChannelHandlerContext getHrCtx() {
+		return hrCtx;
+	}
+
+	public void setHrCtx(ChannelHandlerContext hrCtx) {
+		this.hrCtx = hrCtx;
+	}
+
+	public ChannelHandlerContext getProductCtx() {
+		return productCtx;
+	}
+
+	public void setProductCtx(ChannelHandlerContext productCtx) {
+		this.productCtx = productCtx;
+	}
+
+	public Integer getEmpId() {
+		return empId;
+	}
+
+	public void setEmpId(Integer empId) {
+		this.empId = empId;
+	}
+
+	public Integer getProductLineId() {
+		return productLineId;
+	}
+
+	public void setProductLineId(Integer productLineId) {
+		this.productLineId = productLineId;
+	}
+
+	public Integer getEmpType() {
+		return empType;
+	}
+
+	public void setEmpType(Integer empType) {
+		this.empType = empType;
+	}
+
+	public Integer getHp() {
+		return hp;
+	}
+
+	public ProductLine getProductLine() {
+		return productLine;
+	}
+
+	public void setProductLine(ProductLine productLine) {
+		this.productLine = productLine;
+	}
+	
+	public void setHp(Integer hp) {
+		if (hp >= 100) {
+			hp = 100;
+			recover = false ;
+		} else {
+			this.hp = hp;
+		}
+		if (hp <= 0) {
+			hp = 0;
+			recover = false ;
+			// 当员工血量为0时,停止生产
+			if(productLine != null ) {
+				productLine.setWork(false);
+				// 通知生产者生产线停止
+				//productLine.getProductorManager().writeProductLineStop(productLineId);
+			}
+		} else {
+			this.hp = hp;
+		}
+
+	}
+
+	public Integer getState() {
+		return state;
+	}
+
+	/**
+	 * 更新员工的状态
+	 * 
+	 * @param state
+	 *            1:工作;0:休息
+	 */
+	public void setState(final Integer state) {
+		this.state = state;
+		recover = true ;
+		// 更新该员工对应的生产线
+		if(productLine != null) {
+			productLine.setWork(state == 1);
+		}
+	}
+
+	public Integer getSalary() {
+		return salary;
+	}
+
+	public void setSalary(Integer salary) {
+		this.salary = salary;
+	}
+
+	public String getEmpCompany() {
+		return empCompany;
+	}
+
+	public void setEmpCompany(String empCompany) {
+		this.empCompany = empCompany;
+	}
+
+	public String getEmpName() {
+		return empName;
+	}
+
+	public void setEmpName(String empName) {
+		this.empName = empName;
+	}
+
+	public Integer getEmpAbility() {
+		return empAbility;
+	}
+
+	public void setEmpAbility(Integer empAbility) {
+		this.empAbility = empAbility;
+	}
+
+	public boolean isWorking() {
+		return isWorking;
+	}
+
+	public void setWorking(boolean isWorking) {
+		this.isWorking = isWorking;
+		setState(isWorking?1:0);
+	}
+	
+	public boolean isRecover() {
+		return recover;
+	}
+
+	public void setRecover(boolean recover) {
+		this.recover = recover;
+	}
+	
+	
+	class EmployeeHPTask extends TimerTask{
+		
+		@Override
+		public void run() {
+			while (recover) {
+				if (state == 1) { // 工作
+					setHp(hp - 1);
+				} else {
+					// 休息
+					setHp(hp + 1);
+				}
+				EmployeeSyncHPResponse hr = new EmployeeSyncHPResponse(hrCtx);
+				hr.setEmpId(empId);
+				hr.setHp(hp);
+				hr.writeAndFlush();
+				EmployeeSyncHPResponse product = new EmployeeSyncHPResponse(productCtx);
+				product.setEmpId(empId);
+				product.setHp(hp);
+				product.writeAndFlush();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		
+		}
+		
+	}
+}

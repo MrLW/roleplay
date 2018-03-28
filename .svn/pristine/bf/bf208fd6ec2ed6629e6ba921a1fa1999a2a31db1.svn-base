@@ -1,0 +1,32 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @author liwen
+ * @date:2018年1月11日 下午2:18:41
+ * @Function: 生产线配置员工
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class EmployeeProductLineRequest extends BaseRequest {
+	
+	private short requestId = RolePlayProtocolConstant.EMPLOYEEProductLine_REQUEST_PROTOCOL;
+	// 产品线ID
+	private int productLineId ;
+	// 员工ID
+	private int empId ;
+	
+	
+	public EmployeeProductLineRequest(ByteBuf buf) {
+		super(buf);
+		this.productLineId = buf.readInt();
+		this.empId = buf.readInt();
+	}
+}

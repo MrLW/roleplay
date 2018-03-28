@@ -1,0 +1,26 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.model.model.BaseManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:31:15
+ * @Function: 市场总监
+ * @version 1.0
+ */
+public class BazaarManager extends BaseManager{
+	
+
+	public BazaarManager() {
+		roleId = 5 ;
+		roleType = 5 ;
+		roleName = "BazaarManager";
+	}
+	
+	/**
+	 *  采购
+	 */
+	public void purchase() {
+		
+	}
+}

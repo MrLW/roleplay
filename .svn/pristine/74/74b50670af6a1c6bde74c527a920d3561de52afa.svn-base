@@ -1,0 +1,427 @@
+package com.sim.server.game.common;
+
+/**
+ * 
+ * @author liwen 2017年10月26日 下午12:57:33 Function: 协议ID和对应的数据结构类
+ * @version 1.0
+ */
+public class ProtocolConstant {
+
+	/**
+	 * 协议包头长度的值,因为用的是int,所以字节长是4
+	 */
+	public static final Integer PACK_LEN = 4;
+
+	/**
+	 * 注册请求协议号
+	 */
+	public static final short REGISTE_REQUEST_PROTOCOL = 1000;
+	/**
+	 * 注册响应协议号
+	 */
+	public static final short REGISTE_RESPONSE_PROTOCOL = 1001;
+	/**
+	 * 登录请求协议号
+	 */
+	public static final short LOGIN_REQUEST_PROTOCOL = 1002;
+
+	/**
+	 * 登录响应协议号,登录结果
+	 */
+	public static final short LOGIN_RESPONSE_PROTOCOL = 1003;
+
+	/**
+	 * 获取登录用户信息的请求
+	 */
+	public static final short LOGIN_SUCCESS_REQUEST_PROTOCOL = 1004;
+
+	/**
+	 * 获取登录用户信息的响应
+	 */
+	public static final short LOGIN_SUCCESS_RESPONSE_PROTOCOL = 1005;
+
+	/**
+	 * 登录成功后房间列表请求
+	 */
+	public static final short LOGIN_ROOMLIST_REQUEST_PROTOCOL = 1006;
+
+	/**
+	 * 登录成功后的房间列表响应
+	 */
+	public static final short LOGIN_ROOMLIST_RESPONSE_PROTOCOL = 1007;
+
+	/**
+	 * 获取登录成功后返回的
+	 */
+
+	/**
+	 * 新加入房间的请求协议号
+	 */
+	public static final short ROOM_REQUEST_PROTOCOL = 2000;
+	/**
+	 * 新加入房间的响应协议号
+	 */
+	public static final short ROOM_RESPONSE_PROTOCOL = 2001;
+	/**
+	 * 新加玩家,发给房间里旧玩家的响应协议号
+	 */
+	public static final short NEWJOIN_RESPONSE_PROTOCOL = 2002;
+
+	/**
+	 */
+	public static final short PLAYERLIST_REQUEST_PROTOCOL = 2003;
+
+	/**
+	 * 
+	 */
+	public static final short PLAYERLIST_RESPONSE_PROTOCOL = 2004;
+
+	/**
+	 * 心跳检测请求协议号
+	 */
+	public static final short HEARTBEAT_REQUEST_PROTOCOL = 3000;
+	/**
+	 * 心跳检测响应协议号
+	 */
+	public static final short HEARTBEAT_RESPONSE_PROTOCOL = 3001;
+	/**
+	 * 角色移动请求协议号
+	 */
+	public static final short MOVE_REQUEST_PROTOCOL = 4000;
+
+	/**
+	 * 角色移动响应协议号
+	 */
+	public static final short MOVE_RESPONSE_PROTOCOL = 4001;
+
+	public static final short TESTLIST_PROTOCOL = 1020;
+	/**
+	 * 能量请求协议
+	 */
+	public static final short ENERGY_REQUEST_PROTOCOL = 4002;
+
+	/**
+	 * 能量响应协议
+	 */
+	public static final short ENERGY_RESPONSE_PROTOCOL = 4003;
+	/**
+	 * 请求经验值
+	 */
+	public static final short EXP_REQUEST_PROTOCOL = 4004;
+	/**
+	 * 响应经验值
+	 */
+	public static final short EXP_RESPONSE_PROTOCOL = 4005;
+
+	/**
+	 * 等级请求
+	 */
+	public static final short LEVEL_REQUEST_PROTOCOL = 4006;
+
+	/**
+	 * 等级响应
+	 */
+	public static final short LEVEL_RESPONSE_PROTOCOL = 4007;
+
+	/**
+	 * 当前血量请求
+	 */
+	public static final short HP_REQUEST_PROTOCOL = 4010;
+
+	/**
+	 * 当前血量响应
+	 */
+	public static final short HP_RESPONSE_PROTOCOL = 4011;
+
+	/**
+	 * 怒气请求
+	 */
+	public static final short RAGE_REQUEST_PROTOCOL = 4012;
+
+	/**
+	 * 怒气响应
+	 */
+	public static final short RAGE_RESPONSE_PROTOCOL = 4013;
+
+	/**
+	 * 退出协议
+	 */
+	public static final short DROPOUT_REQUEST_PROTOCOL = 5000;
+
+	/**
+	 * 退出响应
+	 */
+	public static final short DROPOUT_RESPONSE_PROTOCOL = 5001;
+	/**
+	 *  死亡请求
+	 */
+	public static final short DIE_REQUEST_PROTOCOL = 5002;
+	/**
+	 *  死亡响应
+	 */
+	public static final short DIE_RESPONSE_PROTOCOL = 5003 ;
+	/**
+	 *  游戏结束响应
+	 */
+	public static final short GAMEOVER_RESPONSE_PROTOCOL = 5005;
+	
+
+	/**
+	 * 吃食物请求
+	 */
+	public static final short EATFOOD_REQUEST_PROTOCOL = 6000;
+	/**
+	 * 吃食物响应
+	 */
+	public static final short EATFOOD_RESPONSE_PROTOCOL = 6001;
+
+	/**
+	 * 攻击请求
+	 */
+	public static final short ATTACK_REQUEST_PROTOCOL = 6002;
+
+	/**
+	 * 攻击响应
+	 */
+	public static final short ATTACK_RESPONSE_PROTOCOL = 6003;
+
+	/**
+	 * 收到伤害
+	 */
+	public static final short HARM_REQUEST_PROTOCOL = 6004;
+
+	/**
+	 * 收到伤害响应
+	 */
+	public static final short HARM_RESPONSE_PROTOCOL = 6005;
+
+	/**
+	 * 开始加血请求
+	 */
+	public static final short ADDBLOOD_START_REQUEST_PROTOCOL = 6006;
+
+	/**
+	 * 开始加血响应
+	 */
+	public static final short ADDBLOOD_START_RESPONSE_PROTOCOL = 6007;
+
+	/**
+	 * 结束加血请求
+	 */
+	public static final short ADDBLOOD_END_REQUEST_PROTOCOL = 6008;
+
+	/**
+	 * 结束加血响应
+	 */
+	public static final short ADDBLOOD_END_RESPONSE_PROTOCOL = 6009;
+	
+	/**
+	 *  积分列表响应
+	 */
+	public static final short SCORELIST_RESPONSE_PROTOCOL = 6011;
+	/**
+	 * 闪现请求
+	 */
+	public static final short FLASH_REQUEST_PROTOCOL = 7000;
+
+	/**
+	 * 闪现响应
+	 */
+	public static final short FLASH_RESPONSE_PROTOCOL = 7001;
+
+	/**
+	 * 禁锢请求
+	 */
+	public static final short IMPRI_REQUEST_PROTOCOL = 7002;
+
+	/**
+	 * 禁锢请求
+	 */
+	public static final short IMPRI_RESPONSE_PROTOCOL = 7003;
+
+	/**
+	 * 确认收到攻击请求
+	 */
+	public static final short SURE_BEATTACKED_REQUEST_PROTOCOL = 7004;
+
+	/**
+	 * 确认收到攻击响应
+	 */
+	public static final short SURE_BEATTACKED_RESPONSE_PROTOCOL = 7005;
+
+	/**
+	 * 眩晕请求
+	 */
+	public static final short DIZZINESS_REQUEST_PROTOCOL = 7006;
+	/**
+	 * 眩晕响应
+	 */
+	public static final short DIZZINESS_RESPONSE_PROTOCOL = 7007;
+
+	/**
+	 * 加血技能请求
+	 */
+	public static final short ADDBLOOD_ABILITY_REQUEST_PROTOCOL = 7008;
+	/**
+	 * 加血技能响应
+	 */
+	public static final short ADDBLOOD_ABILITY_RESPONSE_PROTOCOL = 7009;
+
+	/**
+	 * 真正开始加血请求
+	 */
+	public static final short ADDBLOOD_START_ABILITY_REQUEST_PROTOCOL = 7010;
+
+	/**
+	 * 真正开始加血响应
+	 */
+	public static final short ADDBLOOD_START_ABILITY_RESPONSE_PROTOCOL = 7011;
+
+	/**
+	 * 真正结束加血请求
+	 */
+	public static final short ADDBLOOD_END_ABILITY_REQUEST_PROTOCOL = 7012;
+
+	/**
+	 * 真正结束加血响应
+	 */
+	public static final short ADDBLOOD_END_ABILITY_RESPONSE_PROTOCOL = 7013;
+
+	/**
+	 * 匹配游戏请求
+	 */
+	public static final short MATCH_REQUEST_PROTOCOL = 8000;
+
+	/**
+	 * 匹配游戏响应
+	 */
+	public static final short MATCH_RESPONSE_PROTOCOL = 8001;
+
+	/**
+	 * 开始游戏请求
+	 */
+	public static final short STARTGAME_REQUEST_PROTOCOL = 8002;
+
+	/**
+	 * 开始游戏响应
+	 */
+	public static final short STARTGAME_RESPONSE_PROTOCOL = 8003;
+
+	/**
+	 * 开始匹配超时请求
+	 */
+	public static final short MATCH_TIMEOUT_REQUEST_PROTOCOL = 8004;
+
+	/**
+	 * 开始匹配超时响应
+	 */
+	public static final short MATCH_TIMEOUT_RESPONSE_PROTOCOL = 8005;
+	
+	/**
+	 *  角色列表请求
+	 */
+	public static final short ROLELIST_REQUEST_PROTOCOL = 8006 ;
+	/**
+	 *  角色列表响应
+	 */
+	public static final short ROLELIST_RESPONSE_PROTOCOL = 8007 ;
+	
+	/**
+	 *  角色请求
+	 */
+	public static final short ROLE_REQUEST_PROTOCOL = 8008 ;
+	/**
+	 *  角色响应
+	 */
+	public static final short ROLE_RESPONSE_PROTOCOL = 8009 ;
+	
+	public static final short ROLE_ALL_SELECT_RESPONSE_PROTOCOL = 8010 ;
+	
+
+	/**
+	 * 搜索好友结果请求
+	 */
+	public static final short SEARCHFRIEND_RESULT_REQUEST_PROTOCOL = 9000;
+	/**
+	 * 搜索好友结果响应
+	 */
+	public static final short SEARCHFRIEND_RESULT_RESPONSE_PROTOCOL = 9001;
+
+	/**
+	 * 搜索好友信息请求
+	 */
+	public static final short SEARCHFRIEND_INFO_REQUEST_PROTOCOL = 9002;
+	/**
+	 * 搜索好友信息响应
+	 */
+	public static final short SEARCHFRIEND_INFO_RESPONSE_PROTOCOL = 9003;
+
+	/**
+	 * 添加好友信息请求
+	 */
+	public static final short ADDFRIEND_REQUEST_PROTOCOL = 9004;
+	/**
+	 * 添加好友信息响应 这个响应是响应给被添加玩家的
+	 */
+	public static final short ADDFRIEND_RESPONSE_PROTOCOL = 9005;
+
+	/**
+	 * 被添加好友的请求
+	 */
+	public static final short REPLYFRIEND_REQUEST_PROTOCOL = 9006;
+	/**
+	 * 这是发给添加者的响应
+	 */
+	public static final short REPLYFRIEND_RESPONSE_PROTOCOL = 9007;
+
+	/**
+	 * 好友列表请求
+	 */
+	public static final short FRIENDLIST_REQUEST_PROTOCOL = 9008;
+	/**
+	 * 好友列表响应
+	 */
+	public static final short FRIENDLIST_RESPONSE_PROTOCOL = 9009;
+
+	/**
+	 * 邀请好友请求
+	 */
+	public static final short INVITE_REQUEST_PROTOCOL = 9010;
+	/**
+	 * 邀请好友响应
+	 */
+	public static final short BEINVITEED_RESPONSE_PROTOCOL = 9011;
+	
+	/**
+	 * 邀请好友请求
+	 */
+	public static final short BEINVITEED_REQUEST_PROTOCOL = 9012;
+	
+	
+	/**
+	 * 邀请好友响应
+	 */
+	public static final short INVITEED_RESPONSE_PROTOCOL = 9013;
+	
+	/**
+	 * 
+	 */
+	public static final short BROCASTTEAMUSERS_RESPONSE_PROTOCOL = 9014;
+	
+	
+	/**
+	 *  组队成功后的响应
+	 */
+	public static final short CREATETEAMSTATE_RESPONSE_PROTOCOL = 9015;
+	
+	/**
+	 *  食物初始化请求
+	 */
+	public static final short FOODINIT_REQUEST_PROTOCOL = 10000 ;
+	
+	/**
+	 *  食物初始化响应
+	 */
+	public static final short FOODINIT_RESPONSE_PROTOCOL = 10001 ;
+	
+}

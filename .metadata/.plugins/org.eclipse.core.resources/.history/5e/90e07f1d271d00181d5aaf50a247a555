@@ -1,0 +1,384 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.hr.EmployeeDismissResponse;
+import com.sim.server.game.message.response.hr.EmployeeListResponse;
+import com.sim.server.game.message.response.hr.EmployeeSalaryResponse;
+import com.sim.server.game.message.response.hr.EmployeeWorkResponse;
+import com.sim.server.game.message.response.hr.InviteResponse;
+import com.sim.server.game.message.response.hr.PayResponse;
+import com.sim.server.game.message.response.hr.TalkWithEmpResponse;
+import com.sim.server.game.message.response.init.HRConfigResponse;
+import com.sim.server.game.message.response.init.InitJobhunterResponse;
+import com.sim.server.game.message.response.productor.EmployeeSyncHPResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Employee;
+import com.sim.server.game.model.model.Employee.EmployeeState;
+import com.sim.server.game.model.model.FinanceDailyItem;
+import com.sim.server.game.model.model.FinanceDailyItem.FinancialType;
+import com.sim.server.game.model.model.Jobhunter;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.factory.FinanceDailyFactory;
+import com.sim.server.game.roleplay.init.JobhunterDataLoader;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:02:09
+ * @Function: HR 总监
+ * @version 1.0
+ * 
+ */
+public class HRManager extends BaseManager implements IByteTo {
+
+	/**
+	 * 公司员工
+	 */
+	@Getter
+	private List<Employee> employees = new LinkedList<Employee>();
+
+	private int seed = 100;
+	// 随机数
+	private Random random = new Random(seed);
+
+	/**
+	 * 涨薪
+	 */
+	private static final int INCRE_SALARY = 5;
+	/**
+	 * 降薪
+	 */
+	private static final int DECRE_SALARY = 5;
+
+	public HRManager() {
+		roleId = 2;
+		roleType = 2;
+		roleName = "HR总监";
+	}
+
+	/**
+	 * 招聘指定ID的求职者
+	 * 
+	 * @param jobhunterId
+	 *            求职者ID
+	 * @return 是否招聘成功,1:招聘成功;0:招聘失败
+	 */
+	public int invite(Integer jobhunterId) {
+		int result = 0;
+		try {
+			// 1、根据id找到求职者
+			Jobhunter jobhunter = JobhunterDataLoader.getInstance().getJobhunterById(jobhunterId);
+			// 2、将当前求职者添加到公司
+			addEmployee(jobhunter);
+			result = 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		InviteResponse response = new InviteResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+		// 更新已有员工列表
+		writeEmployees(room.getProductManager().getCtx());
+		// 更新HR列表
+		syncList();
+		return result;
+	}
+
+	private void syncList() {
+		List<Jobhunter> jobhunters = JobhunterDataLoader.getInstance().getJobhunters();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(jobhunters);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 刷新求职者
+	 */
+	public void flushJobhunter() {
+		// 刷新
+		JobhunterDataLoader.getInstance().flush();
+		InitJobhunterResponse response = new InitJobhunterResponse(ctx);
+		response.setJobhunters(JobhunterDataLoader.getInstance().getJobhunters());
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 已工作的员工列表
+	 */
+	public void writeEmployeeWork(Channel ctx) {
+		List<Employee> es = getEmployeeWork();
+		EmployeeWorkResponse response = new EmployeeWorkResponse(ctx);
+		response.setCount(es.size());
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 公司已有员工数量
+	 * 
+	 * @param ctx
+	 */
+	public void writeEmployees(Channel ctx) {
+		EmployeeListResponse response = new EmployeeListResponse(ctx);
+		response.setEmployees(employees);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 员工辞退
+	 * 
+	 * @param empId
+	 *            员工ID
+	 */
+	public void dismiss(int empId) {
+		Employee employee = getEmployeeById(empId);
+		// 判断当前员工是否处于工作状态
+		if (employee.getState() == EmployeeState.WORK.getState()) {
+			employee.getProductLine().stop();
+		}
+		dismiss(employee);
+		// 辞退响应
+		writeDismiss(empId);
+		// 更新当前员工列表
+		writeEmployees(ctx);
+		writeEmployees(room.getProductManager().getCtx());
+	}
+
+	/**
+	 * 辞退员工响应
+	 * 
+	 * @param empId
+	 *            员工ID
+	 */
+	private void writeDismiss(int empId) {
+		EmployeeDismissResponse response = new EmployeeDismissResponse(ctx);
+		response.setEmpId(empId);
+		response.setResult((byte) 1);
+		response.writeAndFlush();
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+	}
+
+	/**
+	 * 洽谈
+	 * 
+	 * @param empId
+	 *            员工ID
+	 */
+	public void talk(int empId) {
+		Employee emp = getEmployeeById(empId);
+		emp.setHp(100);
+		writeTalk(empId);
+	}
+
+	/**
+	 * 洽谈响应
+	 */
+	private void writeTalk(int empId) {
+		TalkWithEmpResponse response = new TalkWithEmpResponse(ctx);
+		response.setEmpId(empId);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 涨薪、降薪的一些配置
+	 */
+	public void salConf() {
+		HRConfigResponse response = new HRConfigResponse(ctx);
+		response.setDecreSal(DECRE_SALARY);
+		response.setIncreSal(INCRE_SALARY);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 更新员工的薪水
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param type
+	 *            涨或者降 薪水
+	 */
+	public void updateSalary(int empId, int type) {
+		Employee emp = getEmployeeById(empId);
+		if (type == 1) {
+			emp.setSalary(emp.getSalary() + emp.getSalary() * 10 / 100);
+			emp.setEmpAbility(emp.getEmpAbility() + 1);
+		}
+		EmployeeSalaryResponse response = new EmployeeSalaryResponse(ctx);
+		response.setResult((byte) 1);
+		if (type == 2) {
+			if (random.nextInt() == 2) {
+				emp.setSalary(emp.getSalary() - emp.getSalary() * 10 / 100);
+			}
+			response.setResult((byte) 0);
+		}
+		response.writeAndFlush();
+
+		updateEmployee(emp);
+	}
+
+	/**
+	 * 更新员工属性
+	 * 
+	 * @param emp
+	 *            员工对象
+	 */
+	private void updateEmployee(Employee emp) {
+		EmployeeSyncHPResponse employeeSalaryChangeResponse = new EmployeeSyncHPResponse(ctx);
+		employeeSalaryChangeResponse.setEmp(emp);
+		employeeSalaryChangeResponse.writeAndFlush();
+	}
+
+	/**
+	 * 创建财务请款单
+	 */
+	public void createFinanReq() {
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int total = 0;
+		for (Employee employee : employees) {
+			total += employee.getSalary();
+		}
+
+		FinanceDailyItem financeDailyItem = FinanceDailyFactory.buildFinanceDaily(FinancialType.HR, roleId, "支付薪水-留言",
+				room.getCurTime(), total, "支付薪水");
+		financeManager.addFinanceDaily(financeDailyItem);
+
+		// 响应给HR
+		PayResponse response = new PayResponse(ctx);
+		response.setResult((byte) 1);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 添加新员工
+	 * 
+	 * @param jobhunter
+	 */
+	public void addEmployee(Jobhunter jobhunter) {
+		Employee employee = new Employee();
+		employee.setEmpId(employees.size());
+		employee.setEmpCompany("Sim");
+		employee.setEmpName(jobhunter.getName());
+		employee.setEmpType(jobhunter.getType());
+		employee.setSalary(jobhunter.getSalary());
+		employee.setEmpAbility(jobhunter.getAbility());
+		employee.setHrCtx(ctx);
+		employee.setProductor((ProductorManager)room.getProductManager());
+		this.employees.add(employee);
+	}
+
+	/**
+	 * 更新员工状态
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int update(int empId, int state) {
+		try {
+			// 找到empId员工
+			for (Employee employee : employees) {
+				if (empId == employee.getEmpId()) {
+					employee.setState(state);
+					if (employee.isIdle()) {
+						ProductLine productLine = employee.getProductLine();
+						// 停止生产
+						if(productLine==null) {
+							employee.getProductLine().setWork(false);
+							employee.setProductLine(null);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+
+	/**
+	 * 获取闲置的员工列表
+	 * 
+	 * @return 员工列表
+	 */
+	public List<Employee> getIdleEmployees() {
+		List<Employee> emps = new LinkedList<Employee>();
+		for (Employee employee : employees) {
+			if (employee.getState() == 1) { // 如果当前原工此时状态为休息
+				emps.add(employee);
+			}
+		}
+		return emps;
+	}
+
+	/**
+	 * 获取工作中的员工列表
+	 * 
+	 * @return 员工列表
+	 */
+	public List<Employee> getWorkingEmployees() {
+		List<Employee> emps = new LinkedList<Employee>();
+		for (Employee employee : employees) {
+			if (employee.getState() == 1) { // 如果当前原工此时状态为休息
+				emps.add(employee);
+			}
+		}
+		return emps;
+	}
+
+	public List<Employee> getEmployeeWork() {
+		List<Employee> es = new LinkedList<Employee>();
+		// 获取已工作的员工列表
+		for (Employee employee : employees) {
+			if (employee.getState() == 1) {
+				es.add(employee);
+			}
+		}
+		return es;
+	}
+
+	/**
+	 * 根据id查找员工对象
+	 * 
+	 * @param empId
+	 *            员工ID
+	 * @return 员工对象
+	 */
+	public Employee getEmployeeById(int empId) {
+		for (Employee employee : employees) {
+			if (empId == employee.getEmpId()) {
+				return employee;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 辞退某个员工
+	 * 
+	 * @param employee
+	 */
+	public void dismiss(Employee employee) {
+		employees.remove(employee);
+		room.setTotalIncome(room.getTotalIncome() - employee.getSalary());
+		;
+		room.syncTotoalMoney();
+	}
+
+}

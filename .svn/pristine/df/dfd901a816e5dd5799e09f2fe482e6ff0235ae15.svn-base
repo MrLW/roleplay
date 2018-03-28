@@ -1,0 +1,32 @@
+package com.sim.server.game.message.request.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:17:04
+ * @Function:获取公司总金额请求
+ * @version 1.0
+ */
+public class TotalIncomeRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.TOTAL_INCOME_REQUEST_PROTOCOL;
+	
+	public TotalIncomeRequest(ByteBuf buf) {
+		super(buf);
+		this.len = buf.readableBytes() ;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+	
+}

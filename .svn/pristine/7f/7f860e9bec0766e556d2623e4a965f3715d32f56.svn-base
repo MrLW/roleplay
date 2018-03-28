@@ -1,0 +1,92 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.FinancialSuccessResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:04:17
+ * @Function: 财务总监
+ * @version 1.0
+ */
+public class FinanceManager extends BaseManager {
+
+	public FinanceManager() {
+		super.roleId = 3;
+		roleType = 3;
+		roleName = "FinanceManager";
+	}
+
+	public void applyForMoney(Integer applyForMoney) {
+
+		// 其他部门向财务申请金额
+		Room room = RoomManager.getRoomByCtx(ctx);
+		if (room.isApplyFor(applyForMoney)) {
+			room.applyFor(applyForMoney);
+		}
+
+	}
+
+	/**
+	 * 修改财务请款的状态
+	 * 
+	 * @param financialRequestMsgId
+	 *            唯一标志
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int removeFinancialRequestMsgById(Integer financialRequestMsgId) {
+		try {
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+
+	/**
+	 * 通知请款人
+	 * 
+	 * @param financialRequestMsgId
+	 */
+	public int notifyPayee(Integer financialRequestMsgId, int state) {
+		try {
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+
+			if (state == 1 && msg != null) {
+				// 如果state为1,则通知请款人请款成功
+				// 获取请款人roleId
+				Integer roleId = msg.getRoleId();
+				// 同步总金额
+				room.applyFor(msg.getMoney());
+				room.syncTotoalMoney();
+				BaseManager manager = room.getManagerByRoleId(roleId);
+				FinancialSuccessResponse response = new FinancialSuccessResponse(manager.getCtx());
+				response.setResult((byte) 1);
+				response.writeAndFlush();
+			}
+			syncFinancialRequestMsg(room);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+
+	}
+
+	public void syncFinancialRequestMsg(Room room) {
+		FinancialListResponse response = new FinancialListResponse(ctx);
+		response.setFinancialRequestMsgs(room.getFinancialRequestMsgs());
+		response.writeAndFlush();
+	}
+}

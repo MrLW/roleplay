@@ -1,0 +1,211 @@
+package com.sim.server.game.common;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+
+import com.sim.server.game.utils.BeanUtil;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年11月22日 下午6:55:48
+ * @Function: 扩展ByteBuf
+ * @version 1.0
+ */
+public class EnhancedByteBuf {
+
+	/**
+	 * 切记,ByteBuf不可写成静态,否则会导致多个客户端读取数据时出现从一个ByteBuffy读取数据!!!!!!
+	 */
+	private ByteBuf buf;
+
+	public static EnhancedByteBuf enhancedByteBuf = new EnhancedByteBuf();
+
+	public static EnhancedByteBuf getInstance() {
+		if (enhancedByteBuf == null)
+			enhancedByteBuf = new EnhancedByteBuf();
+		return enhancedByteBuf;
+	}
+
+	public EnhancedByteBuf() {
+		super();
+	}
+
+	public EnhancedByteBuf(ByteBuf buf) {
+		this.buf = buf;
+	}
+
+	public int readerIndex() {
+		return this.buf.readerIndex();
+	}
+
+	/**
+	 * 读取字符串
+	 * 
+	 * @param in
+	 * @return
+	 */
+	public String readString() {
+		short len = this.buf.readShort();
+		byte[] b = new byte[len];
+		buf.readBytes(b);
+		return new String(b);
+	}
+
+	public short readShort() {
+		short len = buf.readShort();
+		return len;
+	}
+
+	public boolean isWritable() {
+		return buf.isWritable();
+	}
+
+	public boolean isReadable() {
+		return buf.isReadable();
+	}
+
+	public int readInt() {
+		return buf.readInt();
+	}
+
+	public void writeByte(byte b) {
+		buf.writeByte(b);
+	}
+
+	public void writeInt(Integer value) {
+		buf.writeInt(value);
+	}
+
+	public void writeString(String value) {
+		if (value != null && value.length() > 0) {
+			buf.writeShort(value.length());
+			buf.writeBytes(value.getBytes());
+		}
+	}
+
+	public ByteBuf getBuf() {
+		return buf;
+	}
+
+	public void setBuf(ByteBuf buf) {
+		this.buf = buf;
+	}
+
+	public void writeShort(Short value) {
+		buf.writeShort(value);
+	}
+
+	public void writeLong(long lValue) {
+		buf.writeLong(lValue);
+	}
+
+	/**
+	 * 写入集合
+	 * 
+	 * @param objs
+	 */
+	public void writeList(List objs) {
+		// 1、先写集合的长度
+		this.writeInt(objs.size());
+		// 2、写list中具体内容
+		try {
+			for (int i = 0; i < objs.size(); i++) {
+				Object obj = objs.get(i);
+				// 复杂数据类型
+				if (!BeanUtil.isBaseDataType(obj.getClass())) {
+					Class clazz = obj.getClass();
+					Field[] fields = clazz.getFields();
+					for (Field field : fields) {
+						String type = field.getType().getName();
+						String name = field.getName();
+						name = BeanUtil.getGetName(name);
+						Method method = clazz.getMethod(name);
+						Object o = method.invoke(obj);
+						if (BeanUtil.isShort(type)) {
+							short sValue = (Short) o;
+							this.writeShort(sValue);
+						} else if (BeanUtil.isByte(type)) {
+							byte bValue = (Byte) o;
+							this.writeByte((byte) bValue);
+						} else if (BeanUtil.isInt(type)) {
+							Integer iValue = (Integer) o;
+							this.writeInt(iValue);
+						} else if (BeanUtil.isString(type)) {
+							String sValue = (String) o;
+							this.writeString(sValue);
+						} else if (BeanUtil.isLong(type)) {
+							long lValue = (Long) o;
+							this.writeLong(lValue);
+						}
+					}
+				} else {
+					// 基本数据类型
+					writeBaseObj(obj);
+				}
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 写入基本数据类型
+	 * 
+	 * @param obj
+	 */
+	public void writeBaseObj(Object obj) {
+		Class clazz = obj.getClass();
+		if (clazz.equals(String.class) || clazz.isPrimitive()) {
+			String sValue = (String) obj;
+			this.writeString(sValue);
+		} else if (clazz.equals(Integer.class) || clazz.isPrimitive()) {
+			Integer iValue = (Integer) obj;
+			buf.writeInt(iValue);
+		} else if (clazz.equals(Short.class) || clazz.isPrimitive()) {
+			Short sValue = (Short) obj;
+			buf.writeShort(sValue);
+		} else if (clazz.equals(Byte.class) || clazz.isPrimitive()) {
+			Byte bValue = (Byte) obj;
+			buf.writeByte(bValue);
+		} else if (clazz.equals(Float.class) || clazz.isPrimitive()) {
+			Float fValue = (Float) obj;
+			buf.writeFloat(fValue);
+		} else if (clazz.equals(Double.class) || clazz.isPrimitive()) {
+			Double dValue = (Double) obj;
+			buf.writeDouble(dValue);
+		} else if (clazz.equals(Character.class) || clazz.isPrimitive()) {
+			Character cValue = (Character) obj;
+			buf.writeChar(cValue);
+		} else if (clazz.equals(Long.class) || clazz.isPrimitive()) {
+			Long lValue = (Long) obj;
+			buf.writeLong(lValue);
+		} else if (clazz.equals(Boolean.class) || clazz.isPrimitive()) {
+			Boolean bValue = (Boolean) obj;
+			buf.writeBoolean(bValue);
+		}
+	}
+
+	public void clear() {
+		buf.clear();
+	}
+
+	public byte readByte() {
+		return buf.readByte();
+	}
+
+	public void markWriterIndex() {
+		buf.markWriterIndex();
+	}
+
+	public void writeIndex(Integer value) {
+		buf.writerIndex(value);
+	}
+
+	public void skipBytes(int length) {
+		buf.skipBytes(length);
+	}
+}

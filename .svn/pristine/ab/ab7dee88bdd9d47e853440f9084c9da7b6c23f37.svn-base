@@ -1,0 +1,42 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.MaterialListResponse;
+import com.sim.server.game.message.response.productor.WarehouseListResponse;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:57:23
+ * @Function:原料列表处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.MATERIAL_LIST_REQUEST_PROTOCOL,desc="原料列表处理")
+public class MaterialListHandler extends BaseHandler {
+
+	public void run() {
+		// 获取公司所有仓库
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		List<Material> materials = room.getMaterials();
+		// 创建响应
+		MaterialListResponse response = new MaterialListResponse(ctx);
+		response.setMaterials(materials);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		MaterialListHandler handler = new MaterialListHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.handler.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.hr.EmployeeSalaryRequest;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * 
+ * @author liwen
+ * @date:2018年1月26日 下午2:34:03
+ * @Function:谈薪
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.EMPLOYEE_SALARY_REQUEST_PROTOCOL,desc="谈薪")
+public class EmployeeSalaryHandler extends BaseHandler {
+
+	@Override
+	public void run() {
+		EmployeeSalaryRequest request = (EmployeeSalaryRequest) baseRequest ;
+		int empId = request.getEmpId();
+		int type = request.getType();
+		Room room = RoomManager.getNewRoomByCtx(channel);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		hrManager.updateSalary(empId,type);
+	}
+
+	@Override
+	public Object clone() {
+		EmployeeSalaryHandler handler = new EmployeeSalaryHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

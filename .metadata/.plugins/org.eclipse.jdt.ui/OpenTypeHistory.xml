@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<typeInfoHistroy>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;java.util.concurrent.locks(ReentrantLock.class[ReentrantLock" modifiers="33" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.model.model{PlayerInfo.java[PlayerInfo" modifiers="1" timestamp="1520238554923"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.room{Client.java[Client" modifiers="1" timestamp="1522063670034"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.engine.core{Regist.java[Regist" modifiers="8705" timestamp="1522047141983"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.request.user{LoginRequest.java[LoginRequest" modifiers="1" timestamp="1518084357328"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.request.user{LoginInfoRequest.java[LoginInfoRequest" modifiers="1" timestamp="1518084479751"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.utils{CommodityUtil.java[CommodityUtil" modifiers="1" timestamp="1518247023478"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.request.test{TestRequest.java[TestRequest" modifiers="1" timestamp="1519353586786"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;java.nio.channels(SelectionKey.class[SelectionKey" modifiers="1057" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.init{ResourceDataLoader.java[ResourceDataLoader" modifiers="1" timestamp="1522045937447"/>
+<typeInfo handle="=gameserver-roleplay/src\/test\/java&lt;com.lw.test{TestMap.java[TestMap" modifiers="1" timestamp="1519729976205"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.engine.netty{DefaultInboundHandler.java[DefaultInboundHandler" modifiers="1025" timestamp="1519890725687"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.common{RolePlayProtocolConstant.java[RolePlayProtocolConstant" modifiers="1" timestamp="1517826698016"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;com.sun.org.apache.bcel.internal.util(ClassLoader.class[ClassLoader" modifiers="33" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;java.net(URLClassLoader.class[URLClassLoader" modifiers="33" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;sun.misc(Launcher$ExtClassLoader.class[ExtClassLoader" modifiers="8" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-db/D:\/software\/java\/apache-maven-3.5.0\/repo\/mysql\/mysql-connector-java\/5.1.32\/mysql-connector-java-5.1.32.jar&lt;com.mysql.jdbc(Driver.class[Driver" modifiers="33" timestamp="1508308922333"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;java.sql(Driver.class[Driver" modifiers="1537" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-db/C:\/Program Files\/Java\/jdk1.8.0_144\/jre\/lib\/rt.jar&lt;java.sql(DriverManager.class[DriverManager" modifiers="33" timestamp="1508129921248"/>
+<typeInfo handle="=gameserver-roleplay/src\/test\/java&lt;com.lw.test{Test.java[Test" modifiers="1" timestamp="1522064053910"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.player{Session.java[Session" modifiers="1" timestamp="1522121799658"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.handler.sys{StartGameHandler.java[StartGameHandler" modifiers="1" timestamp="1522135893879"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.response{BaseResponse.java[BaseResponse" modifiers="1025" timestamp="1519888343798"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.engine.script{MessageScript.java[MessageScript" modifiers="1" timestamp="1522047066561"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.request{BaseRequest.java[BaseRequest" modifiers="1" timestamp="1516270364733"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.response.sys{StartGameResponse.java[StartGameResponse" modifiers="1" timestamp="1522121634266"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.message.request.room{GlabLandlordRequest.java[GlabLandlordRequest" modifiers="1" timestamp="1522138281299"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.manager{RoomManager.java[RoomManager" modifiers="1" timestamp="1522063592784"/>
+<typeInfo handle="=gameserver-roleplay/src\/test\/java&lt;com.lw.test{TestB.java[TestB" modifiers="1" timestamp="1522152826991"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.roleplay.room{Room.java[Room" modifiers="1" timestamp="1522148291237"/>
+<typeInfo handle="=gameserver-roleplay/src\/main\/java&lt;com.sim.server.game.engine.handler{BaseHandler.java[BaseHandler" modifiers="1025" timestamp="1519888424823"/>
+</typeInfoHistroy>

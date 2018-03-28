@@ -1,0 +1,18 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class CheckEmployeeRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.CHECK_EMPLOYEE_REQUEST_PROTOCOL;
+
+	public CheckEmployeeRequest(ByteBuf buf) {
+		super(buf);
+	}
+}

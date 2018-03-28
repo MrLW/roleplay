@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.hr;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Employee;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2017年12月26日 下午6:08:25
+ * @Function: 获取员工列表
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class EmployeeListResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.EMPLOYEE_LIST_RESPONSE_PROTOCOL;
+
+	private List<Employee> employees ;
+	
+	public EmployeeListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(employees);
+	}
+
+}

@@ -1,0 +1,22 @@
+package com.sim.server.game.model.model;
+
+public class PlayerAttr {
+	
+	// 玩家经验
+	private Integer maxExp ;
+	// 玩家最大血量
+	private Integer maxHp;
+	public Integer getMaxExp() {
+		return maxExp;
+	}
+	public void setMaxExp(Integer maxExp) {
+		this.maxExp = maxExp;
+	}
+	public Integer getMaxHp() {
+		return maxHp;
+	}
+	public void setMaxHp(Integer maxHp) {
+		this.maxHp = maxHp;
+	} 
+	
+}

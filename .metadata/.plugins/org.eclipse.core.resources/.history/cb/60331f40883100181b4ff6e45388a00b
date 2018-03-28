@@ -1,0 +1,26 @@
+package com.sim.server.game.message.response.room;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.Channel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper=false)
+@Data
+public class GrabLandlordResponse extends BaseResponse {
+
+	// –≠“È∫≈
+	private short responseId = RolePlayProtocolConstant.HEARTBEAT_RESPONSE_PROTOCOL; 
+	
+	public GrabLandlordResponse(Channel ctx) {
+		super(ctx);
+	}
+	
+	@Override
+	public void write() {
+		
+	}
+
+}

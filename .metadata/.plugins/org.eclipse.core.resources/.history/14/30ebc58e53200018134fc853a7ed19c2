@@ -1,0 +1,501 @@
+package com.sim.server.game.roleplay.room;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.message.response.common.AllSelectResponse;
+import com.sim.server.game.message.response.common.RoleResponse;
+import com.sim.server.game.message.response.common.TotalIncomeResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.model.model.ProductLine;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.config.RoomConfig;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.init.RoleDataLoader;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.strategy.FinanReqContext;
+import com.sim.server.game.utils.CommodityUtil;
+import com.sim.server.game.utils.LoggerUtil;
+
+import io.netty.channel.Channel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年11月20日 上午11:07:11
+ * @Function: 玩家房间,在本游戏相当于公司
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Room {
+
+	// 系统同步房间内时间
+	boolean syncSystemTime = false;
+	// 游戏总时间
+	private static int GAMEOVER_TIME = 10 * 60;
+	// 当前系统时间
+	private String curTime = "10:00";
+	// 总收入,初始化情况下为10w
+	private int totalIncome = 100000;
+	// 房间号
+	private String roomId;
+	// 房间状态 1:正处于创建时期,可以添加玩家;2:玩家添加完毕,在进入开始游戏之前;3:房间正在玩游戏
+	private byte state;
+	// 房间是否组队成功
+	private boolean complete;
+	
+	private static final int PRODUCTOR_MANAGER_TYPE = RoomConfig.PRODUCTOR_MANAGER;
+	private static final int FINANCE_MANAGER_TYPE = RoomConfig.FINANCE_MANAGER;
+	private static final int HR_MANAGER_TYPE = RoomConfig.HR_MANAGER;
+	private static final int PURCHASE_MANAGER_TYPE = RoomConfig.PURCHASE_MANAGER;
+	private static final int BAZAAR_MANAGER_TYPE = RoomConfig.BAZAAR_MANAGER;
+	// 玩家信息
+	private BlockingQueue<PlayerInfo> playerInfos = new LinkedBlockingQueue<PlayerInfo>();
+	// 该房间的玩家角色
+	private Queue<BaseManager> baseManagers = new ConcurrentLinkedQueue<BaseManager>();
+	
+	private Map<Commodity, Integer> commodityMap2 = new ConcurrentHashMap<Commodity, Integer>();
+	// 工作中的仓库映射
+	private Queue<Commodity> commodities = new ConcurrentLinkedQueue<>();
+
+
+	// 生产线集合
+	private List<ProductLine> productLines = new LinkedList<ProductLine>();
+
+	// 上下文集合
+	//private List<ChannelHandlerContext> ctxs = new LinkedList<ChannelHandlerContext>();
+	// 客户端连接
+	private Queue<Channel> channels = new ConcurrentLinkedQueue<>();
+
+	@Setter
+	@Getter
+	private FinanReqContext finanReqContext;
+	private Thread timer;
+
+	public Room() {
+	}
+
+	public BlockingQueue<PlayerInfo> getPlayerInfos() {
+		return playerInfos;
+	}
+
+	public void setPlayerInfos(BlockingQueue<PlayerInfo> playerInfos) {
+		this.playerInfos = playerInfos;
+	}
+
+	public void setBaseManagers(LinkedList<BaseManager> baseManagers) {
+		this.baseManagers = baseManagers;
+	}
+
+	public Queue<BaseManager> getBaseManagers() {
+		return baseManagers;
+	}
+
+	public Integer getTotalIncome() {
+		return totalIncome;
+	}
+
+	public void setTotalIncome(Integer totalIncome) {
+		this.totalIncome = totalIncome;
+	}
+
+	/**
+	 * 获取财务经理
+	 * 
+	 * @return
+	 */
+	public BaseManager getFinanceManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == FINANCE_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	public BaseManager getHRManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == HR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	
+
+	/**
+	 * 获取财务经理
+	 * 
+	 * @return
+	 */
+	public BaseManager getPurchaseManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == PURCHASE_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 获取生产经理
+	 */
+	public BaseManager getProductManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == PRODUCTOR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 获取市场经理
+	 */
+	public BaseManager getBazaarManager() {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleType() == BAZAAR_MANAGER_TYPE)
+				return baseManager;
+		}
+		return null;
+	}
+
+	/**
+	 * 房间第一次创建时调用
+	 */
+	public void onCreate() {
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化房间信息开始");
+		Map<Integer, Commodity> commodities = ResourceDataLoader.getInstance().getCommodities();
+		Set<Integer> types = commodities.keySet();
+		for (int type : types) {
+			Queue<Commodity> idle = new ConcurrentLinkedQueue<>();
+			//commdityMap.put(type, idle);
+		}
+		finanReqContext = new FinanReqContext(this);
+		finanReqContext.init();
+
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各房间信息结束");
+	}
+
+	/**
+	 * 游戏开始计时
+	 */
+	public void startTime() {
+		if (!syncSystemTime) {
+			// timer.start();
+		}
+		syncSystemTime = true;
+	}
+
+	/**
+	 * 判断房间是否为空
+	 */
+	public boolean isEmpty() {
+		return getPlayerInfos().isEmpty();
+	}
+	/**
+	 * 房间是否已 满
+	 * @return
+	 */
+	public boolean isAllSelected() {
+		return baseManagers.size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+	}
+
+	public boolean isComplete() {
+		complete = getPlayerInfos().size() == RoomConfig.ROOM_PLAYER_COUNT ? true : false;
+		return complete;
+	}
+
+	/**
+	 * 房间销毁时调用
+	 */
+	public void onDestroy() {
+		LoggerUtil.getLogger(Room.class).info("房间销毁...");
+		RoomManager.newRoomsList.remove(this);
+	}
+
+	public void join(PlayerInfo playerInfo) {
+		this.playerInfos.add(playerInfo);
+		if (this.getPlayerInfos().size() >= RoomConfig.ROOM_PLAYER_COUNT) {
+			state = 2;
+		}
+	}
+
+	/**
+	 * 判断是否申请金额
+	 * 
+	 * @param applyForMoney
+	 *            申请的金额
+	 * @return true: 可以申请;false:不可以申请
+	 */
+	public boolean isApplyFor(Integer applyForMoney) {
+		return totalIncome >= applyForMoney ? true : false;
+	}
+
+	/**
+	 * 从公司申请金额
+	 * 
+	 * @param applyForMoney
+	 *            申请的金额
+	 */
+	public void expense(int applyForMoney) {
+		this.totalIncome -= applyForMoney;
+		syncTotoalMoney();
+	}
+
+	/**
+	 * 根据id查找生产线
+	 * 
+	 * @param productLineId
+	 * @return
+	 */
+	public ProductLine getProductLineById(Integer productLineId) {
+		for (ProductLine productLine : productLines) {
+			if (productLine != null && productLine.getProductLineId() == productLineId) {
+				return productLine;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 同步总金额
+	 */
+	public void syncTotoalMoney() {
+		for (BaseManager baseManager : baseManagers) {
+			TotalIncomeResponse response = new TotalIncomeResponse(baseManager.getCtx());
+			response.setTotalIncome(totalIncome);
+			response.writeAndFlush();
+		}
+	}
+
+	/**
+	 * 根据角色ID查找BaseManager
+	 * 
+	 * @param roleId
+	 *            角色ID
+	 * @return baseManager
+	 */
+	public BaseManager getManagerByRoleId(Integer roleId) {
+		for (BaseManager baseManager : baseManagers) {
+			if (baseManager.getRoleId() == roleId) {
+				return baseManager;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 赚钱
+	 * @param money
+	 */
+	public void earn(int money) {
+		totalIncome += money;
+		// 通知所有客户端
+		syncTotoalMoney();
+	}
+
+	/**
+	 * 通知房间内的其它玩家有玩家选择了角色
+	 * 
+	 * @param roleType
+	 *            角色类型
+	 * @param userId
+	 *            玩家ID
+	 */
+	public void chooseRole(int roleType, int userId) {
+		for (Channel channel : channels) {
+			RoleResponse response = new RoleResponse(channel);
+			response.setRoleType(roleType);
+			response.setUserId(userId);
+			response.writeAndFlush();
+		}
+		if (isAllSelected()) {
+			startGame();
+		}
+	}
+	/**
+	 *  通知所有客户端进入游戏
+	 */
+	public void startGame() {
+		for (Channel channel : channels) {
+			AllSelectResponse response = new AllSelectResponse(channel);
+			int userId = HallManager.getUserIdByCtx(channel);
+			System.out.println(userId + "玩家进入游戏~");
+			response.writeAndFlush();
+		}
+	}
+
+	
+
+	/**
+	 * 添加物品
+	 * @param commodity 物品对象
+	 * @param count 物品的数量
+	 * @return 是否添加成功
+	 */
+	public boolean add(Commodity commodity,int count) {
+		boolean result = false ;
+		// 获取添加物品类型
+		int commodityType = commodity.getCommodityData().getCommodityType();
+		// 添加仓库/生产桌
+		if (CommodityUtil.isWarehouse(commodityType) || CommodityUtil.isProTable(commodityType)) {
+			return addEquipment(commodity, count);
+		}
+		// 添加原料/产品
+		// 该商品是否已经添加
+		// 添加到已存放物品的仓库中
+		if (commodities != null && commodities.size() > 0) {
+			for (Commodity warehouse : commodities) {
+				// 判断当前仓库是否已经满了
+				if (warehouse.isFull()) {
+					continue ;
+				}
+				// 获取仓库的产品集合
+				Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+				for (Map.Entry<Commodity, Integer> entry : atomMap.entrySet()) {
+					Commodity atom = entry.getKey();
+					if (atom.getCommodityData().getCommodityType() == commodityType) {
+						int atomCount = entry.getValue();
+						int residue = 0 ;
+						if(warehouse.remainCount() >= count) {// 如果该仓库有足够的容量
+							atomCount+=count ;
+							atomMap.put(atom, atomCount);
+						}else {
+							residue = count-warehouse.remainCount();
+							atomMap.put(atom, warehouse.getCommodityData().getCapacity());
+						}
+						if(residue > 0) {
+							add(commodity, residue);
+						}
+						result = true ;
+						break;
+					}
+				}
+			}
+		}
+		if (!result) {
+			result = addEmpty(commodity,count);
+		}
+		return result;
+	}
+	/**
+	 * 添加设备(仓库/设备)
+	 * @param commodity 设备对象
+	 * @param count 数量
+	 * @return 是否添加成功
+	 */
+	private boolean addEquipment(Commodity commodity, int count) {
+		if (!commodityMap2.containsKey(commodity)) {
+			commodityMap2.put(commodity, count);
+		} else {
+			int commodityCount = commodityMap2.get(commodity);
+			commodityCount+=count;
+			commodityMap2.put(commodity, commodityCount);
+		}
+		return true;
+	}
+	/**
+	 *  添加一个原料/产品到仓库
+	 * @param commodity 原料或者产品对象
+	 * @param count 数量
+	 * @return 是否添加成功
+	 */
+	private boolean addEmpty(Commodity commodity,int num) {
+		boolean result;
+		//取出模板仓库
+		Commodity  c = ResourceDataLoader.getInstance().getWarehouse();
+		// 设备仓库中仓库的数量
+		int count = commodityMap2.get(c);
+		if (count >= 1) {
+			Commodity warehouse ;
+			try {
+				warehouse = c.clone();
+				int wsCount = commodityMap2.get(c);
+				commodityMap2.put(c, --wsCount);
+			} catch (CloneNotSupportedException e) {
+				throw new RuntimeException("从设备仓库中创建一个仓库失败");
+			}
+			Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+			if(!atomMap.containsKey(commodity)) {
+				if(warehouse.getCommodityData().getCapacity() >= num) {
+					atomMap.put(commodity, num);
+				}else {
+					// 计算剩余数量
+					int residue = num - warehouse.getCommodityData().getCapacity();
+					atomMap.put(commodity, warehouse.getCommodityData().getCapacity());
+					add(commodity, residue);
+				}
+			}else {
+				throw new RuntimeException("一个空仓库中有物品....");
+			}
+			// 将该仓库添加到使用列表
+			commodities.add(warehouse);
+			result = true;
+		} else {
+			result = false;
+		}
+		return result;
+	}
+
+	
+	/**
+	 *  取出指定类型的物品
+	 * @param commodityType 指定类型
+	 * @return 物品对象
+	 */
+	public Commodity poll2(int commodityType) {
+		// 根据原料类型获取原料仓库集合
+		Commodity material = null;
+		// 获取盛装指定商品类型的仓库集合
+		if(commodities != null && commodities.size() >0 ) {
+			for(Commodity warehouse:commodities) {
+				Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+				for(Map.Entry<Commodity, Integer> entry:atomMap.entrySet()) {
+					Commodity atom = entry.getKey();
+					// 判断该参考存放的是否是指定类型
+					if(atom.getCommodityData().getCommodityType()==commodityType) {
+						int count = entry.getValue();
+						material = atom ;
+						if(count == 1) {
+							// 将该仓库重新放到设备设备仓库中
+							commodities.remove(warehouse);
+							int wareHouseCount = commodityMap2.get(ResourceDataLoader.getInstance().getWarehouse());
+							wareHouseCount++;
+							commodityMap2.put(ResourceDataLoader.getInstance().getWarehouse(), wareHouseCount);
+							return material ;
+						} else {
+							atomMap.put(atom, --count);
+							return material ;
+						}
+					}
+				}
+			}
+		}
+		return material;
+	}
+	
+	/**
+	 *  释放仓库
+	 * @param warehouse 仓库对象
+	 */
+	public void release(Commodity warehouse) {
+		// 工作仓库移除
+		commodities.remove(warehouse);
+		// 设备仓库中数量+1
+		Commodity ws = ResourceDataLoader.getInstance().getWarehouse();
+		int c = commodityMap2.get(ws);
+		commodityMap2.put(ws, ++c);
+	}
+}

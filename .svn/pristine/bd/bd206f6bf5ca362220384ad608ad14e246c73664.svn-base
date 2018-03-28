@@ -1,0 +1,40 @@
+package com.sim.server.game.roleplay.bean;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import com.sim.server.game.engine.core.NoSize;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:03:27
+ * @Function: 仓库,里面存放着原料.暂时只有一种类型
+ * @version 1.0
+ */
+public class WareHouse extends WareHouseDesc{
+
+	// 原材料队列
+	@NoSize
+	private BlockingQueue<Material> materials = new LinkedBlockingDeque<Material>();
+	// 产品队列
+	@NoSize
+	private BlockingQueue<Product> products = new LinkedBlockingDeque<Product>();
+
+
+	public BlockingQueue<Material> getMaterials() {
+		return materials;
+	}
+
+	public void setMaterials(BlockingQueue<Material> materials) {
+		this.materials = materials;
+	}
+
+	public BlockingQueue<Product> getProducts() {
+		return products;
+	}
+
+	public void setProducts(BlockingQueue<Product> products) {
+		this.products = products;
+	}
+
+}

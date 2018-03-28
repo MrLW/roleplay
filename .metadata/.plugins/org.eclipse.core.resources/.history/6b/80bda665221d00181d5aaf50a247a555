@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.hr.TalkWithEmpRequest;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月25日 下午4:02:52
+ * @Function: 洽谈
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.EMPLOYEE_TALK_REQUEST_PROTOCOL,desc="洽谈")
+public class TalkWithEmpHandler extends BaseHandler {
+
+	@Override
+	public void run() {
+		TalkWithEmpRequest request = (TalkWithEmpRequest) baseRequest ;
+		int empId = request.getEmpId();
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		hrManager.talk(empId) ;
+	}
+
+	@Override
+	public Object clone() {
+		TalkWithEmpHandler handler = new TalkWithEmpHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

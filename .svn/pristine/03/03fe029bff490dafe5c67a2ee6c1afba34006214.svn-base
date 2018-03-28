@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 下午2:46:28
+ * @Function: 采购结果响应
+ * @version 1.0
+ */
+public class PurchaseResultResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId ;//= RolePlayProtocolConstant.PURCHASE_RESULT_RESPONSE_PROTOCOL;
+
+	private Byte result;
+
+	public PurchaseResultResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

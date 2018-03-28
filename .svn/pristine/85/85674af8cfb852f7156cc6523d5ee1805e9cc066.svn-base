@@ -1,0 +1,15 @@
+package com.lw.test;
+
+import java.lang.reflect.Field;
+import java.util.concurrent.BlockingQueue;
+
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.bean.WareHouseDesc;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+
+public class Test {
+
+	public static void main(String[] args) {
+
+	}
+}

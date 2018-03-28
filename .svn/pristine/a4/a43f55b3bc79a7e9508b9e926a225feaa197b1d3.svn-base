@@ -1,0 +1,77 @@
+package com.lw.test;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.BeanUtils;
+
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.bean.Commodity;
+
+public class Test {
+
+	public static void main(String[] args) throws CloneNotSupportedException {
+		List<String> list = new ArrayList<String>();
+		for (int i = 0; i < 10; i++) {
+			list.add("a-" + i);
+		}
+		System.out.println(list);
+
+		for (int i = 0; i < 5; i++) {
+			list.remove(i);
+		}
+
+		System.out.println(list);
+
+		// ²âÊÔÃ¶¾Ù
+//		System.out.println(WareHouseType.PRODUCTA.getValue());
+
+		/*
+		 * Class<Obj> clazz = Obj.class; Field[] fields = clazz.getFields();
+		 * System.out.println("fiels:" + fields.length); for (Field field : fields) {
+		 * System.out.println(field.getName()); }
+		 */
+
+		Test test = new Test();
+		int a = 2;
+		System.out.println("a:" +( a << 0));
+		System.out.println("a:" +( a << 1));
+		System.out.println("a:" +( a << 2));
+		System.out.println("a:" +( a << 3));
+		Map<Integer, String> map = new HashMap<Integer, String>() ;
+		map.put(1, "a");
+		map.put(2, "b");
+		Collection<String> values = map.values();
+		Iterator<String> iterator = values.iterator();
+		
+		System.out.println(values);
+		
+		Commodity commodity = new Commodity() ;
+		Commodity commodity2 = new Commodity() ;
+		BeanUtils.copyProperties(commodity2, commodity);
+		System.out.println(commodity.getQueue() == commodity2.getQueue());
+		System.out.println("-----------------------");
+		Commodity c = new Commodity() ;
+		c.setCapacity(1);
+		c.setCommodityId(1);
+		c.setCommodityName("a");
+		c.setCommodityType(1);
+		c.setInPrice(1);
+		c.setOutPrice(1);
+		Commodity clone = c.clone();
+		System.out.println(clone.getQueue() == c.getQueue());
+		System.out.println("-----------------------");
+		Order order = new Order() ;
+		Field[] declaredFields = order.getClass().getDeclaredFields();
+		for (Field field : declaredFields) {
+			System.out.println(field.getName());
+		}
+		
+	}
+
+}

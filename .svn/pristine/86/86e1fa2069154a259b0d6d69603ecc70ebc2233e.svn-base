@@ -1,0 +1,53 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午5:22:42
+ * @Function: 求职者
+ * @version 1.0
+ */
+@Data
+public class Jobhunter implements IByteTo{
+
+	// 求职者ID
+	private int jobhunterId;
+	// 求职者名
+	private String name;
+	// 求职类型
+	private int type =1;
+	// 求职者能力
+	private int ability;
+	// 期望薪水
+	private int salary;
+	
+	private int test ;
+
+	public Jobhunter(Integer jobhunterId, String name, Integer ability, Integer salary) {
+		super();
+		this.jobhunterId = jobhunterId;
+		this.name = name;
+		this.ability = ability;
+		this.salary = salary;
+	}
+
+
+	@Override
+	public String toString() {
+		return "Jobhunter [jobhunterId=" + jobhunterId + ", name=" + name + ", type=" + type + ", ability=" + ability
+				+ ", salary=" + salary + "]";
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(jobhunterId);
+		buf.writeString(name);
+		buf.writeInt(type);
+		buf.writeInt(ability);
+		buf.writeInt(salary);
+	}
+	
+}

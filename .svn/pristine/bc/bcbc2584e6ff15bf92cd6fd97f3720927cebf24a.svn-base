@@ -1,0 +1,69 @@
+package com.sim.server.game.roleplay.player;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午1:39:57
+ * @Function:职员
+ * @version 1.0
+ */
+public class Employee {
+	
+	// 职员ID
+	private Integer empId;
+	// 员工所属公司/房间 
+	private String empCompany ;
+	// 职员类型.1:操作员;2:运输员
+	private Integer empType;
+	// 职员能力
+	private Integer ability;
+	// 状态：理解为人物HP，均为0~100，随工作时间减少，为0时拒绝工作
+	private Integer hp;
+	// 薪水
+	private Integer salary ;
+	
+	// 职员此时状态.1:
+	private Integer state;
+	
+	public Integer getEmpId() {
+		return empId;
+	}
+	public void setEmpId(Integer empId) {
+		this.empId = empId;
+	}
+	public Integer getEmpType() {
+		return empType;
+	}
+	public void setEmpType(Integer empType) {
+		this.empType = empType;
+	}
+	public Integer getAbility() {
+		return ability;
+	}
+	public void setAbility(Integer ability) {
+		this.ability = ability;
+	}
+	public Integer getHp() {
+		return hp;
+	}
+	public void setHp(Integer hp) {
+		this.hp = hp;
+	}
+	public Integer getState() {
+		return state;
+	}
+	public void setState(Integer state) {
+		this.state = state;
+	}
+	public Integer getSalary() {
+		return salary;
+	}
+	public void setSalary(Integer salary) {
+		this.salary = salary;
+	}
+	public String getEmpCompany() {
+		return empCompany;
+	}
+	public void setEmpCompany(String empCompany) {
+		this.empCompany = empCompany;
+	}
+}

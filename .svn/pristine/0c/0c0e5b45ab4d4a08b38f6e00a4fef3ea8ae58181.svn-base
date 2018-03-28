@@ -1,0 +1,299 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.FinancialStateResponse;
+import com.sim.server.game.message.response.finance.FinancialSuccessResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.model.model.FinancialRequestMsg.FinancialType;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.utils.CommodityUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:04:17
+ * @Function: 财务总监
+ * @version 1.0
+ */
+public class FinanceManager extends BaseManager implements IByteTo {
+
+	public FinanceManager() {
+		super.roleId = 3;
+		roleType = 3;
+		roleName = "财务总监";
+	}
+
+	public void applyForMoney(Integer applyForMoney) {
+		// 其他部门向财务申请金额
+		if (room.isApplyFor(applyForMoney)) {
+			room.applyFor(applyForMoney);
+		}
+
+	}
+
+	/**
+	 * 修改财务请款的状态
+	 * 
+	 * @param financialRequestMsgId
+	 *            唯一标志
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int removeFinancialRequestMsgById(Integer financialRequestMsgId) {
+		try {
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+
+	/**
+	 * 通知请款人
+	 * 
+	 * @param financialRequestMsgId
+	 */
+	public int notifyPayee(Integer financialRequestMsgId, int state) {
+		int result = 0;
+		try {
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+
+			// 获取请款人roleId
+			int roleId = msg.getRoleId();
+			if (state == 1 && msg != null) {
+				result = 1;
+				// 根据请款ID查找当前请款类型
+				int type = msg.getType();
+				
+				// 如果当前请款类型是财务请款
+				if(CommodityUtil.APPLYFOR_MONEY_TYPE==type) {
+					// 小金库
+					int money = msg.getMoney();
+					// 给市场添加小金库
+					BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+					bazaarManager.coffers(money);
+					
+				}else {
+					// 获取请款单的商品类
+					Commodity commodity = ResourceDataLoader.getInstance().getCommodities().get(type);
+					int count = msg.getMoney() / commodity.getInPrice();
+					// 如果是生产台或者是仓库,直接添加
+					if (CommodityUtil.isWarehouse(type) || CommodityUtil.isProTable(type)) { // 如果是仓库或者生产台,直接添加到房间
+						for (int i = 0; i < count; i++) {
+							Commodity target = commodity.clone();
+							room.addCommodity(type, target);
+						}
+					} else if (CommodityUtil.isMaterial(type)) { // 如果是原料,需要找到对应仓库来添加,如果没有对应的仓库,则提示
+						for (int i = 0; i < count; i++) {
+							Commodity material = commodity.clone();
+							Map<Integer, List<Commodity>> commodityMap = room.getCommdityMap();
+							List<Commodity> warehouseList = commodityMap
+									.get(CommodityUtil.getWarehouseTypeByMaterialType(type));
+							if (warehouseList != null && warehouseList.size() > 0) {
+								// 遍历集合仓库,将原料添加到一个未满仓库
+								for (Commodity warehouse : warehouseList) {
+									// 判断当前仓库是否已经满了
+									if(warehouse.isFull()) {
+										continue;
+									}
+									// 获取仓库的元素集合
+									ConcurrentLinkedQueue<Commodity> queue = warehouse.getQueue();
+									queue.add(material);
+									material = null ;
+									break;
+								}
+								if(material != null ) {
+									insertEmptyWarehouse(type, material, commodityMap);
+								}
+							} else {
+								insertEmptyWarehouse(type, material, commodityMap);
+
+							}
+						}
+					}
+
+				}
+				
+				// 同步总金额
+				room.applyFor(msg.getMoney());
+				room.syncTotoalMoney();
+
+				BaseManager manager = room.getManagerByRoleId(roleId);
+				FinancialSuccessResponse response = new FinancialSuccessResponse(manager.getCtx());
+				response.setResult((byte) 1);
+				response.writeAndFlush();
+			} else {
+				BaseManager manager = room.getManagerByRoleId(roleId);
+				FinancialSuccessResponse response = new FinancialSuccessResponse(manager.getCtx());
+				response.setResult((byte) 0);
+				response.writeAndFlush();
+			}
+			syncFinancialRequestMsg();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+
+		// 通知财务总监
+		writeFinancialStateResponse(result);
+
+		return 1;
+
+	}
+
+	private void insertEmptyWarehouse(int type, Commodity material, Map<Integer, List<Commodity>> commodityMap) {
+		// 仓库都未指定装什么物品
+		LinkedList<Commodity> emptyWarehouseList = (LinkedList<Commodity>) commodityMap
+				.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+		if(emptyWarehouseList == null || emptyWarehouseList.size() == 0 ) {
+			ProductorManager productManager = (ProductorManager) room.getProductManager();
+			productManager.writeCheckWarehouse(ctx);
+			return ;
+		}
+		// 新的仓库类型集合
+		List<Commodity> newList = new LinkedList<Commodity>();
+		// 从空仓库中取出一个
+		Commodity emptyWarehouse = emptyWarehouseList.poll();
+		emptyWarehouse.setQueue(new ConcurrentLinkedQueue<Commodity>());
+		// 设置该新仓库的类型
+		emptyWarehouse
+				.setCommodityType(CommodityUtil.getWarehouseTypeByMaterialType(type));
+		// 将新添加的商品添加到新仓库中
+		emptyWarehouse.getQueue().add(material);
+		// 将该仓库添加到新的仓库类型集合中
+		newList.add(emptyWarehouse);
+		List<Commodity> oldList = commodityMap.get(CommodityUtil.getWarehouseTypeByMaterialType(type));
+		if(oldList == null) {
+			oldList = new LinkedList<Commodity>() ;
+		}
+		newList.addAll(oldList);
+		// 将新仓库类型集合添加到Map中
+		commodityMap.put(CommodityUtil.getWarehouseTypeByMaterialType(type),
+				newList);
+		List<Commodity> busyCommdityList = room.getBusyCommdityMap()
+				.get(CommodityUtil.getWarehouseTypeByMaterialType(type));
+		List<Commodity> idleCommdityList = room.getIdleCommdityMap()
+				.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+		if (busyCommdityList != null) {
+			busyCommdityList.add(emptyWarehouse);
+			idleCommdityList.remove(emptyWarehouse);
+		} else {
+			busyCommdityList = new LinkedList<Commodity>();
+			busyCommdityList.add(emptyWarehouse);
+			room.getBusyCommdityMap().put(
+					CommodityUtil.getWarehouseTypeByMaterialType(type),
+					busyCommdityList);
+		}
+
+		if (idleCommdityList != null) {
+			idleCommdityList.remove(emptyWarehouse);
+		}
+	}
+
+	/**
+	 * 响应财务请款单状态
+	 * 
+	 * @param result
+	 */
+	private void writeFinancialStateResponse(int result) {
+		FinancialStateResponse response = new FinancialStateResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 创建财务请款
+	 * 
+	 * @param roleId
+	 *            创建人的角色ID
+	 * @param financialType
+	 *            请款类型
+	 * @param cost
+	 *            请款的消耗
+	 */
+	public void createFinReq(int roleId, FinancialType financialType, int cost) {
+		// 创建财务请款实体bean
+		FinancialRequestMsg finReq = new FinancialRequestMsg();
+		finReq.setMoney(cost);
+		finReq.setRoleId(roleId);
+		int msgType = 0;
+		String msg = "";
+		switch (financialType) {
+		case MATERIAL:
+			msg = "采购原料A请款";
+			msgType = 13;
+			break;
+		case MATERIALB:
+			msg = "采购原料B请款";
+			msgType = 23;
+			break;
+		case WAREHOUSE:
+			msg = "采购仓库请款";
+			msgType = 11;
+			break;
+		case EQUIPMENT:
+			msg = "采购设备请款";
+			msgType = 12;
+			break;
+		case BAZAAR:
+			msg = "市场申请小金库";
+			msgType = 14;
+			break;
+		default:
+			break;
+		}
+		finReq.setMsg(msg);
+		finReq.setFinancialRequestMsgId(room.getFinancialRequestMsgs().size());
+		finReq.setType(msgType);
+		room.getFinancialRequestMsgs().add(finReq);
+	}
+
+	public void syncFinancialRequestMsg() {
+		FinancialListResponse response = new FinancialListResponse(ctx);
+		response.setFinancialRequestMsgs(room.getFinancialRequestMsgs());
+		response.writeAndFlush();
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+
+	}
+
+	/**
+	 * 创建财务请款
+	 * 
+	 * @param roleId
+	 *            创建人的角色ID
+	 * @param commodityType
+	 *            请款类型
+	 * @param cost
+	 *            请款的消耗
+	 */
+	public void createFinReq(int roleId, int commodityType, int cost) {
+		// 创建财务请款实体bean
+		FinancialRequestMsg finReq = new FinancialRequestMsg();
+		finReq.setMoney(cost);
+		finReq.setRoleId(roleId);
+		finReq.setType(commodityType);
+		finReq.setCount(cost);
+		finReq.setMsg("请款-" + commodityType);
+		finReq.setMoney(cost);
+		room.getFinancialRequestMsgs().add(finReq);
+	}
+}

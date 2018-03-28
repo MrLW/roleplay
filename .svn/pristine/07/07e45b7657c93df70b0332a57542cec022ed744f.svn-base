@@ -1,0 +1,35 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitWareHouseResponse;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午3:40:20
+ * @Function: 初始化数据库仓库处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_WAREHOUSE_REQUEST_PROTOCOL, desc = "初始化数据库仓库处理")
+public class InitWareHouseHandler extends BaseHandler {
+
+	public void run() {
+		List<WareHouse> wareHousesDB = ResourceDataLoader.getInstance().getWareHousesDB();
+		InitWareHouseResponse response = new InitWareHouseResponse(ctx);
+		response.setWareHouses(wareHousesDB);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitWareHouseHandler handler = new InitWareHouseHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+}

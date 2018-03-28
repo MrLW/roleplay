@@ -1,0 +1,36 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.productor.EmployeeProductLineRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+/**
+ * @author liwen
+ * @date:2018年1月11日 下午2:17:55
+ * @Function:员工配置生产线
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.EMPLOYEEProductLine_REQUEST_PROTOCOL,desc="员工配置生产线")
+public class EmployeeProductLineHandler extends BaseHandler {
+
+	public void run() {
+		EmployeeProductLineRequest request = (EmployeeProductLineRequest) baseRequest ;
+		// 找到生产总监
+		ProductorManager manager = (ProductorManager) RoomManager.getNewRoomByCtx(ctx).getProductManager();
+		
+		manager.deployProductLine(request.getEmpId(),request.getProductLineId()) ;
+	}
+
+	@Override
+	public Object clone() {
+		EmployeeProductLineHandler handler = new EmployeeProductLineHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

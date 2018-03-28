@@ -1,0 +1,32 @@
+package com.sim.server.game.message.request.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2018年1月3日 上午11:44:57
+ * @Function: 刷新求职者
+ * @version 1.0
+ */
+public class FlushJobhunterRequest extends BaseRequest {
+	// 请求协议号
+	private Short requestId = RolePlayProtocolConstant.JOBHUNTER_FLUSH_REQUEST_PROTOCOL;
+
+	public FlushJobhunterRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+	
+}

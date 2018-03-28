@@ -1,0 +1,75 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.bazaar.ApplyForMoneyRequest;
+import com.sim.server.game.message.response.bazaar.ApplyForMoneyResponse;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.player.FinanceManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午3:20:17
+ * @Function: 市场经理申请金额请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.APPLYFOR_MONEY_REQUEST_PROTOCOL, desc = " 市场经理申请金额请求处理")
+public class ApplyForMoneyHandler extends BaseHandler {
+
+	public void run() {
+		ApplyForMoneyRequest request = (ApplyForMoneyRequest) baseRequest;
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 获取市场部经理
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		bazaarManager.setBeforeCommitApplyForMoney(request.getApplyForMoney());
+		
+		
+		// 创建财务请款实体bean
+		FinancialRequestMsg msg = new FinancialRequestMsg() ;
+		msg.setMoney(request.getApplyForMoney());
+		msg.setRoleId(bazaarManager.getRoleId());
+		msg.setMsg("市场申请请款");
+		msg.setFinancialRequestMsgId(room.getFinancialRequestMsgs().size());
+		msg.setType(21);
+		room.getFinancialRequestMsgs().add(msg);
+		
+		// 获取财务部经理
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		ApplyForMoneyResponse response = new ApplyForMoneyResponse(financeManager.getCtx());
+		response.setMoney(request.getApplyForMoney());
+		response.writeAndFlush();
+		
+		// 将财务请款列表同步给财务
+	    syncFinancialMsgs(financeManager.getCtx(),room.getFinancialRequestMsgs());
+		
+	}
+	
+	/**
+	 *  同步所有请款列表
+	 * @param financeCtx
+	 */
+	private void syncFinancialMsgs(ChannelHandlerContext financeCtx,List<FinancialRequestMsg> financialRequestMsgs) {
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		ApplyForMoneyHandler handler = new ApplyForMoneyHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

@@ -1,0 +1,38 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月11日 下午6:11:43
+ * @Function:生产线停止生产
+ * @version 1.0
+ */
+public class ProductLineStopResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.PRODUCTLINE_STOP_RESPONSE_PROTOCOL;
+	
+	// 生产线停止生产的原因
+	private Integer reason ;
+
+	public ProductLineStopResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Integer getReason() {
+		return reason;
+	}
+
+	public void setReason(Integer reason) {
+		this.reason = reason;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(reason);
+	}
+
+}

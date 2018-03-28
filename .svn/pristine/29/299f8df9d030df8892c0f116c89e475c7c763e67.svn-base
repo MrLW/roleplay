@@ -1,0 +1,156 @@
+package com.sim.server.game.model.model;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.Product;
+import com.sim.server.game.roleplay.bean.WareHouse;
+import com.sim.server.game.roleplay.bean.WareHouse.WareHouseType;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:34:14
+ * @Function: 生产线
+ * @version 1.0
+ */
+public class ProductLine implements Runnable {
+
+	// 生产线ID
+	public Integer productLineId;
+	// 生产桌ID
+	public Integer equipmentId;
+	// 该生产线要生产的产品ID,默认情况下该生产线不生产产品
+	public Integer productTypeId = 0;
+	// 员工ID
+	public Integer employeeId = -1 ;
+	// 默认不工作
+	private boolean work = false;
+	// 生产总监
+	private ProductorManager productor;
+	// 每个生产生产线创建一个产品的时间间隔
+	private static final int PERIOD_MILS = 500;
+	// 房间对象
+	private Room room;
+	// 锁对象
+	private Object lock = new Object();
+
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public Integer getProductTypeId() {
+		return productTypeId;
+	}
+
+	public void setProductTypeId(Integer productTypeId) {
+		this.productTypeId = productTypeId;
+	}
+
+	public Integer getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(Integer employeeId) {
+		this.employeeId = employeeId;
+	}
+
+	public ProductorManager getProductorManager() {
+		return productor;
+	}
+
+	public void setProductorManager(ProductorManager productorManager) {
+		this.productor = productorManager;
+		this.room = RoomManager.getNewRoomByCtx(productor.getCtx());
+	}
+
+	/**
+	 * 设置当前生产线的工作状态
+	 * 
+	 * @param work
+	 *            是否工作
+	 */
+	public void setWork(boolean work) {
+		this.work = work;
+	}
+
+	public Integer getProductLineId() {
+		return productLineId;
+	}
+
+	public void setProductLineId(Integer productLineId) {
+		this.productLineId = productLineId;
+	}
+
+	public  void run() {
+
+		while (work) { // 如果是在工作状态,每秒创建一个产品
+			// 如果仓库数量不足则停止生产并通知客户端
+			if (!productor.checkWarehouse(WareHouseType.PRODUCTA.getValue(), 0)) { // 仓库库存不足
+				stop();
+				productor.writeCheckWarehouse();
+				return;
+			}
+
+			// 如果原料不足,则停止生产并通知客户端
+			// 获取原料仓库
+			WareHouse materialWarehouse = room.getWareHouseByType(WareHouseType.MATERIALA.getValue());
+			ConcurrentLinkedQueue<Material> materials = (ConcurrentLinkedQueue<Material>) materialWarehouse.getQueue();
+			if (materials.size() == 0) {
+				stop();
+				productor.writeCheckMaterial();
+				return;
+			}
+			// 使用原料开始创建产品
+			createProduct(materials);
+			try {
+				Thread.sleep(PERIOD_MILS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * 创建产品
+	 * 
+	 * @param materials
+	 *            原料集合
+	 */
+	private void createProduct(ConcurrentLinkedQueue<Material> materials) {
+		synchronized (lock) {
+			// 创建产品的原料
+			Material material = materials.poll();
+			if (materials != null) {
+				if (material != null) {
+					// 获取产品仓库
+					WareHouse productWarehouse = room.getWareHouseByType(WareHouseType.PRODUCTA.getValue());
+					ConcurrentLinkedQueue products = productWarehouse.getQueue();
+					Product product = new Product();
+					product.setProId(products.size());
+					product.setProName(material.getMaterialName());
+					product.setProType(material.getMaterialType());
+					productWarehouse.add(product);
+					System.out.println("创建产品A:" + product);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 该生产线停止 生产
+	 */
+	private void stop() {
+		work = false;
+	}
+
+}

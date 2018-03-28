@@ -1,0 +1,47 @@
+package com.sim.server.game.message.response.user;
+
+import com.sim.server.game.common.ProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * 
+ * @author liwen 2017年10月25日 上午10:27:32 Function: 注册响应
+ * @version 1.0
+ */
+public class RegisterResponse extends BaseResponse {
+	// 响应ID
+	private Short responseId = ProtocolConstant.REGISTE_RESPONSE_PROTOCOL;
+
+	// 注册的返回结果
+	private Byte result;
+
+	public RegisterResponse() {
+	}
+
+	public RegisterResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	@Override
+	public void write() {
+		buf.writeByte(result);
+	}
+}

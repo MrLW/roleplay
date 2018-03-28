@@ -1,0 +1,70 @@
+package com.sim.server.game.roleplay.bean;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:05:04
+ * @Function: 原料
+ * @version 1.0
+ */
+public class Material implements IByteTo {
+
+	// 原料ID
+	@Setter
+	@Getter
+	private int materialId;
+	// 原料类型
+	@Getter
+	private int materialType;
+	// 原料名字
+	@Setter
+	@Getter
+	private String materialName;
+	// 原料价格
+	@Setter
+	@Getter
+	private int inPrice = 10;
+	public static final int MATERIAL_PRICE = 10; 
+	// 原料卖出价格
+	@Getter
+	@Setter
+	private int outPrice = 5;
+	public static final int MATERIAL_SALE_PRICE = 5; 
+	
+	private int capacity = 0 ;
+	// 该原料生产的产品
+	@Setter
+	@Getter
+	private int productType;
+	
+	
+
+	public Material() {
+		super();
+	}
+
+	public Material(int materialId) {
+		this.materialId = materialId;
+	}
+
+	public void setMaterialType(int materialType) {
+		this.materialType = materialType;
+		this.materialName = materialType == 1 ? "A" : "B";
+		this.productType = materialType;
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(materialId);
+		buf.writeInt(materialType);
+		buf.writeString(materialName);
+		buf.writeInt(inPrice);
+		buf.writeInt(outPrice);
+		buf.writeInt(capacity);
+	}
+
+}

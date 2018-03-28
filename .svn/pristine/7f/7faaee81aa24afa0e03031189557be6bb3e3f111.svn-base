@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.common;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.common.RoleListRequest;
+import com.sim.server.game.message.response.common.RoleListResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.init.RoleDataLoader;
+import com.sim.server.game.roleplay.manager.HallManager;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午5:45:48
+ * @Function:角色列表请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.ROLELIST_REQUEST_PROTOCOL, desc = "角色列表请求处理")
+public class RoleListHandler extends BaseHandler {
+
+	public void run() {
+		RoleListResponse response = new RoleListResponse(ctx);
+		List<BaseManager> managers = RoleDataLoader.getInstance().getRoleTypes();
+		response.setRoles(managers);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		RoleListHandler handler = new RoleListHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.ctx = this.ctx; 
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

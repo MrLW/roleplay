@@ -1,0 +1,31 @@
+package com.sim.server.game.message.request.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午11:06:32
+ * @Function: 刷新订单请求
+ * @version 1.0
+ */
+public class FlushOrderRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.DB_FLUSH_ORDER_REQUEST_PROTOCOL;
+
+	public FlushOrderRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+}

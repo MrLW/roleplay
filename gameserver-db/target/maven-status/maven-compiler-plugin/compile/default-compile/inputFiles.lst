@@ -1,0 +1,15 @@
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\mapper\TbAbilityMapper.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\mapper\TbFriendMapper.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\service\FriendSservice.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbAbilityExample.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbFriendExample.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbUserExample.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbUser.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\handler\DBServerHandler.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\service\impl\UserServiceImpl.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbFriend.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\mapper\TbUserMapper.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\service\impl\FriendServiceImpl.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\service\UserService.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\App.java
+D:\sim_code\roleplay\gameserver-db\src\main\java\com\sim\server\game\data\db\pojo\TbAbility.java

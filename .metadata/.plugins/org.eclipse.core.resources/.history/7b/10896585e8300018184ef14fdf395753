@@ -1,0 +1,59 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.utils.LoggerUtil;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午3:56:24
+ * @Function: 角色数据初始化
+ * @version 1.0
+ */
+public class RoleDataLoader extends BaseLoader {
+
+	
+	private static RoleDataLoader loader = null;
+
+	private RoleDataLoader() {
+	}
+
+	public static RoleDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (RoleDataLoader.class) {
+				if (loader == null)
+					loader = new RoleDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息开始");
+		try {
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息异常");
+			return false; 
+		}
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息结束");
+		return true;
+	}
+
+	
+
+	/**
+	 * 获取所有角色类型
+	 * 
+	 * @return 角色类型集合
+	 */
+	public List<BaseManager> getRoleTypes() {
+		List<Integer> lists = new CopyOnWriteArrayList<Integer>();
+		for (BaseManager role : roles) {
+			lists.add(role.getRoleType());
+		}
+		return roles;
+	}
+}

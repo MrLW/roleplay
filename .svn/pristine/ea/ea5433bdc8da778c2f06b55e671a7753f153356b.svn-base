@@ -1,0 +1,28 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+/**
+ * @author liwen
+ * @date:2018年1月5日 下午2:51:22
+ * @Function: 检查仓库数量
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.WAREHOUSE_CHECK_REQUEST_PROTOCOL,desc="检查仓库数量")
+public class CheckWarehouseHandler extends BaseHandler {
+
+	public void run() {
+		
+	}
+
+	@Override
+	public Object clone() {
+		CheckWarehouseHandler handler = new CheckWarehouseHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

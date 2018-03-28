@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午2:14:18
+ * @Function: 添加生产线响应
+ * @version 1.0
+ */
+public class ProductLineAddResponse extends BaseResponse {
+
+	private Short responseId = RolePlayProtocolConstant.PRODUCTLINE_ADD_RESPONSE_PROTOCOL;
+
+	private Byte result ; 
+	
+	public ProductLineAddResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

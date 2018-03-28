@@ -1,0 +1,61 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.sim.server.game.roleplay.bean.Order;
+import com.sim.server.game.utils.LoggerUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:54:12
+ * @Function: 订单初始化数据
+ * @version 1.0
+ */
+public class OrderDataLoader extends BaseLoader {
+
+	private static OrderDataLoader loader = null;
+
+	private OrderDataLoader() {
+
+	}
+
+	public static OrderDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (OrderDataLoader.class) {
+				if (loader == null)
+					loader = new OrderDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	// 相当于数据库中的数据
+	private BlockingQueue<Order> dbOrders = new LinkedBlockingQueue<Order>();
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据开始");
+		try {
+			for (int i = 1; i <= 10; i++) {
+				Order order = new Order();
+				order.setOrderId(i);
+				order.setOrderNum("orderNum-" + i);
+				order.setValidTime((long) i * 30);
+				order.setLatestPay((long) 10);
+				if (i % 2 == 0)
+					order.setOrderName("book");
+				else
+					order.setOrderName("pen");
+				dbOrders.add(order);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据异常");
+			return false; 
+		}
+		LoggerUtil.getLogger(OrderDataLoader.class).info("初始化订单数据结束");
+		return true;
+	}
+	
+}

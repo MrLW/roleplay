@@ -1,0 +1,29 @@
+package com.lw.test;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.springframework.scheduling.config.Task;
+
+public class Test {
+
+	public static void main(String[] args) {
+		Timer timer = new Timer();
+		CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList();
+		list.add("a");
+		list.add("b");
+		list.add("c");
+		for (final String string : list) {
+			timer.schedule(new TimerTask() {
+				
+				@Override
+				public void run() {
+					System.out.println("s:" + string);
+				}
+			}, 0,3000);
+		}
+	}
+}

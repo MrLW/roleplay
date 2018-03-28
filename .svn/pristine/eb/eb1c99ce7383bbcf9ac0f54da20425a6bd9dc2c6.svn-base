@@ -1,0 +1,41 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月29日 下午5:53:55
+ * @Function: 产品列表
+ * @version 1.0
+ */
+public class ProductListResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.PRODUCT_LIST_RESPONSE_PROTOCOL;
+
+	private ConcurrentLinkedQueue products ;
+
+	public ProductListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public ConcurrentLinkedQueue getProducts() {
+		return products;
+	}
+
+	public void setProducts(ConcurrentLinkedQueue products) {
+		this.products = products;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeQueue(products);
+	}
+
+}

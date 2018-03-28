@@ -1,0 +1,8 @@
+1514946717232	Extract method 'calculatePayee'
+1515069900607	Extract method 'getEmployeeWork'
+1515121868039	Extract method 'writeOrders'
+1515122632383	Extract method 'removeFromCurOrders'
+1515132818535	Extract method 'writeAcceptOrder'
+1515133736578	Extract method 'writeDeliveryOrder'
+1515137907061	Extract method 'writeCheckMaterial'
+1515144841571	Delete element

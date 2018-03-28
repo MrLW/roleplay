@@ -1,0 +1,60 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.bazaar.AcceptOrderRequest;
+import com.sim.server.game.message.response.bazaar.AcceptOrderResponse;
+import com.sim.server.game.message.response.common.OrderListResponse;
+import com.sim.server.game.message.response.init.InitOrderResponse;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.init.OrderDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午11:24:01
+ * @Function:接收订单处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.ACCEPT_ORDER_REQUEST_PROTOCOL,desc="接收订单处理")
+public class AcceptOrderHandler extends BaseHandler {
+
+	public void run() {
+		AcceptOrderRequest request = (AcceptOrderRequest) baseRequest ;
+		Integer orderId = request.getOrderId();
+		Order order = OrderDataLoader.getInstance().getOrderById(orderId);
+		if(order != null ) {
+			order.setOrderState(1);
+			// 获取市场总监
+			Room room = RoomManager.getNewRoomByCtx(ctx);
+			BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+			// 采购订单
+			int result = bazaarManager.purchase(order);
+			
+			
+			AcceptOrderResponse response = new AcceptOrderResponse(ctx);
+			response.setResult((byte)result);
+			response.writeAndFlush();
+			
+			// 更新订单
+			List<Order> dbOrders = OrderDataLoader.getInstance().next();
+			InitOrderResponse orderListResponse = new InitOrderResponse(ctx);
+			orderListResponse.setOrders(dbOrders);
+			orderListResponse.writeAndFlush();
+		}
+	}
+
+	@Override
+	public Object clone() {
+		AcceptOrderHandler handler = new AcceptOrderHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

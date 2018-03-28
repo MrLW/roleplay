@@ -1,0 +1,38 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitMaterialResponse;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午3:49:05
+ * @Function:初始化原材料处理器
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.DB_MATERIALS_REQUEST_PROTOCOL, desc = "初始化原材料处理器")
+public class InitMaterialHandler extends BaseHandler {
+
+	public void run() {
+		// 相当于从db中查询
+		List<Material> materialsDB = ResourceDataLoader.getInstance().getMaterialsDB();
+		InitMaterialResponse response = new InitMaterialResponse(ctx);
+		response.setMaterials(materialsDB);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitMaterialHandler handler = new InitMaterialHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

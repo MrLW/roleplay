@@ -1,0 +1,66 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午4:22:45
+ * @Function: 财务请款实体Bean
+ * @version 1.0
+ */
+@Data
+public class FinancialRequestMsg implements IByteTo{
+
+	private int financialRequestMsgId;
+	
+	private String msg;
+	
+	private int money;
+	// 申请人
+	private int roleId;
+	// 该财务请款的类型
+	private int type;
+	// 请款数量
+	private int count ;
+	//
+	private FinancialType financialType ;
+
+	/**
+	 * 请款类型
+	 */
+	public static enum FinancialType {
+		/**
+		 * 购买原料请款
+		 */
+		MATERIAL,
+		/**
+		 *  购买原料B
+		 */
+		MATERIALB,
+		/**
+		 * 购买操作桌请款
+		 */
+		EQUIPMENT,
+		/**
+		 * 购买仓库请款
+		 */
+		WAREHOUSE,
+		/**
+		 * 市场申请小金库请款
+		 */
+		BAZAAR;
+
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(financialRequestMsgId);
+		buf.writeString(msg);
+		buf.writeInt(money);
+		buf.writeInt(roleId);
+		buf.writeInt(type);
+	}
+
+}

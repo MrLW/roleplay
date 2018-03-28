@@ -1,0 +1,38 @@
+package com.sim.server.game.message.response.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2018年1月5日 下午2:48:51
+ * @Function: 检查仓库数量
+ * @version 1.0
+ */
+public class CheckWarehouseResponse extends BaseResponse {
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.WAREHOUSE_CHECK_RESPONSE_PROTOCOL;
+	
+	private Byte result;
+
+	public CheckWarehouseResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

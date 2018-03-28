@@ -1,0 +1,39 @@
+package com.sim.server.game.message.response.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 上午11:14:59
+ * @Function: 接收订单
+ * @version 1.0
+ */
+public class AcceptOrderResponse extends BaseResponse {
+	
+	public AcceptOrderResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_FLUSH_ORDER_RESPONSE_PROTOCOL;
+	// 订单接收 1:接收成功;0:接收失败
+	private Byte result;
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

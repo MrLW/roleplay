@@ -1,0 +1,52 @@
+package com.sim.server.game.message.response.user;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年11月29日 下午6:10:10
+ * @Function:  login response
+ * @version 1.0
+ */
+public class LoginResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.LOGIN_RESPONSE_PROTOCOL;
+	// 登录返回结果
+	private Byte result;
+
+
+	public LoginResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	public short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(short responseId) {
+		this.responseId = responseId;
+	}
+	
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+	
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+	
+	
+}

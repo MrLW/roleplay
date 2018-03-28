@@ -1,0 +1,35 @@
+package com.sim.server.game.message.request.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月26日 上午11:26:48
+ * @Function: 采购原材料结果请求
+ * @version 1.0
+ */
+public class PurchaseMaterialResultRequest extends BaseRequest {
+	
+	private Short requestId = RolePlayProtocolConstant.PURCHASE_MATERIAL_REQUEST_PROTOCOL;
+	// 数量
+	private Byte result;
+	
+	public PurchaseMaterialResultRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		this.result = buf.readByte() ;
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+	
+	
+}

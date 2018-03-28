@@ -1,0 +1,19 @@
+package com.sim.server.game.model.model;
+/**
+ * @author liwen
+ * @date:2017年12月27日 上午11:34:14
+ * @Function: 生产线
+ * @version 1.0
+ */
+public class ProductLine {
+
+	// 生产桌ID
+	public Integer equipmentId; 
+	
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+}

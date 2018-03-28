@@ -1,0 +1,29 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午5:15:05
+ * @Function: 角色信息
+ * @version 1.0
+ */
+@Data
+public class BaseManager {
+	// 该角色对应的ID
+	public Integer roleId;
+	// 角色类型
+	public Integer roleType;
+	// 角色名字
+	public String roleName;
+	// 默认申请的金额
+	public Integer applyForMoney = 0 ;
+	
+	public ChannelHandlerContext ctx ;
+	
+	public Room room ;
+	
+}

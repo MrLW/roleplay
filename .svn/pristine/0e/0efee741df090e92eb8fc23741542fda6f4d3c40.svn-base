@@ -1,0 +1,43 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.MaterialType;
+import com.sim.server.game.roleplay.bean.Material;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午6:15:48
+ * @Function: 原料类型集合
+ * @version 1.0
+ */
+public class InitMaterialTypeListResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.MATERIALTYPES_RESPONSE_PROTOCOL ;
+
+	private List<Material> materialTypes ;
+	
+	public List<Material> getMaterialTypes() {
+		return materialTypes;
+	}
+
+	public void setMaterialTypes(List<Material> materialTypes) {
+		this.materialTypes = materialTypes;
+	}
+
+	public InitMaterialTypeListResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(materialTypes);
+	}
+
+}

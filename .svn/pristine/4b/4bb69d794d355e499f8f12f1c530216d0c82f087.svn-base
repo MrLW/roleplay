@@ -1,0 +1,27 @@
+package com.sim.server.game.message.response.hr;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class EmployeeWorkResponse extends BaseResponse {
+	// –≠“È∫≈
+	private short responseId = RolePlayProtocolConstant.EMPLOYEE_WORK_RESPONSE_PROTOCOL;
+	
+	private int count ;
+
+	public EmployeeWorkResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(count);
+	}
+
+}

@@ -1,0 +1,34 @@
+package com.sim.server.game.message.response.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2018年1月26日 下午5:29:31
+ * @Function: HR初始化
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class HRConfigResponse extends BaseResponse {
+
+	private short responseId = RolePlayProtocolConstant.HRCONFIG_RESPONSE_PROTOCOL ;
+	private int increSal ;
+	private int decreSal ;
+	
+	public HRConfigResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeInt(increSal);
+		buf.writeInt(decreSal);
+	}
+
+}

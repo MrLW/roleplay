@@ -1,0 +1,44 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.roleplay.bean.WareHouse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午3:10:28
+ * @Function: 初始化数据库仓库响应
+ * @version 1.0
+ */
+public class InitWareHouseResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_WAREHOUSE_RESPONSE_PROTOCOL;
+	
+	
+	private List<WareHouse> wareHouses;
+
+	public InitWareHouseResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public List<WareHouse> getWareHouses() {
+		return wareHouses;
+	}
+
+	public void setWareHouses(List<WareHouse> wareHouses) {
+		this.wareHouses = wareHouses;
+	}
+	
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(wareHouses);
+	}
+
+}

@@ -1,0 +1,28 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午2:57:48
+ * @Function: 生产线列表请求
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class ProductLineListRequest extends BaseRequest {
+	private short requestId = RolePlayProtocolConstant.PRODUCTLINE_LIST_REQUEST_PROTOCOL;
+	
+	public ProductLineListRequest(ByteBuf buf) {
+		super(buf);
+	}
+	
+}

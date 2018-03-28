@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.roleplay.bean.Equipment;
+
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午3:51:35
+ * @Function: 初始化数据库设备响应
+ * @version 1.0
+ */
+public class InitEquipmentResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_EQUIPMENT_RESPONSE_PROTOCOL;
+	@Setter
+	@Getter
+	private List<Equipment> equipments;
+
+	public InitEquipmentResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(equipments);
+	}
+
+}

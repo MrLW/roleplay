@@ -1,0 +1,47 @@
+package com.sim.server.game.message.response.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2018年1月3日 下午3:09:31
+ * @Function: 修改订单状态
+ * @version 1.0
+ */
+public class OrderTypeResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.ORDERTYPE_RESPONSE_PROTOCOL;
+
+	private Byte result;
+
+	public OrderTypeResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

@@ -1,0 +1,41 @@
+package com.sim.server.game.roleplay.bean;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:07:29
+ * @Function: 产品
+ * @version 1.0
+ */
+@Data
+public class Product implements  IByteTo{
+	// 产品ID
+	private int proId ;
+	// 产品类型
+	private int proType = 1 ;
+	// 产品名
+	private String proName = "A" ;
+	// 该产品由哪个原料生产
+	private int materialType = 1;
+	// 买入价格
+	private int inPrice = 1000 ;
+	// 卖出价格
+	private int outPrice = 500 ;
+	// 非仓库都为0
+	private int capacity = 0 ;
+	
+	
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(proId);
+		buf.writeInt(proType);
+		buf.writeString(proName);
+		buf.writeInt(inPrice);
+		buf.writeInt(outPrice);
+		buf.writeInt(capacity);
+	}
+	
+}

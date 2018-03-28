@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月26日 上午11:33:28
+ * @Function: 采购原材料结果响应
+ * @version 1.0
+ */
+public class PurchaseMaterialResultResponse extends BaseResponse {
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.PURCHASE_MATERIAL_RESULT_RESPONSE_PROTOCOL;
+
+	private Byte result;
+
+	public PurchaseMaterialResultResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+		// TODO Auto-generated constructor stub
+	}
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+	
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

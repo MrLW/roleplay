@@ -1,0 +1,19 @@
+package com.sim.server.game.roleplay.handler.room;
+
+import com.sim.server.game.engine.handler.BaseHandler;
+
+public class GlabLandlordHandler extends BaseHandler {
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Object clone() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

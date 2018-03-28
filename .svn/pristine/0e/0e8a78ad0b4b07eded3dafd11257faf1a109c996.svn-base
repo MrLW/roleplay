@@ -1,0 +1,22 @@
+package com.sim.server.game.message.request.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2018年1月8日 下午6:20:32
+ * @Function: 原料类型集合
+ * @version 1.0
+ */
+public class InitMaterialTypeListRequest extends BaseRequest {
+	
+	private Short requestId = RolePlayProtocolConstant.MATERIALTYPES_REQUEST_PROTOCOL;
+
+	public InitMaterialTypeListRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+}

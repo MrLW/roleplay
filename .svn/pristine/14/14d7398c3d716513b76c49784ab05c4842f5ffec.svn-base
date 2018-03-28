@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.PurchaseMaterialRequest;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2017年12月22日 下午1:24:44
+ * @Function:采购材料请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PURCHASE_MATERIAL_REQUEST_PROTOCOL,desc="采购仓库请求处理")
+public class PurchaseMaterialHandler extends BaseHandler {
+
+	public void run() {
+		PurchaseMaterialRequest request = (PurchaseMaterialRequest) baseRequest ;
+		Integer count = request.getCount();
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		// 获取采购经理
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		
+		purchaseManager.purchaseMaterial(count);
+		
+	}
+	
+	@Override
+	public Object clone() {
+		PurchaseMaterialHandler handler = new PurchaseMaterialHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

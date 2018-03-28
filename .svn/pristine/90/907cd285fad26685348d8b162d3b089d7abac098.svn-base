@@ -1,0 +1,36 @@
+package com.sim.server.game.roleplay.handler.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2018年1月3日 上午11:35:49
+ * @Function: 市场总监小金库
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.COFFERS_REQUEST_PROTOCOL, desc = "市场总监小金库")
+public class CoffersHandler extends BaseHandler {
+
+	public void run() {
+		// 找到市场总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		bazaarManager.writeCoffer();
+	}
+
+	@Override
+	public Object clone() {
+		CoffersHandler handler = new CoffersHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

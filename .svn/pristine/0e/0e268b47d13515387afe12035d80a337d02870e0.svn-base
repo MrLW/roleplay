@@ -1,0 +1,38 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月28日 下午4:09:22
+ * @Function: 选择生产A/B响应
+ * @version 1.0
+ */
+public class ProductLineAndTypeResponse extends BaseResponse {
+
+	private Short responseId = RolePlayProtocolConstant.PRODUCTLINE_TYPE_RESPONSE_PROTOCOL;
+	
+	private Byte result;
+
+	public ProductLineAndTypeResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

@@ -1,0 +1,41 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.productor.ProductLineAddRequest;
+import com.sim.server.game.message.response.productor.ProductLineAddResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午2:19:01
+ * @Function: 添加生产线请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.PRODUCTLINE_ADD_REQUEST_PROTOCOL, desc = "添加生产线请求处理")
+public class ProductLineAddHandler extends BaseHandler {
+
+	public void run() {
+		ProductLineAddRequest request = (ProductLineAddRequest) baseRequest;
+		int commodityCount = request.getCommodityCount();
+		int commodityType = request.getCommodityType();
+		// 生产总监添加生产线
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		
+		productManager.addProductLine(commodityType,commodityCount);
+	}
+
+	@Override
+	public Object clone() {
+		ProductLineAddHandler handler = new ProductLineAddHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

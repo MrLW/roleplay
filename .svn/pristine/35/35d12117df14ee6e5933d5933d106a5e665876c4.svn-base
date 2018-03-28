@@ -1,0 +1,29 @@
+package com.sim.server.game.message.request.common;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+import com.sim.server.game.message.response.common.RoleWeatherResponse;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午2:17:04
+ * @Function:获取公司总金额请求
+ * @version 1.0
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class TotalIncomeRequest extends BaseRequest {
+	private short requestId = RolePlayProtocolConstant.TOTAL_INCOME_REQUEST_PROTOCOL;
+	
+	public TotalIncomeRequest(ByteBuf buf) {
+		super(buf);
+	}
+
+	
+}

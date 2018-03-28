@@ -1,0 +1,68 @@
+package com.sim.server.game.roleplay.handler.common;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.common.RoleRequest;
+import com.sim.server.game.message.response.common.AllSelectResponse;
+import com.sim.server.game.message.response.common.RoleResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.PlayerInfo;
+import com.sim.server.game.roleplay.factory.BaseManagerFactory;
+import com.sim.server.game.roleplay.manager.HallManager;
+import com.sim.server.game.roleplay.manager.PlayerManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月18日 下午6:45:54
+ * @Function: 选择角色请求
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.ROLE_REQUEST_PROTOCOL, desc = "角色选中请求处理")
+public class RoleHandler extends BaseHandler {
+
+	public void run() {
+		RoleRequest request = (RoleRequest) baseRequest;
+		Integer roleType = request.getRoleType();
+		String roomId = RoomManager.getNewRoomIdByCtx(ctx);
+		int userId = HallManager.getUserIdByCtx(ctx);
+		PlayerInfo info = PlayerManager.getInstance().getPlayerInfoByCtx(ctx);
+		info.setRoleType(roleType);
+		Room room = RoomManager.getRoomByCtx(ctx);
+		BaseManager manager = BaseManagerFactory.getBaseManager(roleType);
+		manager.setCtx(ctx);
+		room.getBaseManagers().add(manager);
+		List<ChannelHandlerContext> ctxs = RoomManager.getContextsByRoomId(roomId);
+		for (ChannelHandlerContext ctx : ctxs) {
+			RoleResponse response = new RoleResponse(ctx);
+			response.setRoleType(request.getRoleType());
+			response.setUserId(userId);
+			response.writeAndFlush();
+		}
+		// 判断是否可以进入开始游戏界面
+		if (room.isAllSelected()) {
+			for (ChannelHandlerContext ctx : ctxs) {
+				AllSelectResponse response = new AllSelectResponse(ctx);
+				response.setResult((byte) 1);
+				response.writeAndFlush();
+			}
+		}
+	}
+
+	@Override
+	public Object clone() {
+		RoleHandler handler = new RoleHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

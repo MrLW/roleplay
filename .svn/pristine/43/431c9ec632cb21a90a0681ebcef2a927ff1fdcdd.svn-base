@@ -1,0 +1,42 @@
+package com.sim.server.game.message.request.purchase;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 上午11:02:47
+ * @Function: 采购仓库请求
+ * @version 1.0
+ */
+public class PurchaseWarehouseRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.PURCHASE_WAREHOUSE_REQUEST_PROTOCOL;
+	// 仓库个数
+	private Integer count ;
+
+	public PurchaseWarehouseRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		count = buf.readInt();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+
+	public Integer getCount() {
+		return count;
+	}
+
+	public void setCount(Integer count) {
+		this.count = count;
+	}
+	
+}

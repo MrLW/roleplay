@@ -1,0 +1,14 @@
+package com.sim.server.game.common;
+
+public interface State {
+	int state ;
+//	SUCCESS(1), FAIL(0);
+//	int state;
+//	
+//	private State(int state) {
+//		this.state = state;
+//	}
+//	public int getState() {
+//		return state;
+//	}
+}

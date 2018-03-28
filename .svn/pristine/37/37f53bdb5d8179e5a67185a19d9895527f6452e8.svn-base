@@ -1,0 +1,31 @@
+
+package com.sim.server.game.message.request.bazaar;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午3:17:17
+ * @Function:市场经理申请money响应
+ * @version 1.0 
+ */
+@Data
+@EqualsAndHashCode(callSuper=false)
+public class ApplyForMoneyRequest extends BaseRequest {
+
+	private short requestId = RolePlayProtocolConstant.APPLYFOR_MONEY_REQUEST_PROTOCOL;
+
+	private int applyForMoney ;
+	
+	public ApplyForMoneyRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		applyForMoney = buf.readInt();
+	}
+
+
+}

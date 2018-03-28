@@ -1,0 +1,42 @@
+package com.sim.server.game.message.response.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+import com.sim.server.game.model.model.Jobhunter;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月25日 下午5:09:08
+ * @Function:初始化数据库设备响应
+ * @version 1.0
+ */
+public class InitJobhunterResponse extends BaseResponse {
+
+	// 协议号
+	private Short responseId = RolePlayProtocolConstant.DB_JOBHUNTER__RESPONSE_PROTOCOL;
+
+	private List<Jobhunter> jobhunters;
+
+	public InitJobhunterResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public List<Jobhunter> getJobhunters() {
+		return jobhunters;
+	}
+
+	public void setJobhunters(List<Jobhunter> jobhunters) {
+		this.jobhunters = jobhunters;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeArray(jobhunters);
+	}
+
+}

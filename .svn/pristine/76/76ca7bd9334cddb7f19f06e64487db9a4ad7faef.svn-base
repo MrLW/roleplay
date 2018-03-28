@@ -1,0 +1,48 @@
+package com.sim.server.game.roleplay.handler.finance;
+
+import java.util.LinkedList;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.finance.PurchaseEquipmentResultRequest;
+import com.sim.server.game.message.request.finance.PurchaseResultRequest;
+import com.sim.server.game.message.response.finance.PurchaseEquipmentResultResponse;
+import com.sim.server.game.message.response.finance.PurchaseResultResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月26日 上午11:42:59
+ * @Function:采购设备结果请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.PURCHASE_EQUIPMENT_RESULT_REQUEST_PROTOCOL,desc="采购设备结果请求处理")
+public class PurchaseEquipmentResultHandler extends BaseHandler {
+
+	public void run() {
+		PurchaseEquipmentResultRequest request = (PurchaseEquipmentResultRequest) baseRequest;
+		Byte result = request.getResult();
+		// 获取采购经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		purchaseManager.writePurchaseEquipmentResult(result) ;
+	}
+
+	@Override
+	public Object clone() {
+		PurchaseEquipmentResultHandler handler = new PurchaseEquipmentResultHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

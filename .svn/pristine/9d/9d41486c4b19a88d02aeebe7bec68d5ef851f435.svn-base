@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.init.InitEquipmentResponse;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+/**
+ * @author liwen
+ * @date:2017年12月21日 下午3:57:48
+ * @Function: 初始化设备请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.DB_EQUIPMENT_REQUEST_PROTOCOL,desc="初始化设备请求处理")
+public class InitEquipmentHandler extends BaseHandler{
+
+	public void run() {
+		// 相当于从数据库中查询
+		List<Equipment> equipmentsDB = ResourceDataLoader.getInstance().getEquipmentsDB();
+		InitEquipmentResponse response = new InitEquipmentResponse(ctx); 
+		response.setEquipments(equipmentsDB);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		InitEquipmentHandler handler = new InitEquipmentHandler(); 
+		handler.baseRequest = this.baseRequest ;
+		handler.ctx = this.ctx; 
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

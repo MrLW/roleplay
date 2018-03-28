@@ -1,0 +1,41 @@
+package com.sim.server.game.model.model;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+import lombok.Data;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午6:26:04
+ * @Function:
+ * @version 1.0
+ */
+@Data
+public class ProductorType implements IByteTo {
+
+	private int productorTypeId;
+
+	// 产品类型
+	private int proType = 1;
+	private String productorTypeName;
+	// 产品名
+	// 该产品由哪个原料生产
+	private int materialType = 1;
+	// 买入价格
+	private int inPrice = 1000;
+	// 卖出价格
+	private int outPrice = 500;
+	// 非仓库都为0
+	private int capacity = 0;
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(productorTypeId);
+		buf.writeInt(proType);
+		buf.writeString(productorTypeName);
+		buf.writeInt(inPrice);
+		buf.writeInt(outPrice);
+		buf.writeInt(capacity);
+	}
+
+}

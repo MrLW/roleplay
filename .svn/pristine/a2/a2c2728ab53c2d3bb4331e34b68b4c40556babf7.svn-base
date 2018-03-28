@@ -1,0 +1,12 @@
+package com.sim.server.game.message.request.bazaar;
+
+import com.sim.server.game.message.request.BaseRequest;
+/**
+ * @author liwen
+ * @date:2018年1月2日 下午9:10:03
+ * @Function:
+ * @version 1.0
+ */
+public class CoffersRequest extends BaseRequest {
+
+}

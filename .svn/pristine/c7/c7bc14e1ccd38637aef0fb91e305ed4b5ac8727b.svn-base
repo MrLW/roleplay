@@ -1,0 +1,39 @@
+package com.sim.server.game.roleplay.handler.productor;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.response.productor.ProducterorTypeListResponse;
+import com.sim.server.game.model.model.ProductorType;
+import com.sim.server.game.roleplay.init.ProducterDataLoader;
+
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午6:37:07
+ * @Function: 产品类型列表
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.PRODUCTOR_LIST_REQUEST_PROTOCOL, desc = "产品类型列表")
+public class ProducterorTypeList extends BaseHandler {
+
+	public void run() {
+		// 获取产品类型列表
+		List<ProductorType> productorTypes = ProducterDataLoader.getInstance().getProductorTypes();
+		// 创建响应
+		ProducterorTypeListResponse response = new ProducterorTypeListResponse(ctx);
+		response.setProductorTypes(productorTypes);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		ProducterorTypeList handler = new ProducterorTypeList();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

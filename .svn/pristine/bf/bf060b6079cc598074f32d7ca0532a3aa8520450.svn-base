@@ -1,0 +1,10 @@
+package com.sim.server.game.roleplay.bean;
+/**
+ * @author liwen
+ * @date:2018年1月18日 下午2:27:33
+ * @Function:原料A
+ * @version 1.0
+ */
+public class MaterialA extends Commodity {
+
+}

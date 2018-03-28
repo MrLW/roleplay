@@ -1,0 +1,103 @@
+package com.sim.server.game.roleplay.init;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.player.FinanceManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.player.ProductorManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.utils.LoggerUtil;
+
+public class RoleDataLoader extends BaseLoader {
+
+	private List<BaseManager> roles = new CopyOnWriteArrayList<BaseManager>();
+	
+	private static RoleDataLoader loader = null;
+
+	private RoleDataLoader() {
+	}
+
+	public static RoleDataLoader getInstance() {
+		if (loader == null) {
+			synchronized (RoleDataLoader.class) {
+				if (loader == null)
+					loader = new RoleDataLoader();
+			}
+		}
+		return loader;
+	}
+
+	@Override
+	public boolean initData() {
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息开始");
+		try {
+//			initProductor();
+//			initHR();
+			initFinance();
+			initPurchase();
+			initBazaar();
+		} catch (Exception e) {
+			e.printStackTrace();
+			LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息异常");
+			return false; 
+		}
+		LoggerUtil.getLogger(RoleDataLoader.class).info("初始化各角色信息结束");
+		return true;
+	}
+
+	/**
+	 * 初始化HR总监
+	 */
+	private void initHR() {
+		BaseManager manager = new HRManager();
+		roles.add(manager);
+	}
+
+	/**
+	 * 初始化采购总监
+	 */
+	private void initPurchase() {
+		BaseManager manager = new PurchaseManager();
+		roles.add(manager);
+	}
+
+	/**
+	 * 初始化生产总监
+	 */
+	private void initProductor() {
+		BaseManager manager = new ProductorManager();
+		roles.add(manager);
+	}
+
+	/**
+	 * 初始化财务总监
+	 */
+	private void initFinance() {
+		FinanceManager manager = new FinanceManager();
+		roles.add(manager);
+	}
+
+	/**
+	 * 初始化市场总监
+	 */
+	private void initBazaar() {
+		BaseManager manager = new BazaarManager();
+		roles.add(manager);
+	}
+
+	/**
+	 * 获取所有角色类型
+	 * 
+	 * @return 角色类型集合
+	 */
+	public List<BaseManager> getRoleTypes() {
+		List<Integer> lists = new CopyOnWriteArrayList<Integer>();
+		for (BaseManager role : roles) {
+			lists.add(role.getRoleType());
+		}
+		return roles;
+	}
+}

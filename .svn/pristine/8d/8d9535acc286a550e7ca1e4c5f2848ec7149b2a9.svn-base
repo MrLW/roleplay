@@ -1,0 +1,81 @@
+package com.sim.server.game.roleplay.bean;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+
+/**
+ * @author liwen
+ * @date:2017年12月20日 下午6:38:58
+ * @Function: 设备(测试就当做生产桌)
+ * @version 1.0
+ */
+public class Equipment implements IByteTo{
+
+	// 设备ID
+	private int equipmentId;
+	// 设备类型
+	private int equipmentType;
+	// 设备名
+	private String equipmentName;
+	// 设备价格
+	public static int price = 50;
+	// 卖出价格
+	private int outPrice = 25;
+	
+	private int capacity = 0 ;
+	// (该设备)是否使用,默认没有使用
+	private boolean userd = false ;
+	
+	public Integer getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(Integer equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public Integer getEquipmentType() {
+		return equipmentType;
+	}
+
+	public void setEquipmentType(Integer equipmentType) {
+		this.equipmentType = equipmentType;
+	}
+
+	public String getEquipmentName() {
+		return equipmentName;
+	}
+
+	public void setEquipmentName(String equipmentName) {
+		this.equipmentName = equipmentName;
+	}
+
+	public Integer getPrice() {
+		return price;
+	}
+
+	public void setPrice(Integer price) {
+		this.price = price;
+	}
+
+	public boolean getUserd() {
+		return userd;
+	}
+	/**
+	 *  设置当前的设备工作状态
+	 * @param userd
+	 */
+	public void setUserd(boolean userd) {
+		this.userd = userd;
+	}
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(equipmentId);
+		buf.writeInt(equipmentType);
+		buf.writeString(equipmentName);
+		buf.writeInt(price);
+		buf.writeInt(outPrice);
+		buf.writeInt(capacity);
+	}
+
+}

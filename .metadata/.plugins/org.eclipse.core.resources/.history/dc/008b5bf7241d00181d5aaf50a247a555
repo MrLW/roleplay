@@ -1,0 +1,260 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.Map;
+import java.util.Queue;
+
+import com.sim.server.game.common.EnhancedByteBuf;
+import com.sim.server.game.engine.core.IByteTo;
+import com.sim.server.game.message.response.purchase.CheckWarehouseResponse;
+import com.sim.server.game.message.response.purchase.PurchaseCommodityResponse;
+import com.sim.server.game.message.response.purchase.SaleCommodityResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinanceDailyItem;
+import com.sim.server.game.model.model.FinanceDailyItem.FinancialType;
+import com.sim.server.game.model.model.ReportItem;
+import com.sim.server.game.model.model.ReportItem.ReportItemCategory;
+import com.sim.server.game.roleplay.bean.Commodity;
+import com.sim.server.game.roleplay.factory.FinanceDailyFactory;
+import com.sim.server.game.roleplay.factory.ReportItemFactory;
+import com.sim.server.game.roleplay.init.ResourceDataLoader;
+import com.sim.server.game.utils.CommodityUtil;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:05:16
+ * @Function: 采购总监
+ * @version 1.0
+ */
+public class PurchaseManager extends BaseManager implements IByteTo {
+
+	// 购买仓库/材料/操作桌的数量
+	private int count = -1;
+	// 采购需要的花费
+	private int cost;
+
+	public PurchaseManager() {
+		roleId = 4;
+		roleType = 4;
+		roleName = "采购总监";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public int getCost() {
+		return cost;
+	}
+
+	public void setCost(int cost) {
+		this.cost = cost;
+	}
+
+	/**
+	 * 检查仓库是否足够
+	 * 
+	 * @param type
+	 *            存放原料or产品
+	 * @param count
+	 *            原料or产品的数量
+	 */
+	private boolean checkWarehouse(int type, int count) {
+		// 请求生产经理进行判断
+		ProductorManager productManager = (ProductorManager) room.getProductManager();
+		boolean result = productManager.checkWarehouse(type, count);
+		if (!result) {
+			writeCheckWarehouse();
+		}
+		return result;
+	}
+
+	
+	/**
+	 * 提示仓库数量是否足够
+	 */
+	private void writeCheckWarehouse() {
+		CheckWarehouseResponse response = new CheckWarehouseResponse(ctx);
+		response.setResult((byte) 0); // 0,不够
+		response.writeAndFlush();
+	}
+
+
+	/**
+	 * 卖某个“产品”多少个
+	 * 
+	 * @param type
+	 *            产品类型
+	 * @param count
+	 *            产品数量
+	 */
+	// 哈哈哈哈
+	/*public void sale(int type, int count) {
+		int earn = 0;
+		Map<Integer, Queue<Commodity>> commdityMap = room.getCommdityMap();
+		int i = count;
+		ReportItemCategory reportItemCategory = null ;
+		String msg = "" ;
+		// 如果是原料
+		if (CommodityUtil.isMaterial(type)) {
+			// 根据原料或者产品类型获取对应的仓库类型
+			int warehouseType = CommodityUtil.getWarehouseTypeByMaterialType(type);
+			Queue<Commodity> totalWarehouseList = commdityMap.get(warehouseType);
+			// 要删除的仓库
+			List<Commodity> removeCommodities = null ;
+			for (Commodity warehouse : totalWarehouseList) {
+				if(warehouse.getCommodityData().getCommodityType()== CommodityUtil.getWarehouseTypeByMaterialType(type)) {
+					removeCommodities = new LinkedList<>() ;
+					ConcurrentLinkedQueue<Commodity> queue = warehouse.getQueue();
+					if(queue != null ) {
+						for (; i > 0; i--) {
+							if (queue.size() > 0) {
+								Commodity poll = queue.poll();
+								earn += poll.getCommodityData().getOutPrice();
+							}
+							// 如果当前仓库的商品卖完,则从下一个仓库中取出继续卖
+							if (queue.size() == 0) {
+								// 将当前仓库设置为闲置状态
+								warehouse.getCommodityData().setCommodityType(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE);
+								commdityMap.get(CommodityUtil.DEFAULT_WAREHOUSE_PRE_TYPE).add(warehouse);
+								removeCommodities.add(warehouse);
+								break;
+							} 
+						}
+						
+					}
+				}
+			}
+			for (Commodity commodity : removeCommodities) {
+				totalWarehouseList.remove(commodity);
+			}
+			reportItemCategory = ReportItemCategory.MATERIAL;
+			msg ="卖出原料";
+		}
+		
+		// 如果是仓库/生产桌
+		if(CommodityUtil.isWarehouse(type) ||CommodityUtil.isProTable(type) ) {
+			LinkedList<Commodity> totalWarehouseList = (LinkedList<Commodity>) commdityMap.get(type);
+			for(int j = 0 ; j < count ; j++ ) {
+				Commodity commodity = totalWarehouseList.poll();
+				earn += commodity.getCommodityData().getOutPrice();
+			}
+			reportItemCategory = ReportItemCategory.EQUIPMENT ;
+			msg ="卖出设备";
+		}
+		ReportItem reportItem = ReportItemFactory.buildReportItem(reportItemCategory, msg, room.getCurTime(), earn);
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		financeManager.addReportItem(reportItem);
+		room.earn(earn);
+		writeCommoditySale(1);
+	}*/
+	
+	public void sale(int type, int count) {
+		int earn = 0;
+		int i = count;
+		ReportItemCategory reportItemCategory = null ;
+		String msg = "" ;
+		// 如果是原料
+		if (CommodityUtil.isMaterial(type) || CommodityUtil.isProduct(type)) {
+			Queue<Commodity> commodities = room.getCommodities2();
+			for (Commodity warehouse : commodities) {
+				Map<Commodity, Integer> atomMap = warehouse.getAtomMap();
+				for(Map.Entry<Commodity, Integer> entry:atomMap.entrySet()) {
+					Commodity atom = entry.getKey();
+					if( atom.getCommodityData().getCommodityType()== type) {
+						// 卖>该仓库拥有
+						if(count > warehouse.remainCount()) {
+							count -= warehouse.remainCount();
+							earn += atom.getCommodityData().getOutPrice() * warehouse.remainCount();
+							room.release(warehouse);
+						} else if(count == warehouse.remainCount()) { // 卖=该仓库拥有
+							count -= warehouse.remainCount();
+							earn += atom.getCommodityData().getOutPrice() * warehouse.remainCount();
+							room.release(warehouse);
+							break;
+						} else {// 卖<该仓库拥有
+							earn += atom.getCommodityData().getOutPrice() * count;
+							atomMap.put(atom, warehouse.remainCount()-count);
+						}
+					}
+				}
+			}
+		
+			reportItemCategory = ReportItemCategory.MATERIAL;
+			msg ="卖出原料";
+		}
+		
+		// 如果是仓库/生产桌
+		if(CommodityUtil.isWarehouse(type) ||CommodityUtil.isProTable(type) ) {
+			Map<Commodity, Integer> commodityMap = room.getCommodityMap2();
+			for(Map.Entry<Commodity, Integer> entry : commodityMap.entrySet()) {
+				Commodity equip = entry.getKey();
+				if(equip.getCommodityData().getCommodityType() == type) {
+					int equipCount = entry.getValue();
+					equipCount -= count ;
+					commodityMap.put(equip, equipCount);
+					earn += count * equip.getCommodityData().getOutPrice();
+				}
+			}
+			reportItemCategory = ReportItemCategory.EQUIPMENT ;
+			msg ="卖出设备";
+		}
+		ReportItem reportItem = ReportItemFactory.buildReportItem(reportItemCategory, msg, room.getCurTime(), earn);
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		financeManager.addReportItem(reportItem);
+		room.earn(earn);
+		writeCommoditySale(1);
+	}
+
+	/**
+	 * 卖商品响应
+	 */
+	private void writeCommoditySale(int result) {
+		// 告诉采购方卖出结果
+		SaleCommodityResponse response = new SaleCommodityResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+
+	public void toData(EnhancedByteBuf buf) {
+		buf.writeInt(roleId);
+		buf.writeInt(roleType);
+		buf.writeString(roleName);
+		buf.writeInt(applyForMoney);
+	}
+
+	/**
+	 * 购买某种商品
+	 * 
+	 * @param commodityType
+	 *            商品的类型
+	 * @param commodityCount
+	 *            商品的数量
+	 */
+	public void purchaseCommodity(int commodityType, int commodityCount) {
+		// 注意:此处的commodityType不对
+		if (!CommodityUtil.isWarehouse(commodityType) & !CommodityUtil.isProTable(commodityType)) {
+			if (!checkWarehouse(commodityType, commodityCount)) {
+				return;
+			}
+		}
+		Map<Integer, Commodity> commodities = ResourceDataLoader.getInstance().getCommodities();
+		// 获取商品
+		Commodity commodity = commodities.get(commodityType);
+		// 获取财务总监
+		FinanceManager financeManager = (FinanceManager) room.getFinanceManager();
+		int money = commodityCount * commodity.getCommodityData().getInPrice();
+		FinanceDailyItem financeDailyItem = FinanceDailyFactory.buildFinanceDaily(FinancialType.PURCHASE, roleId, "采购商品留言", room.getCurTime(), money, "采购商品");
+		financeDailyItem.setCommodityType(commodityType);
+		financeManager.addFinanceDaily(financeDailyItem);
+		
+		PurchaseCommodityResponse response = new PurchaseCommodityResponse(ctx);
+		response.setCost(money);
+		response.writeAndFlush();
+	}
+
+}

@@ -1,0 +1,37 @@
+package com.sim.server.game.roleplay.handler.hr;
+
+import javax.management.relation.Role;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月3日 上午11:48:40
+ * @Function: 刷新求职者
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.JOBHUNTER_FLUSH_REQUEST_PROTOCOL,desc="刷新求职者")
+public class FlushJobhunterHandler extends BaseHandler {
+
+	public void run() {
+		// 找到HR经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		hrManager.flushJobhunter() ;
+	}
+
+	@Override
+	public Object clone() {
+		FlushJobhunterHandler handler = new FlushJobhunterHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

@@ -1,0 +1,51 @@
+package com.sim.server.game.message.response.sys;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年11月13日 下午3:30:06
+ * @Function: 匹配响应
+ * @version 1.0
+ */
+public class MatchResponse extends BaseResponse{
+
+	
+	private Short responseId = RolePlayProtocolConstant.MATCH_RESPONSE_PROTOCOL ;
+	// 是否匹配成功
+	private Byte result ;
+	
+	public MatchResponse() {
+	}
+	
+	public MatchResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Short getResponseId() {
+		return responseId;
+	}
+
+	public void setResponseId(Short responseId) {
+		this.responseId = responseId;
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+	
+	
+}

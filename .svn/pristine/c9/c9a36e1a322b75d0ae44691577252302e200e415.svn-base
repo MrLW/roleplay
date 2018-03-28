@@ -1,0 +1,34 @@
+package com.sim.server.game.roleplay.handler.init;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.HRManager;
+import com.sim.server.game.roleplay.room.Room;
+/**
+ * @author liwen
+ * @date:2018年1月26日 下午5:38:02
+ * @Function: HR初始化配置
+ * @version 1.0
+ */
+@HandlerEntity(id=RolePlayProtocolConstant.HRCONFIG_REQUEST_PROTOCOL,desc="HR初始化配置")
+public class HRConfigHandler extends BaseHandler{
+
+	@Override
+	public void run() {
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		HRManager hrManager = (HRManager) room.getHRManager();
+		hrManager.salConf();
+	}
+
+	@Override
+	public Object clone() {
+		HRConfigHandler handler = new HRConfigHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

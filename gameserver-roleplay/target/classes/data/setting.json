@@ -1,0 +1,50 @@
+[
+	{
+		"commodityId": 1,
+		"commodityType": 10011000,
+		"commodityName": "原料A",
+		"inPrice": 10,
+		"outPrice": 5,
+		"capacity":-1
+	},
+	{
+		"commodityId": 2,
+		"commodityType": 10021000,
+		"commodityName": "原料B",
+		"inPrice": 10,
+		"outPrice": 5,
+		"capacity":-1
+	},
+	{
+		"commodityId": 3,
+		"commodityType": 20011000,
+		"commodityName": "生产桌",
+		"inPrice": 50,
+		"outPrice": 25,
+		"capacity":-1
+	},
+	{
+		"commodityId": 4,
+		"commodityType": 30011000,
+		"commodityName": "仓库",
+		"inPrice": 100,
+		"outPrice": 50,
+		"capacity":10
+	},
+	{
+		"commodityId": 5,
+		"commodityType": 40011000,
+		"commodityName": "产品A",
+		"inPrice": 20,
+		"outPrice": 10,
+		"capacity":-1
+	},
+	{
+		"commodityId": 6,
+		"commodityType": 40021000,
+		"commodityName": "产品B",
+		"inPrice": 20,
+		"outPrice": 10,
+		"capacity":-1
+	}
+]

@@ -1,0 +1,37 @@
+package com.sim.server.game.message.response.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.response.BaseResponse;
+
+import io.netty.channel.ChannelHandlerContext;
+/**
+ * @author liwen
+ * @date:2017年12月27日 下午4:59:44
+ * @Function: 员工状态响应
+ * @version 1.0
+ */
+public class EmployeeStateResponse extends BaseResponse {
+	
+	private Short responseId = RolePlayProtocolConstant.EMPLOYEE_STATE_RESPONSE_PROTOCOL;
+
+	private Byte result ; 
+	
+	public EmployeeStateResponse(ChannelHandlerContext ctx) {
+		super(ctx);
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+
+	@Override
+	public void write() {
+		buf.writeShort(responseId);
+		buf.writeByte(result);
+	}
+
+}

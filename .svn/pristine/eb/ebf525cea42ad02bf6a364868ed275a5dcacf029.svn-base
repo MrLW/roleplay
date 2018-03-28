@@ -1,0 +1,40 @@
+package com.sim.server.game.message.request.sys;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2018年1月4日 下午3:04:42
+ * @Function: 心跳检查
+ * @version 1.0
+ */
+public class ConnectRequest extends BaseRequest {
+	// 消息长度
+	private Integer len;
+	// 请求协议号
+	private Short requestId = RolePlayProtocolConstant.HEARTBEAT_REQUEST_PROTOCOL;
+	
+	public ConnectRequest(ByteBuf buf) {
+		this.len = buf.readableBytes();
+	}
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+}

@@ -1,0 +1,31 @@
+package com.sim.server.game.message.request.productor;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年12月28日 下午3:02:09
+ * @Function: 开始生产
+ * @version 1.0
+ */
+public class StartProductRequest extends BaseRequest {
+	
+	private Short requestId = RolePlayProtocolConstant.START_PRODUCTLINE_REQUEST_PROTOCOL;
+	
+	public StartProductRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+}

@@ -1,0 +1,45 @@
+package com.sim.server.game.message.request.gamemode;
+
+import com.sim.server.game.common.ProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @author liwen
+ * @date:2017年11月13日 下午3:26:17
+ * @Function:匹配游戏请求
+ * @version 1.0
+ */
+public class MatchRequest extends BaseRequest{
+
+	private Integer len ;
+	
+	private Short requestId = ProtocolConstant.MATCH_REQUEST_PROTOCOL ;
+	
+	public MatchRequest() {
+	}
+	
+	public MatchRequest(ByteBuf buf) {
+		super(buf);
+		this.len = buf.readableBytes() ;
+	}
+
+	public Integer getLen() {
+		return len;
+	}
+
+	public void setLen(Integer len) {
+		this.len = len;
+	}
+
+	public Short getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(Short requestId) {
+		this.requestId = requestId;
+	}
+	
+	
+}

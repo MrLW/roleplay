@@ -1,0 +1,41 @@
+package com.sim.server.game.roleplay.handler.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.finance.BazaarApplyForMoneyResultRequest;
+import com.sim.server.game.message.response.finance.BazaarApplyForMoneyResultResponse;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.BazaarManager;
+import com.sim.server.game.roleplay.room.Room;
+@HandlerEntity(id=RolePlayProtocolConstant.APPLYFOR_MONEY_RESULT_REQUEST_PROTOCOL,desc="")
+public class BazaarApplyForMoneyResultHandler extends BaseHandler {
+
+	public void run() {
+		BazaarApplyForMoneyResultRequest request = (BazaarApplyForMoneyResultRequest) baseRequest ;
+		// 找到市场经理
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+		bazaarManager.setApplyForMoney(bazaarManager.getBeforeCommitApplyForMoney());
+		bazaarManager.setBeforeCommitApplyForMoney(0);
+		
+		BazaarApplyForMoneyResultResponse response = new BazaarApplyForMoneyResultResponse(bazaarManager.getCtx());
+		response.setResult(request.getResult());
+		response.writeAndFlush();
+		// 同步金钱
+		room.expense(bazaarManager.getApplyForMoney());
+		// 刷新
+		room.syncTotoalMoney();
+	}
+
+	@Override
+	public Object clone() {
+		BazaarApplyForMoneyResultHandler handler = new BazaarApplyForMoneyResultHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+
+	}
+
+}

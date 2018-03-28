@@ -1,0 +1,15 @@
+package com.sim.server.game.message.response.room;
+
+import com.sim.server.game.message.response.BaseResponse;
+
+import lombok.Data;
+@EqualsAndHashCode(callSuper=false)
+@Data
+public class GrabLandlordResponse extends BaseResponse {
+
+	@Override
+	public void write() {
+		
+	}
+
+}

@@ -1,0 +1,110 @@
+package com.sim.server.game.roleplay.player;
+
+import java.util.List;
+
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.Order;
+import com.sim.server.game.roleplay.init.OrderDataLoader;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.room.Room;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午3:31:15
+ * @Function: 市场总监
+ * @version 1.0
+ */
+public class BazaarManager extends BaseManager {
+
+	/**
+	 * 市场总监默认申请金额,当申请金额用完之后,需要再次到财务申请
+	 */
+	private Integer DEFAULT_AVAILABLE_MONEY = 1000;
+
+	private Integer availableMoney = DEFAULT_AVAILABLE_MONEY;
+	
+	private  int beforeCommitApplyForMoney = 0 ;
+
+	/**
+	 * 默认每次刷新订单需要消耗的money
+	 */
+	private Integer FLUSH_ORDER_MONEY = 10;
+
+	public BazaarManager() {
+		roleId = 5;
+		roleType = 5;
+		roleName = "BazaarManager";
+	}
+
+	/**
+	 * 采购 订单
+	 * 
+	 * @param order
+	 * @return
+	 */
+	public int purchase(Order order) {
+		int result;
+		try {
+			// 将当前订单添加到房间
+			Room room = RoomManager.getRoomByCtx(ctx);
+			room.insertOrder(order);
+			this.availableMoney -= order.getSpendIncome();
+			result = 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = 0;
+		}
+		return result;
+	}
+
+	/**
+	 * 刷新订单
+	 * 
+	 * @return 下一个订单对象
+	 */
+	public List<Order> flushOrder() {
+		List<Order> orders = OrderDataLoader.getInstance().next();
+		this.availableMoney -= FLUSH_ORDER_MONEY;
+		return orders;
+	}
+
+	/**
+	 * 获取市场总监可用金额
+	 * 
+	 * @return
+	 */
+	public Integer getApplyForMoney() {
+		return availableMoney;
+	}
+
+	/**
+	 * 判断当前剩余金额是否足够刷新
+	 * 
+	 * @return true:可以刷新,false:不可以刷新
+	 */
+	public boolean isFlush() {
+		return availableMoney >= FLUSH_ORDER_MONEY ? true : false;
+	}
+	
+	public void applyForMoney(Integer applyForMoney) {
+		// 其他部门向财务申请金额
+		Room room = RoomManager.getRoomByCtx(ctx);
+		if(room.isApplyFor(applyForMoney)) {
+			room.applyFor(applyForMoney);
+		}
+		
+	}
+
+	public  int getBeforeCommitApplyForMoney() {
+		return beforeCommitApplyForMoney;
+	}
+
+	public  void setBeforeCommitApplyForMoney(int beforeCommitApplyForMoney) {
+		this.beforeCommitApplyForMoney = beforeCommitApplyForMoney;
+	}
+
+	
+	
+	
+
+}

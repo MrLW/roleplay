@@ -1,0 +1,81 @@
+package com.sim.server.game.roleplay.handler.purchase;
+
+import java.util.List;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.engine.core.HandlerEntity;
+import com.sim.server.game.engine.handler.BaseHandler;
+import com.sim.server.game.message.request.purchase.PurchaseEquipmentRequest;
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.purchase.PurchaseEquipmentResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.manager.RoomManager;
+import com.sim.server.game.roleplay.player.PurchaseManager;
+import com.sim.server.game.roleplay.room.Room;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * @author liwen
+ * @date:2017年12月22日 下午2:18:24
+ * @Function: 购买生产桌请求处理
+ * @version 1.0
+ */
+@HandlerEntity(id = RolePlayProtocolConstant.PURCHASE_PRODUCTTABLE_REQUEST_PROTOCOL, desc = "购买生产桌请求处理")
+public class PurchaseEquipmentHandler extends BaseHandler {
+
+	public void run() {
+		PurchaseEquipmentRequest request = (PurchaseEquipmentRequest) baseRequest;
+		Integer count = request.getCount();
+		// 计算生产桌总花费
+		Integer cost = count * 100;
+		// 找到财务总监
+		Room room = RoomManager.getNewRoomByCtx(ctx);
+		BaseManager financeManager = room.getFinanceManager();
+		// 获取采购经理
+		PurchaseManager purchaseManager = (PurchaseManager) room.getPurchaseManager();
+		purchaseManager.setCount(request.getCount());
+		
+		purchaseManager.purchaseEquipment(count);
+		
+//		// 创建财务请款实体bean
+//		FinancialRequestMsg msg = new FinancialRequestMsg() ;
+//		msg.setMoney(cost);
+//		msg.setRoleId(purchaseManager.getRoleId());
+//		msg.setMsg("采购设备请款");
+//		msg.setFinancialRequestMsgId(room.getFinancialRequestMsgs().size());
+//		msg.setType(12);
+//		room.getFinancialRequestMsgs().add(msg);
+		
+		ChannelHandlerContext financeCtx = financeManager.getCtx();
+		// 将花销发送给财务总监
+		PurchaseEquipmentResponse response = new PurchaseEquipmentResponse(financeCtx);
+		response.setCost(cost);
+		response.writeAndFlush();
+		
+		// 将财务请款列表同步给财务
+		syncFinancialMsgs(financeCtx,room.getFinancialRequestMsgs());
+		
+	}
+	
+	/**
+	 *  同步所有请款列表
+	 * @param financeCtx
+	 */
+	private void syncFinancialMsgs(ChannelHandlerContext financeCtx,List<FinancialRequestMsg> financialRequestMsgs) {
+		FinancialListResponse response = new FinancialListResponse(financeCtx);
+		response.setFinancialRequestMsgs(financialRequestMsgs);
+		response.writeAndFlush();
+	}
+
+	@Override
+	public Object clone() {
+		PurchaseEquipmentHandler handler = new PurchaseEquipmentHandler();
+		handler.baseRequest = this.baseRequest;
+		handler.ctx = this.ctx;
+		handler.channel = this.channel;
+		return handler;
+	}
+
+}

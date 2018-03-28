@@ -1,0 +1,28 @@
+package com.sim.server.game.message.request.finance;
+
+import com.sim.server.game.common.RolePlayProtocolConstant;
+import com.sim.server.game.message.request.BaseRequest;
+
+import io.netty.buffer.ByteBuf;
+
+public class BazaarApplyForMoneyResultRequest extends BaseRequest {
+
+	private Short requestId = RolePlayProtocolConstant.APPLYFOR_MONEY_RESULT_REQUEST_PROTOCOL;
+	// ÊýÁ¿
+	private Byte result;
+	
+	public BazaarApplyForMoneyResultRequest(ByteBuf buf) {
+		super(buf);
+		len = buf.readableBytes();
+		result = buf.readByte() ;
+	}
+
+	public Byte getResult() {
+		return result;
+	}
+
+	public void setResult(Byte result) {
+		this.result = result;
+	}
+	
+}

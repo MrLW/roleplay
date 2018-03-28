@@ -1,0 +1,195 @@
+package com.sim.server.game.roleplay.player;
+
+import com.sim.server.game.message.response.finance.FinancialListResponse;
+import com.sim.server.game.message.response.finance.FinancialStateResponse;
+import com.sim.server.game.message.response.finance.FinancialSuccessResponse;
+import com.sim.server.game.model.model.BaseManager;
+import com.sim.server.game.model.model.FinancialRequestMsg;
+import com.sim.server.game.roleplay.bean.Equipment;
+import com.sim.server.game.roleplay.bean.Material;
+import com.sim.server.game.roleplay.bean.WareHouse;
+
+/**
+ * @author liwen
+ * @date:2017年12月19日 下午2:04:17
+ * @Function: 财务总监
+ * @version 1.0
+ */
+public class FinanceManager extends BaseManager {
+
+	public FinanceManager() {
+		super.roleId = 3;
+		roleType = 3;
+		roleName = "财务总监";
+	}
+
+	public void applyForMoney(Integer applyForMoney) {
+		// 其他部门向财务申请金额
+		if (room.isApplyFor(applyForMoney)) {
+			room.applyFor(applyForMoney);
+		}
+
+	}
+
+	/**
+	 * 修改财务请款的状态
+	 * 
+	 * @param financialRequestMsgId
+	 *            唯一标志
+	 * @param state
+	 *            状态
+	 * @return
+	 */
+	public int removeFinancialRequestMsgById(Integer financialRequestMsgId) {
+		try {
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return 1;
+	}
+
+	/**
+	 * 通知请款人
+	 * 
+	 * @param financialRequestMsgId
+	 */
+	public int notifyPayee(Integer financialRequestMsgId, int state) {
+		int result = 0;
+		try {
+			FinancialRequestMsg msg = room.getFinancialRequestMsgById(financialRequestMsgId);
+			room.getFinancialRequestMsgs().remove(msg);
+
+			// 获取请款人roleId
+			Integer curRoleId = msg.getRoleId();
+			if (state == 1 && msg != null) {
+				result = 1;
+				// 如果state为1,则通知请款人请款成功
+				switch (msg.getType()) {
+				case 11:
+					Integer wareHouseMoney = msg.getMoney();
+					// 计算需要添加仓库的数量
+					int wareHouseCount = wareHouseMoney / 10000;
+					for (int i = 0; i < wareHouseCount; i++) {
+						WareHouse wareHouse = new WareHouse();
+						wareHouse.setWarehouseId(room.getWareHouses().size());
+						room.getWareHouses().add(wareHouse);
+					}
+					break;
+				case 12:
+					Integer equipmentMoney = msg.getMoney();
+					// 计算需要添加仓库的数量
+					int equipmentCount = equipmentMoney / 1000;
+					for (int i = 0; i < equipmentCount; i++) {
+						Equipment equipment = new Equipment();
+						equipment.setEquipmentId(room.getEquipments().size());
+						equipment.setEquipmentName("equipment-" + equipment.getEquipmentId());
+						equipment.setEquipmentType(1);
+						room.getEquipments().add(equipment);
+					}
+					break;
+				case 13:
+					WareHouse wareHouse = room.getWareHouseByType(1);
+					Integer materialMoney = msg.getMoney();
+					// 计算需要添加仓库的数量
+					int materialCount = materialMoney / 100;
+					for (int i = 0; i < materialCount; i++) {
+						Material material = new Material(room.getMaterials().size(), room.getMaterials().size(), "A");
+						room.getMaterials().add(material);
+						// 获取指定的仓库
+						wareHouse.getList().add(material);
+					}
+					break;
+				case 21:
+					// 小金库
+					Integer money = msg.getMoney();
+					// 给市场添加小金库
+					BazaarManager bazaarManager = (BazaarManager) room.getBazaarManager();
+					bazaarManager.coffers(money);
+					break;
+
+				default:
+					break;
+				}
+				// 同步总金额
+				room.applyFor(msg.getMoney());
+				room.syncTotoalMoney();
+
+				BaseManager manager = room.getManagerByRoleId(curRoleId);
+				FinancialSuccessResponse response = new FinancialSuccessResponse(manager.getCtx());
+				response.setResult((byte) 1);
+				response.writeAndFlush();
+			} else {
+				BaseManager manager = room.getManagerByRoleId(curRoleId);
+				FinancialSuccessResponse response = new FinancialSuccessResponse(manager.getCtx());
+				response.setResult((byte) 0);
+				response.writeAndFlush();
+			}
+			syncFinancialRequestMsg();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+		
+		// 通知财务总监
+		writeFinancialStateResponse(result);
+		
+		return 1;
+
+	}
+	/**
+	 *  响应财务请款单状态
+	 * @param result
+	 */
+	private void writeFinancialStateResponse(int result) {
+		FinancialStateResponse response = new FinancialStateResponse(ctx);
+		response.setResult((byte) result);
+		response.writeAndFlush();
+	}
+
+	/**
+	 * 创建财务请款
+	 * 
+	 * @param roleId
+	 *            创建人的角色ID
+	 * @param type
+	 *            请款类型
+	 * @param cost
+	 *            请款的消耗
+	 */
+	public void createFinReq(int roleId, int type, int cost) {
+		// 创建财务请款实体bean
+		FinancialRequestMsg finReq = new FinancialRequestMsg();
+		finReq.setMoney(cost);
+		finReq.setRoleId(roleId);
+		String msg = "";
+		switch (type) {
+		case 11:
+			msg = "采购仓库请款";
+			break;
+		case 12:
+			msg = "采购设备请款";
+			break;
+		case 13:
+			msg = "采购原料请款";
+			break;
+		case 21:
+			msg = "市场申请小金库";
+			break;
+		default:
+			break;
+		}
+		finReq.setMsg(msg);
+		finReq.setFinancialRequestMsgId(room.getFinancialRequestMsgs().size());
+		finReq.setType(type);
+		room.getFinancialRequestMsgs().add(finReq);
+	}
+
+	public void syncFinancialRequestMsg() {
+		FinancialListResponse response = new FinancialListResponse(ctx);
+		response.setFinancialRequestMsgs(room.getFinancialRequestMsgs());
+		response.writeAndFlush();
+	}
+}
